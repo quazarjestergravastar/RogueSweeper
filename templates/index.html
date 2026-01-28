@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minesweeper</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="stats-panel">
+                <div class="stat">
+                    <span class="stat-label">REMAINING</span>
+                    <span class="stat-value" id="remaining">24</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">TIME</span>
+                    <span class="stat-value" id="time">000</span>
+                </div>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="dig-btn">DIG</button>
+                <button class="mode-btn" id="flag-btn">FLG</button>
+            </div>
+        </div>
+        <div class="game-board" id="game-board"></div>
+        <div class="game-over-modal" id="game-over-modal">
+            <div class="modal-content">
+                <h2 id="modal-title">Game Over</h2>
+                <p id="modal-message">You hit a mine!</p>
+                <button class="restart-btn" id="restart-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/game.js"></script>
+</body>
+</html>
