@@ -170,12 +170,67 @@ class Minesweeper {
         const newGameBoard = gameBoard.cloneNode(true);
         gameBoard.parentNode.replaceChild(newGameBoard, gameBoard);
         
-        newGameBoard.addEventListener('click', (e) => {
-            if (e.target.classList.contains('cell')) {
-                const row = parseInt(e.target.dataset.row);
-                const col = parseInt(e.target.dataset.col);
-                this.handleClick(row, col);
+        let longPressTimer = null;
+        let isLongPress = false;
+        const LONG_PRESS_DURATION = 400;
+        
+        const handlePressStart = (e) => {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+            
+            isLongPress = false;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            longPressTimer = setTimeout(() => {
+                isLongPress = true;
+                this.handleLongPress(row, col);
+            }, LONG_PRESS_DURATION);
+        };
+        
+        const handlePressEnd = (e) => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
             }
+            
+            if (!isLongPress) {
+                const cell = e.target.closest('.cell');
+                if (cell) {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    this.handleClick(row, col);
+                }
+            }
+            isLongPress = false;
+        };
+        
+        const handlePressCancel = () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+            isLongPress = false;
+        };
+        
+        newGameBoard.addEventListener('mousedown', handlePressStart);
+        newGameBoard.addEventListener('mouseup', handlePressEnd);
+        newGameBoard.addEventListener('mouseleave', handlePressCancel);
+        
+        newGameBoard.addEventListener('touchstart', (e) => {
+            handlePressStart(e);
+        }, { passive: true });
+        
+        newGameBoard.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handlePressEnd(e.changedTouches[0]);
+        });
+        
+        newGameBoard.addEventListener('touchcancel', handlePressCancel);
+        newGameBoard.addEventListener('touchmove', handlePressCancel);
+        
+        newGameBoard.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
         });
         
         digBtn.onclick = () => {
@@ -195,6 +250,28 @@ class Minesweeper {
             this.createBoard();
             this.bindEvents();
         };
+    }
+    
+    handleLongPress(row, col) {
+        if (this.gameOver || this.gameWon) return;
+        if (this.revealed[row][col]) return;
+        
+        if (this.mode === 'dig') {
+            this.toggleFlag(row, col);
+        } else {
+            if (this.flagged[row][col]) return;
+            
+            if (this.firstClick) {
+                this.firstClick = false;
+                this.placeMines(row, col);
+                this.startTimer();
+            }
+            
+            this.reveal(row, col);
+        }
+        
+        this.updateDisplay();
+        this.checkWin();
     }
     
     handleClick(row, col) {
