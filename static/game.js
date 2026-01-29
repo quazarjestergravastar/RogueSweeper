@@ -1,12 +1,5 @@
-const DIFFICULTIES = {
-    easy: { rows: 10, cols: 8, mines: 10 },
-    medium: { rows: 16, cols: 10, mines: 24 },
-    hard: { rows: 20, cols: 12, mines: 45 }
-};
-
 class Minesweeper {
     constructor() {
-        this.difficulty = 'medium';
         this.rows = 16;
         this.cols = 10;
         this.mines = 24;
@@ -19,20 +12,78 @@ class Minesweeper {
         this.timerInterval = null;
         this.mode = 'dig';
         this.firstClick = true;
+        this.zoomLevel = 1;
+        this.minZoom = 0.5;
+        this.maxZoom = 2;
         
+        this.loadSettings();
         this.bindMenuEvents();
+        this.updateMinesCount();
+    }
+    
+    loadSettings() {
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('dark-mode-toggle').checked = true;
+        }
+        
+        const savedWidth = localStorage.getItem('gridWidth');
+        const savedHeight = localStorage.getItem('gridHeight');
+        
+        if (savedWidth) {
+            document.getElementById('width-slider').value = savedWidth;
+            document.getElementById('width-value').textContent = savedWidth;
+            this.cols = parseInt(savedWidth);
+        }
+        
+        if (savedHeight) {
+            document.getElementById('height-slider').value = savedHeight;
+            document.getElementById('height-value').textContent = savedHeight;
+            this.rows = parseInt(savedHeight);
+        }
+    }
+    
+    saveSettings() {
+        localStorage.setItem('gridWidth', this.cols);
+        localStorage.setItem('gridHeight', this.rows);
+    }
+    
+    calculateMines() {
+        const totalCells = this.rows * this.cols;
+        return Math.floor(totalCells * 0.15);
+    }
+    
+    updateMinesCount() {
+        this.mines = this.calculateMines();
+        document.getElementById('mines-value').textContent = this.mines;
     }
     
     bindMenuEvents() {
-        const menuBtns = document.querySelectorAll('.menu-btn');
+        const widthSlider = document.getElementById('width-slider');
+        const heightSlider = document.getElementById('height-slider');
+        const playBtn = document.getElementById('play-btn');
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-btn');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const zoomIn = document.getElementById('zoom-in');
+        const zoomOut = document.getElementById('zoom-out');
         
-        menuBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const difficulty = btn.dataset.difficulty;
-                this.startGame(difficulty);
-            });
+        widthSlider.addEventListener('input', (e) => {
+            this.cols = parseInt(e.target.value);
+            document.getElementById('width-value').textContent = this.cols;
+            this.updateMinesCount();
+        });
+        
+        heightSlider.addEventListener('input', (e) => {
+            this.rows = parseInt(e.target.value);
+            document.getElementById('height-value').textContent = this.rows;
+            this.updateMinesCount();
+        });
+        
+        playBtn.addEventListener('click', () => {
+            this.saveSettings();
+            this.startGame();
         });
         
         backBtn.addEventListener('click', () => {
@@ -43,20 +94,74 @@ class Minesweeper {
             document.getElementById('game-over-modal').classList.remove('show');
             this.showMenu();
         });
+        
+        darkModeToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'false');
+            }
+        });
+        
+        zoomIn.addEventListener('click', () => this.zoom(0.25));
+        zoomOut.addEventListener('click', () => this.zoom(-0.25));
+        
+        this.setupPinchZoom();
     }
     
-    startGame(difficulty) {
-        this.difficulty = difficulty;
-        const config = DIFFICULTIES[difficulty];
-        this.rows = config.rows;
-        this.cols = config.cols;
-        this.mines = config.mines;
+    setupPinchZoom() {
+        const container = document.getElementById('zoom-container');
+        let initialDistance = 0;
+        let initialZoom = 1;
+        
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                initialDistance = this.getDistance(e.touches[0], e.touches[1]);
+                initialZoom = this.zoomLevel;
+            }
+        }, { passive: true });
+        
+        container.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                const currentDistance = this.getDistance(e.touches[0], e.touches[1]);
+                const scale = currentDistance / initialDistance;
+                const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, initialZoom * scale));
+                this.setZoom(newZoom);
+            }
+        }, { passive: true });
+    }
+    
+    getDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    zoom(delta) {
+        const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoomLevel + delta));
+        this.setZoom(newZoom);
+    }
+    
+    setZoom(level) {
+        this.zoomLevel = level;
+        const gameBoard = document.getElementById('game-board');
+        gameBoard.style.transform = `scale(${this.zoomLevel})`;
+        document.getElementById('zoom-level').textContent = Math.round(this.zoomLevel * 100) + '%';
+    }
+    
+    startGame() {
+        this.updateMinesCount();
         
         document.getElementById('menu-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
         
         const gameBoard = document.getElementById('game-board');
         gameBoard.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+        
+        this.zoomLevel = 1;
+        this.setZoom(1);
         
         this.createBoard();
         this.bindEvents();
@@ -218,16 +323,24 @@ class Minesweeper {
         newGameBoard.addEventListener('mouseleave', handlePressCancel);
         
         newGameBoard.addEventListener('touchstart', (e) => {
-            handlePressStart(e);
+            if (e.touches.length === 1) {
+                handlePressStart(e);
+            }
         }, { passive: true });
         
         newGameBoard.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            handlePressEnd(e.changedTouches[0]);
+            if (e.changedTouches.length === 1) {
+                e.preventDefault();
+                handlePressEnd(e.changedTouches[0]);
+            }
         });
         
         newGameBoard.addEventListener('touchcancel', handlePressCancel);
-        newGameBoard.addEventListener('touchmove', handlePressCancel);
+        newGameBoard.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                handlePressCancel();
+            }
+        });
         
         newGameBoard.addEventListener('contextmenu', (e) => {
             e.preventDefault();
