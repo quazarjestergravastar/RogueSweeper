@@ -23,6 +23,74 @@ body {
     gap: 20px;
 }
 
+.hidden {
+    display: none !important;
+}
+
+.menu-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 40px;
+}
+
+.game-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #222;
+    letter-spacing: 4px;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.menu-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #fff;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.menu-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.menu-btn:active {
+    transform: scale(0.98);
+}
+
+.menu-btn-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.menu-btn-desc {
+    font-size: 12px;
+    font-weight: 500;
+    color: #999;
+}
+
+.game-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -91,7 +159,6 @@ body {
 
 .game-board {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
     gap: 6px;
     padding: 15px;
     background: #f0f0f0;
@@ -158,6 +225,24 @@ body {
 .cell.n7 { color: #333; }
 .cell.n8 { color: #888; }
 
+.back-btn {
+    padding: 14px;
+    background: #fff;
+    color: #666;
+    border: none;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.back-btn:hover {
+    background: #f5f5f5;
+}
+
 .game-over-modal {
     position: fixed;
     top: 0;
@@ -195,6 +280,12 @@ body {
     margin-bottom: 25px;
 }
 
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
 .restart-btn {
     padding: 14px 36px;
     background: #222;
@@ -213,6 +304,23 @@ body {
 
 .restart-btn:active {
     transform: scale(0.95);
+}
+
+.menu-link-btn {
+    padding: 14px 28px;
+    background: #fff;
+    color: #666;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-link-btn:hover {
+    background: #f5f5f5;
+    transform: scale(1.05);
 }
 
 @media (max-width: 420px) {
@@ -236,5 +344,13 @@ body {
     .mode-btn {
         padding: 8px 14px;
         font-size: 12px;
+    }
+    
+    .game-title {
+        font-size: 26px;
+    }
+    
+    .menu-btn {
+        padding: 16px;
     }
 }

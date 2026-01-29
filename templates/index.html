@@ -8,28 +8,51 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="stats-panel">
-                <div class="stat">
-                    <span class="stat-label">REMAINING</span>
-                    <span class="stat-value" id="remaining">24</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">TIME</span>
-                    <span class="stat-value" id="time">000</span>
-                </div>
-            </div>
-            <div class="mode-toggle">
-                <button class="mode-btn active" id="dig-btn">DIG</button>
-                <button class="mode-btn" id="flag-btn">FLG</button>
+        <div class="menu-screen" id="menu-screen">
+            <h1 class="game-title">MINESWEEPER</h1>
+            <div class="menu-options">
+                <button class="menu-btn" data-difficulty="easy">
+                    <span class="menu-btn-title">EASY</span>
+                    <span class="menu-btn-desc">8x10 grid, 10 mines</span>
+                </button>
+                <button class="menu-btn" data-difficulty="medium">
+                    <span class="menu-btn-title">MEDIUM</span>
+                    <span class="menu-btn-desc">10x16 grid, 24 mines</span>
+                </button>
+                <button class="menu-btn" data-difficulty="hard">
+                    <span class="menu-btn-title">HARD</span>
+                    <span class="menu-btn-desc">12x20 grid, 45 mines</span>
+                </button>
             </div>
         </div>
-        <div class="game-board" id="game-board"></div>
+        <div class="game-screen hidden" id="game-screen">
+            <div class="header">
+                <div class="stats-panel">
+                    <div class="stat">
+                        <span class="stat-label">REMAINING</span>
+                        <span class="stat-value" id="remaining">24</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">TIME</span>
+                        <span class="stat-value" id="time">000</span>
+                    </div>
+                </div>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="dig-btn">DIG</button>
+                    <button class="mode-btn" id="flag-btn">FLG</button>
+                </div>
+            </div>
+            <div class="game-board" id="game-board"></div>
+            <button class="back-btn" id="back-btn">MENU</button>
+        </div>
         <div class="game-over-modal" id="game-over-modal">
             <div class="modal-content">
                 <h2 id="modal-title">Game Over</h2>
                 <p id="modal-message">You hit a mine!</p>
-                <button class="restart-btn" id="restart-btn">Play Again</button>
+                <div class="modal-buttons">
+                    <button class="restart-btn" id="restart-btn">Play Again</button>
+                    <button class="menu-link-btn" id="menu-btn">Menu</button>
+                </div>
             </div>
         </div>
     </div>

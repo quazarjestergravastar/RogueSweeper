@@ -1,5 +1,12 @@
+const DIFFICULTIES = {
+    easy: { rows: 10, cols: 8, mines: 10 },
+    medium: { rows: 16, cols: 10, mines: 24 },
+    hard: { rows: 20, cols: 12, mines: 45 }
+};
+
 class Minesweeper {
     constructor() {
+        this.difficulty = 'medium';
         this.rows = 16;
         this.cols = 10;
         this.mines = 24;
@@ -13,13 +20,56 @@ class Minesweeper {
         this.mode = 'dig';
         this.firstClick = true;
         
-        this.init();
+        this.bindMenuEvents();
     }
     
-    init() {
+    bindMenuEvents() {
+        const menuBtns = document.querySelectorAll('.menu-btn');
+        const backBtn = document.getElementById('back-btn');
+        const menuBtn = document.getElementById('menu-btn');
+        
+        menuBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const difficulty = btn.dataset.difficulty;
+                this.startGame(difficulty);
+            });
+        });
+        
+        backBtn.addEventListener('click', () => {
+            this.showMenu();
+        });
+        
+        menuBtn.addEventListener('click', () => {
+            document.getElementById('game-over-modal').classList.remove('show');
+            this.showMenu();
+        });
+    }
+    
+    startGame(difficulty) {
+        this.difficulty = difficulty;
+        const config = DIFFICULTIES[difficulty];
+        this.rows = config.rows;
+        this.cols = config.cols;
+        this.mines = config.mines;
+        
+        document.getElementById('menu-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        
+        const gameBoard = document.getElementById('game-board');
+        gameBoard.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+        
         this.createBoard();
         this.bindEvents();
-        this.updateDisplay();
+    }
+    
+    showMenu() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('menu-screen').classList.remove('hidden');
     }
     
     createBoard() {
@@ -30,6 +80,12 @@ class Minesweeper {
         this.gameWon = false;
         this.firstClick = true;
         this.timer = 0;
+        this.mode = 'dig';
+        
+        const digBtn = document.getElementById('dig-btn');
+        const flagBtn = document.getElementById('flag-btn');
+        digBtn.classList.add('active');
+        flagBtn.classList.remove('active');
         
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
@@ -111,7 +167,10 @@ class Minesweeper {
         const flagBtn = document.getElementById('flag-btn');
         const restartBtn = document.getElementById('restart-btn');
         
-        gameBoard.addEventListener('click', (e) => {
+        const newGameBoard = gameBoard.cloneNode(true);
+        gameBoard.parentNode.replaceChild(newGameBoard, gameBoard);
+        
+        newGameBoard.addEventListener('click', (e) => {
             if (e.target.classList.contains('cell')) {
                 const row = parseInt(e.target.dataset.row);
                 const col = parseInt(e.target.dataset.col);
@@ -119,22 +178,23 @@ class Minesweeper {
             }
         });
         
-        digBtn.addEventListener('click', () => {
+        digBtn.onclick = () => {
             this.mode = 'dig';
             digBtn.classList.add('active');
             flagBtn.classList.remove('active');
-        });
+        };
         
-        flagBtn.addEventListener('click', () => {
+        flagBtn.onclick = () => {
             this.mode = 'flag';
             flagBtn.classList.add('active');
             digBtn.classList.remove('active');
-        });
+        };
         
-        restartBtn.addEventListener('click', () => {
+        restartBtn.onclick = () => {
             document.getElementById('game-over-modal').classList.remove('show');
             this.createBoard();
-        });
+            this.bindEvents();
+        };
     }
     
     handleClick(row, col) {
