@@ -4,16 +4,22 @@ A clean, minimal Minesweeper game with a modern UI.
 
 ## Overview
 
-This is a web-based Minesweeper game built with Flask (Python backend) and vanilla HTML/CSS/JavaScript frontend. The design features a clean, minimal white/gray aesthetic.
+This is a web-based Minesweeper game built with Flask (Python backend) and vanilla HTML/CSS/JavaScript frontend. The design features a clean, minimal aesthetic with support for both light and dark modes.
 
 ## Features
 
-- 10x16 grid with 24 mines
+- Customizable grid size with width/height sliders
+- Proportional mine count (15% of total cells)
 - Toggle between DIG and FLAG modes
+- Long-press to perform opposite action (dig in flag mode, flag in dig mode)
 - Timer tracking
 - Remaining mines counter
 - Win/lose detection with modal popup
+- Dark mode support
+- Zoom controls (pinch-to-zoom on mobile, +/- buttons)
+- Custom icons: green triangle for flags, red circle for mines
 - Responsive design for mobile devices
+- Settings persistence via localStorage
 
 ## Project Structure
 
@@ -22,8 +28,8 @@ This is a web-based Minesweeper game built with Flask (Python backend) and vanil
 ├── templates/
 │   └── index.html       # Game HTML template
 ├── static/
-│   ├── style.css        # Game styling
-│   └── game.js          # Game logic
+│   ├── style.css        # Game styling with CSS variables for theming
+│   └── game.js          # Game logic with zoom and settings
 ```
 
 ## Running the Game
@@ -35,11 +41,17 @@ python main.py
 
 ## How to Play
 
-1. Click "DIG" mode to reveal cells
-2. Click "FLG" mode to place/remove flags on suspected mines
-3. Reveal all non-mine cells to win
-4. Hitting a mine ends the game
+1. Adjust WIDTH and HEIGHT sliders to set grid size
+2. MINES count updates automatically (proportional to grid size)
+3. Toggle Dark Mode if desired
+4. Click PLAY to start
+5. Use DIG mode to reveal cells, FLG mode to place flags
+6. Long-press for opposite action
+7. Use zoom controls or pinch to zoom in/out
+8. Reveal all non-mine cells to win
 
 ## Recent Changes
 
+- January 29, 2026: Added sliders for grid size, dark mode, zoom controls, custom flag/mine icons
+- January 28, 2026: Added menu with difficulty selection, long-press functionality
 - January 28, 2026: Initial creation with clean minimal UI matching reference design
