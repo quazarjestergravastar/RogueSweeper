@@ -1,3 +1,52 @@
+class FloatingBackground {
+    constructor() {
+        this.container = document.getElementById('floating-bg');
+        this.shapes = [];
+        this.maxShapes = 15;
+        this.init();
+    }
+    
+    init() {
+        this.spawnShape();
+        setInterval(() => this.spawnShape(), 2000);
+    }
+    
+    spawnShape() {
+        if (this.shapes.length >= this.maxShapes) {
+            const oldShape = this.shapes.shift();
+            if (oldShape && oldShape.parentNode) {
+                oldShape.parentNode.removeChild(oldShape);
+            }
+        }
+        
+        const shape = document.createElement('div');
+        const types = ['', 'blob', 'shard'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        
+        shape.className = `floating-shape ${type}`;
+        
+        const size = 20 + Math.random() * 80;
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+        shape.style.left = `${Math.random() * 100}%`;
+        shape.style.animationDuration = `${15 + Math.random() * 20}s`;
+        shape.style.animationDelay = `${Math.random() * 2}s`;
+        
+        this.container.appendChild(shape);
+        this.shapes.push(shape);
+        
+        setTimeout(() => {
+            const index = this.shapes.indexOf(shape);
+            if (index > -1) {
+                this.shapes.splice(index, 1);
+            }
+            if (shape.parentNode) {
+                shape.parentNode.removeChild(shape);
+            }
+        }, 35000);
+    }
+}
+
 class Minesweeper {
     constructor() {
         this.rows = 16;
@@ -16,9 +65,19 @@ class Minesweeper {
         this.minZoom = 0.5;
         this.maxZoom = 2;
         
+        this.scrollX = 0;
+        this.scrollY = 0;
+        this.isDragging = false;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.dragThreshold = 10;
+        this.hasDragged = false;
+        
         this.loadSettings();
         this.bindMenuEvents();
         this.updateMinesCount();
+        
+        new FloatingBackground();
     }
     
     loadSettings() {
@@ -56,7 +115,10 @@ class Minesweeper {
     
     updateMinesCount() {
         this.mines = this.calculateMines();
-        document.getElementById('mines-value').textContent = this.mines;
+        const minesEl = document.getElementById('mines-value');
+        minesEl.textContent = this.mines;
+        minesEl.classList.add('pop');
+        setTimeout(() => minesEl.classList.remove('pop'), 300);
     }
     
     bindMenuEvents() {
@@ -71,13 +133,19 @@ class Minesweeper {
         
         widthSlider.addEventListener('input', (e) => {
             this.cols = parseInt(e.target.value);
-            document.getElementById('width-value').textContent = this.cols;
+            const valueEl = document.getElementById('width-value');
+            valueEl.textContent = this.cols;
+            valueEl.classList.add('pop');
+            setTimeout(() => valueEl.classList.remove('pop'), 200);
             this.updateMinesCount();
         });
         
         heightSlider.addEventListener('input', (e) => {
             this.rows = parseInt(e.target.value);
-            document.getElementById('height-value').textContent = this.rows;
+            const valueEl = document.getElementById('height-value');
+            valueEl.textContent = this.rows;
+            valueEl.classList.add('pop');
+            setTimeout(() => valueEl.classList.remove('pop'), 200);
             this.updateMinesCount();
         });
         
@@ -105,38 +173,19 @@ class Minesweeper {
             }
         });
         
-        zoomIn.addEventListener('click', () => this.zoom(0.25));
-        zoomOut.addEventListener('click', () => this.zoom(-0.25));
+        zoomIn.addEventListener('click', () => {
+            this.zoom(0.25);
+            const levelEl = document.getElementById('zoom-level');
+            levelEl.classList.add('pop');
+            setTimeout(() => levelEl.classList.remove('pop'), 200);
+        });
         
-        this.setupPinchZoom();
-    }
-    
-    setupPinchZoom() {
-        const container = document.getElementById('zoom-container');
-        let initialDistance = 0;
-        let initialZoom = 1;
-        
-        container.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                initialDistance = this.getDistance(e.touches[0], e.touches[1]);
-                initialZoom = this.zoomLevel;
-            }
-        }, { passive: true });
-        
-        container.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) {
-                const currentDistance = this.getDistance(e.touches[0], e.touches[1]);
-                const scale = currentDistance / initialDistance;
-                const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, initialZoom * scale));
-                this.setZoom(newZoom);
-            }
-        }, { passive: true });
-    }
-    
-    getDistance(touch1, touch2) {
-        const dx = touch1.clientX - touch2.clientX;
-        const dy = touch1.clientY - touch2.clientY;
-        return Math.sqrt(dx * dx + dy * dy);
+        zoomOut.addEventListener('click', () => {
+            this.zoom(-0.25);
+            const levelEl = document.getElementById('zoom-level');
+            levelEl.classList.add('pop');
+            setTimeout(() => levelEl.classList.remove('pop'), 200);
+        });
     }
     
     zoom(delta) {
@@ -149,6 +198,7 @@ class Minesweeper {
         const gameBoard = document.getElementById('game-board');
         gameBoard.style.transform = `scale(${this.zoomLevel})`;
         document.getElementById('zoom-level').textContent = Math.round(this.zoomLevel * 100) + '%';
+        this.clampScroll();
     }
     
     startGame() {
@@ -161,10 +211,14 @@ class Minesweeper {
         gameBoard.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
         
         this.zoomLevel = 1;
+        this.scrollX = 0;
+        this.scrollY = 0;
         this.setZoom(1);
+        this.updateBoardPosition();
         
         this.createBoard();
         this.bindEvents();
+        this.setupScrolling();
     }
     
     showMenu() {
@@ -175,6 +229,166 @@ class Minesweeper {
         
         document.getElementById('game-screen').classList.add('hidden');
         document.getElementById('menu-screen').classList.remove('hidden');
+    }
+    
+    setupScrolling() {
+        const container = document.getElementById('zoom-container');
+        const wrapper = document.getElementById('board-wrapper');
+        
+        let velocityX = 0;
+        let velocityY = 0;
+        let lastX = 0;
+        let lastY = 0;
+        let animationId = null;
+        
+        const applyInertia = () => {
+            if (Math.abs(velocityX) > 0.5 || Math.abs(velocityY) > 0.5) {
+                this.scrollX += velocityX;
+                this.scrollY += velocityY;
+                this.clampScroll();
+                this.updateBoardPosition();
+                
+                velocityX *= 0.92;
+                velocityY *= 0.92;
+                
+                animationId = requestAnimationFrame(applyInertia);
+            }
+        };
+        
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                if (animationId) cancelAnimationFrame(animationId);
+                this.isDragging = true;
+                this.hasDragged = false;
+                this.dragStartX = e.touches[0].clientX;
+                this.dragStartY = e.touches[0].clientY;
+                lastX = this.dragStartX;
+                lastY = this.dragStartY;
+                velocityX = 0;
+                velocityY = 0;
+            }
+        }, { passive: true });
+        
+        container.addEventListener('touchmove', (e) => {
+            if (this.isDragging && e.touches.length === 1) {
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                
+                const deltaX = currentX - lastX;
+                const deltaY = currentY - lastY;
+                
+                const totalDeltaX = Math.abs(currentX - this.dragStartX);
+                const totalDeltaY = Math.abs(currentY - this.dragStartY);
+                
+                if (totalDeltaX > this.dragThreshold || totalDeltaY > this.dragThreshold) {
+                    this.hasDragged = true;
+                }
+                
+                if (this.hasDragged) {
+                    this.scrollX += deltaX;
+                    this.scrollY += deltaY;
+                    this.clampScroll();
+                    this.updateBoardPosition();
+                    
+                    velocityX = deltaX;
+                    velocityY = deltaY;
+                }
+                
+                lastX = currentX;
+                lastY = currentY;
+            }
+        }, { passive: true });
+        
+        container.addEventListener('touchend', () => {
+            if (this.isDragging && this.hasDragged) {
+                applyInertia();
+            }
+            this.isDragging = false;
+        });
+        
+        container.addEventListener('mousedown', (e) => {
+            if (animationId) cancelAnimationFrame(animationId);
+            this.isDragging = true;
+            this.hasDragged = false;
+            this.dragStartX = e.clientX;
+            this.dragStartY = e.clientY;
+            lastX = this.dragStartX;
+            lastY = this.dragStartY;
+            velocityX = 0;
+            velocityY = 0;
+        });
+        
+        container.addEventListener('mousemove', (e) => {
+            if (this.isDragging) {
+                const deltaX = e.clientX - lastX;
+                const deltaY = e.clientY - lastY;
+                
+                const totalDeltaX = Math.abs(e.clientX - this.dragStartX);
+                const totalDeltaY = Math.abs(e.clientY - this.dragStartY);
+                
+                if (totalDeltaX > this.dragThreshold || totalDeltaY > this.dragThreshold) {
+                    this.hasDragged = true;
+                }
+                
+                if (this.hasDragged) {
+                    this.scrollX += deltaX;
+                    this.scrollY += deltaY;
+                    this.clampScroll();
+                    this.updateBoardPosition();
+                    
+                    velocityX = deltaX;
+                    velocityY = deltaY;
+                }
+                
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        });
+        
+        container.addEventListener('mouseup', () => {
+            if (this.isDragging && this.hasDragged) {
+                applyInertia();
+            }
+            this.isDragging = false;
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            this.isDragging = false;
+        });
+    }
+    
+    clampScroll() {
+        const container = document.getElementById('zoom-container');
+        const board = document.getElementById('game-board');
+        
+        const containerRect = container.getBoundingClientRect();
+        const boardWidth = board.offsetWidth * this.zoomLevel;
+        const boardHeight = board.offsetHeight * this.zoomLevel;
+        
+        const maxScrollX = Math.max(0, (boardWidth - containerRect.width) / 2 + 50);
+        const maxScrollY = Math.max(0, (boardHeight - containerRect.height) / 2 + 50);
+        
+        const elasticity = 0.3;
+        
+        if (this.scrollX > maxScrollX) {
+            this.scrollX = maxScrollX + (this.scrollX - maxScrollX) * elasticity;
+        } else if (this.scrollX < -maxScrollX) {
+            this.scrollX = -maxScrollX + (this.scrollX + maxScrollX) * elasticity;
+        }
+        
+        if (this.scrollY > maxScrollY) {
+            this.scrollY = maxScrollY + (this.scrollY - maxScrollY) * elasticity;
+        } else if (this.scrollY < -maxScrollY) {
+            this.scrollY = -maxScrollY + (this.scrollY + maxScrollY) * elasticity;
+        }
+        
+        this.scrollX = Math.max(-maxScrollX * 1.5, Math.min(maxScrollX * 1.5, this.scrollX));
+        this.scrollY = Math.max(-maxScrollY * 1.5, Math.min(maxScrollY * 1.5, this.scrollY));
+    }
+    
+    updateBoardPosition() {
+        const wrapper = document.getElementById('board-wrapper');
+        wrapper.style.transform = `translate(${this.scrollX}px, ${this.scrollY}px)`;
     }
     
     createBoard() {
@@ -261,6 +475,7 @@ class Minesweeper {
                 cell.className = 'cell';
                 cell.dataset.row = i;
                 cell.dataset.col = j;
+                cell.style.animationDelay = `${(i * this.cols + j) * 0.01}s`;
                 gameBoard.appendChild(cell);
             }
         }
@@ -277,37 +492,58 @@ class Minesweeper {
         
         let longPressTimer = null;
         let isLongPress = false;
+        let pressedCell = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
         const LONG_PRESS_DURATION = 400;
+        const MOVE_THRESHOLD = 10;
         
-        const handlePressStart = (e) => {
+        const handlePressStart = (e, x, y) => {
             const cell = e.target.closest('.cell');
             if (!cell) return;
             
             isLongPress = false;
+            pressedCell = cell;
+            touchStartX = x;
+            touchStartY = y;
+            
+            cell.classList.add('pressed');
+            
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
             
             longPressTimer = setTimeout(() => {
                 isLongPress = true;
-                this.handleLongPress(row, col);
+                cell.classList.remove('pressed');
+                if (!this.hasDragged) {
+                    this.handleLongPress(row, col);
+                }
             }, LONG_PRESS_DURATION);
         };
         
-        const handlePressEnd = (e) => {
+        const handlePressEnd = (e, x, y) => {
             if (longPressTimer) {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
             }
             
-            if (!isLongPress) {
-                const cell = e.target.closest('.cell');
-                if (cell) {
-                    const row = parseInt(cell.dataset.row);
-                    const col = parseInt(cell.dataset.col);
+            if (pressedCell) {
+                pressedCell.classList.remove('pressed');
+            }
+            
+            if (!isLongPress && !this.hasDragged && pressedCell) {
+                const moveX = Math.abs(x - touchStartX);
+                const moveY = Math.abs(y - touchStartY);
+                
+                if (moveX < MOVE_THRESHOLD && moveY < MOVE_THRESHOLD) {
+                    const row = parseInt(pressedCell.dataset.row);
+                    const col = parseInt(pressedCell.dataset.col);
                     this.handleClick(row, col);
                 }
             }
+            
             isLongPress = false;
+            pressedCell = null;
         };
         
         const handlePressCancel = () => {
@@ -315,32 +551,37 @@ class Minesweeper {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
             }
+            if (pressedCell) {
+                pressedCell.classList.remove('pressed');
+            }
             isLongPress = false;
+            pressedCell = null;
         };
         
-        newGameBoard.addEventListener('mousedown', handlePressStart);
-        newGameBoard.addEventListener('mouseup', handlePressEnd);
+        newGameBoard.addEventListener('mousedown', (e) => {
+            handlePressStart(e, e.clientX, e.clientY);
+        });
+        
+        newGameBoard.addEventListener('mouseup', (e) => {
+            handlePressEnd(e, e.clientX, e.clientY);
+        });
+        
         newGameBoard.addEventListener('mouseleave', handlePressCancel);
         
         newGameBoard.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
-                handlePressStart(e);
+                handlePressStart(e, e.touches[0].clientX, e.touches[0].clientY);
             }
         }, { passive: true });
         
         newGameBoard.addEventListener('touchend', (e) => {
             if (e.changedTouches.length === 1) {
                 e.preventDefault();
-                handlePressEnd(e.changedTouches[0]);
+                handlePressEnd(e, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
             }
         });
         
         newGameBoard.addEventListener('touchcancel', handlePressCancel);
-        newGameBoard.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 1) {
-                handlePressCancel();
-            }
-        });
         
         newGameBoard.addEventListener('contextmenu', (e) => {
             e.preventDefault();
@@ -443,7 +684,9 @@ class Minesweeper {
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
                     if (i !== 0 || j !== 0) {
-                        this.reveal(row + i, col + j);
+                        setTimeout(() => {
+                            this.reveal(row + i, col + j);
+                        }, 30);
                     }
                 }
             }
@@ -457,14 +700,20 @@ class Minesweeper {
     startTimer() {
         this.timerInterval = setInterval(() => {
             this.timer++;
-            document.getElementById('time').textContent = this.timer.toString().padStart(3, '0');
+            const timeEl = document.getElementById('time');
+            timeEl.textContent = this.timer.toString().padStart(3, '0');
+            timeEl.classList.add('pulse');
+            setTimeout(() => timeEl.classList.remove('pulse'), 200);
         }, 1000);
     }
     
     updateDisplay() {
         const flagCount = this.flagged.flat().filter(f => f).length;
         const remaining = this.mines - flagCount;
-        document.getElementById('remaining').textContent = remaining;
+        const remainingEl = document.getElementById('remaining');
+        remainingEl.textContent = remaining;
+        remainingEl.classList.add('pulse');
+        setTimeout(() => remainingEl.classList.remove('pulse'), 200);
         document.getElementById('time').textContent = this.timer.toString().padStart(3, '0');
     }
     
@@ -488,12 +737,16 @@ class Minesweeper {
         clearInterval(this.timerInterval);
         
         if (!won) {
+            let delay = 0;
             for (let i = 0; i < this.rows; i++) {
                 for (let j = 0; j < this.cols; j++) {
                     if (this.board[i][j] === -1) {
-                        const cell = this.getCell(i, j);
-                        cell.classList.add('mine');
-                        cell.classList.remove('flagged');
+                        setTimeout(() => {
+                            const cell = this.getCell(i, j);
+                            cell.classList.add('mine');
+                            cell.classList.remove('flagged');
+                        }, delay);
+                        delay += 50;
                     }
                 }
             }
@@ -513,7 +766,7 @@ class Minesweeper {
             }
             
             modal.classList.add('show');
-        }, 500);
+        }, won ? 500 : 800);
     }
 }
 

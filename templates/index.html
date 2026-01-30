@@ -7,30 +7,31 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <div class="floating-bg" id="floating-bg"></div>
     <div class="container">
         <div class="menu-screen" id="menu-screen">
             <h1 class="game-title">MINESWEEPER</h1>
             <div class="menu-options">
-                <div class="slider-group">
+                <div class="slider-group juicy-card">
                     <label class="slider-label">
                         <span>WIDTH</span>
                         <span class="slider-value" id="width-value">10</span>
                     </label>
                     <input type="range" class="slider" id="width-slider" min="5" max="15" value="10">
                 </div>
-                <div class="slider-group">
+                <div class="slider-group juicy-card">
                     <label class="slider-label">
                         <span>HEIGHT</span>
                         <span class="slider-value" id="height-value">16</span>
                     </label>
                     <input type="range" class="slider" id="height-slider" min="8" max="25" value="16">
                 </div>
-                <div class="mines-display">
+                <div class="mines-display juicy-card">
                     <span class="mines-label">MINES</span>
                     <span class="mines-value" id="mines-value">24</span>
                 </div>
-                <button class="play-btn" id="play-btn">PLAY</button>
-                <div class="settings-section">
+                <button class="play-btn juicy-btn" id="play-btn">PLAY</button>
+                <div class="settings-section juicy-card">
                     <div class="dark-mode-toggle">
                         <span class="toggle-label">Dark Mode</span>
                         <label class="switch">
@@ -43,7 +44,7 @@
         </div>
         <div class="game-screen hidden" id="game-screen">
             <div class="header">
-                <div class="stats-panel">
+                <div class="stats-panel juicy-card">
                     <div class="stat">
                         <span class="stat-label">REMAINING</span>
                         <span class="stat-value" id="remaining">24</span>
@@ -53,30 +54,32 @@
                         <span class="stat-value" id="time">000</span>
                     </div>
                 </div>
-                <div class="mode-toggle">
-                    <button class="mode-btn active" id="dig-btn">DIG</button>
-                    <button class="mode-btn" id="flag-btn">FLG</button>
+                <div class="mode-toggle juicy-card">
+                    <button class="mode-btn juicy-btn active" id="dig-btn">DIG</button>
+                    <button class="mode-btn juicy-btn" id="flag-btn">FLG</button>
                 </div>
             </div>
             <div class="zoom-container" id="zoom-container">
-                <div class="game-board" id="game-board"></div>
+                <div class="board-wrapper" id="board-wrapper">
+                    <div class="game-board" id="game-board"></div>
+                </div>
             </div>
             <div class="game-controls">
-                <button class="back-btn" id="back-btn">MENU</button>
-                <div class="zoom-controls">
-                    <button class="zoom-btn" id="zoom-out">-</button>
+                <button class="back-btn juicy-btn" id="back-btn">MENU</button>
+                <div class="zoom-controls juicy-card">
+                    <button class="zoom-btn juicy-btn" id="zoom-out">-</button>
                     <span class="zoom-level" id="zoom-level">100%</span>
-                    <button class="zoom-btn" id="zoom-in">+</button>
+                    <button class="zoom-btn juicy-btn" id="zoom-in">+</button>
                 </div>
             </div>
         </div>
         <div class="game-over-modal" id="game-over-modal">
-            <div class="modal-content">
+            <div class="modal-content juicy-card">
                 <h2 id="modal-title">Game Over</h2>
                 <p id="modal-message">You hit a mine!</p>
                 <div class="modal-buttons">
-                    <button class="restart-btn" id="restart-btn">Play Again</button>
-                    <button class="menu-link-btn" id="menu-btn">Menu</button>
+                    <button class="restart-btn juicy-btn" id="restart-btn">Play Again</button>
+                    <button class="menu-link-btn juicy-btn" id="menu-btn">Menu</button>
                 </div>
             </div>
         </div>
