@@ -16,10 +16,21 @@ This is a web-based Minesweeper game built with Flask (Python backend) and vanil
 - Remaining mines counter
 - Win/lose detection with modal popup
 - Dark mode support
-- Zoom controls (pinch-to-zoom on mobile, +/- buttons)
+- Button-based zoom controls (+/- buttons only, no pinch-to-zoom)
 - Custom icons: green triangle for flags, red circle for mines
 - Responsive design for mobile devices
 - Settings persistence via localStorage
+
+## UI/UX Design
+
+- "Juicy, bouncy, alive" interface with spring animations and micro-interactions
+- Floating background shapes (circles, blobs, shards) that drift and fade
+- All buttons have scale-down + bounce-back feedback on tap
+- Ripple effects on button interactions
+- Touch-safe input: scroll vs tap detection with movement threshold
+- Single-finger drag scrolling with inertia
+- Soft scroll bounds with elastic overscroll (can't scroll board off-screen)
+- Staggered reveal animations for cells
 
 ## Project Structure
 
