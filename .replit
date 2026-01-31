@@ -47,4 +47,4 @@ outputType = "webview"
 
 [deployment]
 deploymentTarget = "cloudrun"
-run = ["sh", "-c", "key"]
+run = ["sh", "-c", "python main.py"]
