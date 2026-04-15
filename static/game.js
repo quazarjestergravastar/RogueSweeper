@@ -93,8 +93,8 @@ class Minesweeper {
         }
     }
 
-    awardPoints(minesHit) {
-        const earned = minesHit * 10;
+    awardPoints(correctFlags) {
+        const earned = correctFlags * 10;
         this.points += earned;
         localStorage.setItem('ms_points', this.points);
         this.renderLevelBar();
@@ -241,14 +241,26 @@ class Minesweeper {
 
         document.getElementById('menu-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.remove('show');
+            document.getElementById('modal-restore-btn').classList.add('hidden');
             this.showMenu();
         });
 
         document.getElementById('restart-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.remove('show');
+            document.getElementById('modal-restore-btn').classList.add('hidden');
             this.clearSavedGame();
             this.createFreshBoard();
             this.bindGameEvents();
+        });
+
+        document.getElementById('modal-hide-btn').addEventListener('click', () => {
+            document.getElementById('game-over-modal').classList.remove('show');
+            document.getElementById('modal-restore-btn').classList.remove('hidden');
+        });
+
+        document.getElementById('modal-restore-btn').addEventListener('click', () => {
+            document.getElementById('game-over-modal').classList.add('show');
+            document.getElementById('modal-restore-btn').classList.add('hidden');
         });
 
         document.getElementById('dark-mode-toggle').addEventListener('change', (e) => {
@@ -695,30 +707,46 @@ class Minesweeper {
         this.timerInterval = null;
         this.clearSavedGame();
 
-        let minesHit = 0;
+        let correctFlags = 0;
         let delay = 0;
+
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
-                if (this.board[i][j] === -1) {
-                    minesHit++;
+                const isMine = this.board[i][j] === -1;
+                const isFlagged = this.flagged[i][j];
+
+                if (isMine && isFlagged) {
+                    correctFlags++;
+                } else if (isMine && !isFlagged) {
                     const d = delay;
                     setTimeout(() => {
                         const cell = this.getCell(i, j);
                         if (cell) { cell.classList.add('mine'); cell.classList.remove('flagged'); }
                     }, d);
                     delay += 35;
+                } else if (!isMine && isFlagged) {
+                    const d = delay;
+                    setTimeout(() => {
+                        const cell = this.getCell(i, j);
+                        if (cell) cell.classList.add('flag-wrong');
+                    }, d);
+                    delay += 25;
                 }
             }
         }
 
-        const earned = this.awardPoints(1);
+        const earned = this.awardPoints(correctFlags);
 
         setTimeout(() => {
             document.getElementById('modal-title').textContent = 'Game Over';
-            document.getElementById('modal-message').textContent = `You survived ${this.timer}s and opened 1 mine.`;
-            document.getElementById('points-earned').textContent = `+${earned} points`;
+            const flagMsg = correctFlags === 1
+                ? '1 correct flag'
+                : `${correctFlags} correct flags`;
+            document.getElementById('modal-message').textContent = `${flagMsg} · ${this.timer}s survived`;
+            document.getElementById('points-earned').textContent = earned > 0 ? `+${earned} points` : 'No points earned';
             document.getElementById('game-over-modal').classList.add('show');
-        }, Math.min(delay + 200, 1200));
+            document.getElementById('modal-restore-btn').classList.add('hidden');
+        }, Math.min(delay + 300, 1400));
     }
 }
 
