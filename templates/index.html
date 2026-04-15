@@ -29,26 +29,41 @@
             </div>
 
             <div class="menu-options">
-                <div class="slider-group juicy-card">
-                    <label class="slider-label">
-                        <span>WIDTH</span>
-                        <span class="slider-value" id="width-value">10</span>
-                    </label>
-                    <input type="range" class="slider" id="width-slider" min="5" max="15" value="10">
+                <div class="difficulty-grid juicy-card">
+                    <div class="diff-box" id="diff-easy">
+                        <div class="diff-icon easy-color">&#9650;</div>
+                        <span class="diff-name">Easy</span>
+                    </div>
+                    <div class="diff-box" id="diff-normal">
+                        <div class="diff-icon normal-color">&#9632;</div>
+                        <span class="diff-name">Normal</span>
+                    </div>
+                    <div class="diff-box diff-locked" id="diff-hard">
+                        <div class="diff-icon hard-color">&#9670;</div>
+                        <div class="diff-lock-badge" id="hard-lock-badge">&#128274;</div>
+                        <span class="diff-name">Hard</span>
+                    </div>
+                    <div class="diff-box diff-soon" id="diff-cs1">
+                        <div class="diff-icon soon-color">&#63;</div>
+                        <span class="diff-name">???</span>
+                    </div>
+                    <div class="diff-box diff-soon" id="diff-cs2">
+                        <div class="diff-icon soon-color">&#63;</div>
+                        <span class="diff-name">???</span>
+                    </div>
+                    <div class="diff-box diff-soon" id="diff-cs3">
+                        <div class="diff-icon soon-color">&#63;</div>
+                        <span class="diff-name">???</span>
+                    </div>
                 </div>
-                <div class="slider-group juicy-card">
-                    <label class="slider-label">
-                        <span>HEIGHT</span>
-                        <span class="slider-value" id="height-value">16</span>
-                    </label>
-                    <input type="range" class="slider" id="height-slider" min="8" max="25" value="16">
-                </div>
+
                 <div class="mines-display juicy-card">
                     <span class="mines-label">MINES</span>
-                    <span class="mines-value" id="mines-value">24</span>
+                    <span class="mines-value" id="mines-value">—</span>
                 </div>
+
                 <div class="play-row">
-                    <button class="play-btn juicy-btn" id="play-btn">NEW GAME</button>
+                    <button class="play-btn juicy-btn hidden" id="play-btn">NEW GAME</button>
                     <button class="continue-btn juicy-btn hidden" id="continue-btn">CONTINUE</button>
                 </div>
             </div>
@@ -59,7 +74,7 @@
                 <div class="stats-panel juicy-card">
                     <div class="stat">
                         <span class="stat-label">MINES LEFT</span>
-                        <span class="stat-value" id="remaining">24</span>
+                        <span class="stat-value" id="remaining">0</span>
                     </div>
                     <div class="stat">
                         <span class="stat-label">TIME</span>
@@ -87,11 +102,12 @@
         </div>
     </div>
 
+    <!-- Game Over Modal -->
     <div class="modal-overlay" id="game-over-modal">
         <div class="modal-content juicy-card">
             <button class="modal-hide-btn juicy-btn" id="modal-hide-btn" title="Hide">&#8722;</button>
             <h2 id="modal-title">Game Over</h2>
-            <p id="modal-message">You hit a mine!</p>
+            <p id="modal-message"></p>
             <p class="points-earned" id="points-earned"></p>
             <div class="modal-buttons">
                 <button class="restart-btn juicy-btn" id="restart-btn">Play Again</button>
@@ -101,6 +117,16 @@
     </div>
     <button class="modal-restore-btn juicy-btn hidden" id="modal-restore-btn">&#9873;</button>
 
+    <!-- Difficulty Prompt Modal -->
+    <div class="modal-overlay" id="diff-modal">
+        <div class="modal-content juicy-card">
+            <h2 id="diff-modal-title"></h2>
+            <p id="diff-modal-body"></p>
+            <div class="modal-buttons" id="diff-modal-buttons"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content juicy-card">
             <h2>Settings</h2>
