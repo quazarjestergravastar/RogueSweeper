@@ -63,6 +63,7 @@ python main.py
 
 ## Recent Changes
 
+- April 15, 2026: Added continue feature (save/restore board state via localStorage), points + level system, settings popup, flag removal in dig mode, screen transition animation, removed win condition (no winning, only losing)
 - January 29, 2026: Added sliders for grid size, dark mode, zoom controls, custom flag/mine icons
 - January 28, 2026: Added menu with difficulty selection, long-press functionality
 - January 28, 2026: Initial creation with clean minimal UI matching reference design

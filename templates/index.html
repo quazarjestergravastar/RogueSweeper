@@ -8,9 +8,26 @@
 </head>
 <body>
     <div class="floating-bg" id="floating-bg"></div>
+    <div class="screen-transition" id="screen-transition"></div>
+
     <div class="container">
         <div class="menu-screen" id="menu-screen">
-            <h1 class="game-title">MINESWEEPER</h1>
+            <div class="menu-top">
+                <h1 class="game-title">MINESWEEPER</h1>
+                <button class="settings-icon-btn juicy-btn" id="settings-open-btn" title="Settings">&#9881;</button>
+            </div>
+
+            <div class="level-section juicy-card" id="level-section">
+                <div class="level-row">
+                    <button class="upgrade-btn juicy-btn hidden" id="upgrade-btn">LEVEL UP</button>
+                    <span class="level-label" id="level-label">LVL 0</span>
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar-fill" id="xp-bar-fill"></div>
+                    </div>
+                    <span class="xp-text" id="xp-text">0 / 10</span>
+                </div>
+            </div>
+
             <div class="menu-options">
                 <div class="slider-group juicy-card">
                     <label class="slider-label">
@@ -30,23 +47,18 @@
                     <span class="mines-label">MINES</span>
                     <span class="mines-value" id="mines-value">24</span>
                 </div>
-                <button class="play-btn juicy-btn" id="play-btn">PLAY</button>
-                <div class="settings-section juicy-card">
-                    <div class="dark-mode-toggle">
-                        <span class="toggle-label">Dark Mode</span>
-                        <label class="switch">
-                            <input type="checkbox" id="dark-mode-toggle">
-                            <span class="switch-slider"></span>
-                        </label>
-                    </div>
+                <div class="play-row">
+                    <button class="play-btn juicy-btn" id="play-btn">NEW GAME</button>
+                    <button class="continue-btn juicy-btn hidden" id="continue-btn">CONTINUE</button>
                 </div>
             </div>
         </div>
+
         <div class="game-screen hidden" id="game-screen">
             <div class="header">
                 <div class="stats-panel juicy-card">
                     <div class="stat">
-                        <span class="stat-label">REMAINING</span>
+                        <span class="stat-label">MINES LEFT</span>
                         <span class="stat-value" id="remaining">24</span>
                     </div>
                     <div class="stat">
@@ -73,17 +85,34 @@
                 </div>
             </div>
         </div>
-        <div class="game-over-modal" id="game-over-modal">
-            <div class="modal-content juicy-card">
-                <h2 id="modal-title">Game Over</h2>
-                <p id="modal-message">You hit a mine!</p>
-                <div class="modal-buttons">
-                    <button class="restart-btn juicy-btn" id="restart-btn">Play Again</button>
-                    <button class="menu-link-btn juicy-btn" id="menu-btn">Menu</button>
-                </div>
+    </div>
+
+    <div class="modal-overlay" id="game-over-modal">
+        <div class="modal-content juicy-card">
+            <h2 id="modal-title">Game Over</h2>
+            <p id="modal-message">You hit a mine!</p>
+            <p class="points-earned" id="points-earned"></p>
+            <div class="modal-buttons">
+                <button class="restart-btn juicy-btn" id="restart-btn">Play Again</button>
+                <button class="menu-link-btn juicy-btn" id="menu-btn">Menu</button>
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content juicy-card">
+            <h2>Settings</h2>
+            <div class="settings-row">
+                <span class="toggle-label">Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="dark-mode-toggle">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+            <button class="close-settings-btn juicy-btn" id="settings-close-btn">Done</button>
+        </div>
+    </div>
+
     <script src="/static/game.js"></script>
 </body>
 </html>
