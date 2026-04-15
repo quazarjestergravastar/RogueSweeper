@@ -171,8 +171,30 @@ class Minesweeper {
         document.getElementById('diff-modal').classList.add('show');
     }
 
-    hideDiffModal() {
-        document.getElementById('diff-modal').classList.remove('show');
+    selectDifficulty(key) {
+        const diff = DIFFICULTIES[key];
+        this.currentDifficulty = key;
+
+        /* highlight selected box */
+        document.querySelectorAll('.diff-box').forEach(b => b.classList.remove('selected'));
+        document.getElementById(`diff-${key}`).classList.add('selected');
+
+        /* update counters with pop animation */
+        const setCounter = (id, val) => {
+            const el = document.getElementById(id);
+            el.textContent = val;
+            el.classList.remove('pop');
+            void el.offsetWidth;
+            el.classList.add('pop');
+            setTimeout(() => el.classList.remove('pop'), 220);
+        };
+        setCounter('cols-value',  diff.cols);
+        setCounter('rows-value',  diff.rows);
+        setCounter('mines-value', diff.mines);
+
+        /* show NEW GAME button */
+        document.getElementById('play-btn').dataset.diff = key;
+        document.getElementById('play-btn').classList.remove('hidden');
     }
 
     onDifficultyClick(key) {
@@ -183,35 +205,24 @@ class Minesweeper {
             return;
         }
 
-        const diff = DIFFICULTIES[key];
-
         if (key === 'hard' && !this.hardUnlocked) {
+            const diff = DIFFICULTIES.hard;
             const canAfford = this.points >= diff.unlockCost;
             this.showDiffModal(
-                '🔒 Unlock Hard?',
+                'Unlock Hard?',
                 `Hard difficulty costs <strong>${diff.unlockCost} points</strong>.<br>You have <strong>${this.points} points</strong>.`,
                 [
                     canAfford
                         ? { label:'Unlock', cls:'confirm-btn', action:() => this.unlockHard() }
-                        : { label:'Not Enough Points', cls:'menu-link-btn', action:() => {} },
+                        : { label:'Not enough points', cls:'menu-link-btn', action:() => {} },
                     { label:'Cancel', cls:'menu-link-btn', action:() => {} }
                 ]
             );
             return;
         }
 
-        this.showDiffModal(
-            diff.name,
-            `${diff.rows}×${diff.cols} board · <strong>${diff.mines} mines</strong>`,
-            [
-                { label:'Play', cls:'restart-btn', action:() => this.startDifficulty(key) },
-                { label:'Cancel', cls:'menu-link-btn', action:() => {} }
-            ]
-        );
-
-        document.getElementById('mines-value').textContent = diff.mines;
-        document.getElementById('play-btn').dataset.diff = key;
-        document.getElementById('play-btn').classList.remove('hidden');
+        /* Easy, Normal, or unlocked Hard — select immediately, no info popup */
+        this.selectDifficulty(key);
     }
 
     unlockHard() {
@@ -222,14 +233,8 @@ class Minesweeper {
         localStorage.setItem('ms_hard_unlocked', 'true');
         this.renderLevelBar();
         this.renderDifficultyGrid();
-        this.showDiffModal(
-            'Hard Unlocked! 🎉',
-            `${diff.rows}×${diff.cols} board · <strong>${diff.mines} mines</strong>`,
-            [
-                { label:'Play Now', cls:'confirm-btn', action:() => this.startDifficulty('hard') },
-                { label:'Later',    cls:'menu-link-btn', action:() => {} }
-            ]
-        );
+        /* select hard immediately after unlock */
+        this.selectDifficulty('hard');
     }
 
     startDifficulty(key) {
@@ -238,7 +243,6 @@ class Minesweeper {
         this.rows  = diff.rows;
         this.cols  = diff.cols;
         this.mines = diff.mines;
-        document.getElementById('mines-value').textContent = diff.mines;
         this.clearSavedGame();
         this.transitionToGame(() => {
             this.createFreshBoard();
@@ -355,6 +359,12 @@ class Minesweeper {
                 this.renderLevelBar();
             }
         });
+
+        document.getElementById('shop-btn').addEventListener('click', () => {
+            this.showDiffModal('Shop', 'Shop coming soon.', [
+                { label:'OK', cls:'restart-btn', action:() => {} }
+            ]);
+        });
     }
 
     /* ── ZOOM ── */
@@ -380,6 +390,7 @@ class Minesweeper {
         document.getElementById('menu-screen').classList.remove('hidden');
         this.checkSavedGame();
         this.renderLevelBar();
+        if (this.currentDifficulty) this.selectDifficulty(this.currentDifficulty);
     }
 
     /* ── SCROLLING ── */

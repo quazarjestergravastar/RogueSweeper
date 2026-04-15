@@ -31,41 +31,54 @@
             <div class="menu-options">
                 <div class="difficulty-grid juicy-card">
                     <div class="diff-box" id="diff-easy">
-                        <div class="diff-icon easy-color">&#9650;</div>
+                        <div class="diff-icon-wrap easy-wrap">&#9650;</div>
                         <span class="diff-name">Easy</span>
                     </div>
                     <div class="diff-box" id="diff-normal">
-                        <div class="diff-icon normal-color">&#9632;</div>
+                        <div class="diff-icon-wrap normal-wrap">&#9632;</div>
                         <span class="diff-name">Normal</span>
                     </div>
                     <div class="diff-box diff-locked" id="diff-hard">
-                        <div class="diff-icon hard-color">&#9670;</div>
-                        <div class="diff-lock-badge" id="hard-lock-badge">&#128274;</div>
+                        <div class="diff-icon-wrap hard-wrap">&#9670;</div>
                         <span class="diff-name">Hard</span>
                     </div>
                     <div class="diff-box diff-soon" id="diff-cs1">
-                        <div class="diff-icon soon-color">&#63;</div>
+                        <div class="diff-icon-wrap soon-wrap">?</div>
                         <span class="diff-name">???</span>
                     </div>
                     <div class="diff-box diff-soon" id="diff-cs2">
-                        <div class="diff-icon soon-color">&#63;</div>
+                        <div class="diff-icon-wrap soon-wrap">?</div>
                         <span class="diff-name">???</span>
                     </div>
                     <div class="diff-box diff-soon" id="diff-cs3">
-                        <div class="diff-icon soon-color">&#63;</div>
+                        <div class="diff-icon-wrap soon-wrap">?</div>
                         <span class="diff-name">???</span>
                     </div>
                 </div>
 
-                <div class="mines-display juicy-card">
-                    <span class="mines-label">MINES</span>
-                    <span class="mines-value" id="mines-value">—</span>
+                <div class="counters-row juicy-card">
+                    <div class="counter-item">
+                        <span class="counter-label">W</span>
+                        <span class="counter-value" id="cols-value">—</span>
+                    </div>
+                    <div class="counter-divider"></div>
+                    <div class="counter-item">
+                        <span class="counter-label">H</span>
+                        <span class="counter-value" id="rows-value">—</span>
+                    </div>
+                    <div class="counter-divider"></div>
+                    <div class="counter-item">
+                        <span class="counter-label">MINES</span>
+                        <span class="counter-value" id="mines-value">—</span>
+                    </div>
                 </div>
 
                 <div class="play-row">
                     <button class="play-btn juicy-btn hidden" id="play-btn">NEW GAME</button>
                     <button class="continue-btn juicy-btn hidden" id="continue-btn">CONTINUE</button>
                 </div>
+
+                <button class="shop-btn juicy-btn" id="shop-btn">SHOP</button>
             </div>
         </div>
 
@@ -117,7 +130,7 @@
     </div>
     <button class="modal-restore-btn juicy-btn hidden" id="modal-restore-btn">&#9873;</button>
 
-    <!-- Difficulty Prompt Modal -->
+    <!-- Difficulty / Unlock / Shop Modal -->
     <div class="modal-overlay" id="diff-modal">
         <div class="modal-content juicy-card">
             <h2 id="diff-modal-title"></h2>
