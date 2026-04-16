@@ -1,89 +1,99 @@
-# Minesweeper Game
+# RogueSweeper
 
-A clean, minimal Minesweeper game with a modern UI.
+A web-based "MineSweeper Gone Rogue" game with Flask backend and vanilla HTML/CSS/JS frontend. Features a roguelike progression system across 8 sequential boards per run.
 
 ## Overview
 
-This is a web-based Minesweeper game built with Flask (Python backend) and vanilla HTML/CSS/JS frontend. The design features a clean, minimal aesthetic with support for both light and dark modes.
+Flask (Python) serves a single-page app. All game logic runs in the browser via `static/game.js`. State is persisted in `localStorage`.
 
 ## Features
 
-- Difficulty selection grid (2×3) replacing width/height sliders
-  - Easy (unlocked, green triangle, 10×12, 15 mines)
-  - Normal (unlocked, blue square, 12×20, 30 mines)
-  - Hard (locked, orange diamond, 16×28, 55 mines — costs 800 points to unlock)
-  - 3 "Coming Soon" locked placeholder slots
-- Each difficulty shows a popup before starting; Hard shows unlock prompt if locked
-- Proportional mine count per difficulty preset
-- Toggle between DIG and FLAG modes
-- Long-press to perform opposite action (dig in flag mode, flag in dig mode)
-- Timer tracking (preserved correctly on continue)
-- Remaining mines counter
-- Lose detection with modal popup (no win condition)
-- Dark mode support (via Settings gear icon)
-- Button-based zoom controls (+/- buttons, no pinch-to-zoom)
-- Custom icons: green triangle for flags, red circle for mines
-- Responsive design for mobile devices
-- Settings persistence via localStorage
+### Menu
+- Title "RogueSweeper" with subtitle "MineSweeper Gone Rogue"
+- Settings button (gear icon, top-right) opens dark-mode toggle modal
+- Level / XP bar with LEVEL UP button (cost = 10 × 2^level)
+- 2×3 Difficulty grid:
+  - Easy (green triangle, always unlocked)
+  - Normal (blue square, always unlocked)
+  - Hard (orange diamond, locked — costs 800pts to unlock; unlock popup)
+  - 3 Coming Soon slots (greyed out, popup on click)
+- Board carousel (8 cards, 3 visible, center card larger):
+  - Swipe left/right or tap dots to navigate
+  - Board 1 always unlocked; subsequent boards unlock through run progression
+  - Locked boards show "LOCKED" text and dimmed appearance
+  - Completed boards show green border
+  - Card colors/band match selected difficulty
+- W / H / MINES counters (reflect carousel-selected board's config)
+- Play row (mutually exclusive states):
+  - No run active: "START" button (greyed when locked board selected)
+  - Run paused: "CONTINUE" (green) + "ABORT" (red) buttons
+- Extra and Feats buttons (side by side, both show "Coming Soon" popup)
 
-## UI/UX Design
+### Roguelike Run System
+- Each run = 8 boards, played sequentially
+- Difficulty selection determines all 8 boards' dimensions and mine counts (via BOARD_CONFIGS)
+- Completing a board → "Board Complete!" popup → Continue to next or Return to Menu
+- Completing board 8 → "Run Complete!" popup, progression resets
+- Hitting a mine → "Run Over" popup, run state cleared
+- Returning to menu mid-run pauses the run (boardState saved); Continue/Abort shown on return
+- Abort clears run state and resets to board 1
 
-- "Juicy, bouncy, alive" interface with spring animations and micro-interactions
-- Floating background shapes (circles, blobs, shards) that drift and fade
-- All buttons have scale-down + bounce-back feedback on tap
-- Ripple effects on button interactions
-- Touch-safe input: scroll vs tap detection with movement threshold
-- Single-finger drag scrolling with inertia
-- Scroll bounds: asymmetric clamp (top-left origin), board fills down/right
-  - overflowX/Y = max(0, boardSize * zoom - containerSize)
-  - scrollX ∈ [-(overflowX + pad), pad], scrollY ∈ [-(overflowY + pad), pad]
-- Staggered reveal animations for cells
-- Game screen fills full viewport; zoom-container flex-grows to fill remaining space
+### BOARD_CONFIGS (progressive scaling per difficulty)
+- Easy: 8 boards scaling from 8×10/10mines to 12×14/30mines
+- Normal: 8 boards scaling from 12×14/26mines to 16×22/65mines
+- Hard: 8 boards scaling from 16×18/50mines to 22×28/115mines
+
+### Game Screen
+- Header: MINES remaining | BOARD N/8 | TIME elapsed
+- DIG / FLG mode toggle
+- Scrollable board (drag, with inertia; transform-origin: top left)
+- Asymmetric scroll clamp: scrollX/Y ∈ [-(overflow+pad), pad]
+- Zoom in/out buttons (50%–250%, 25% steps)
+- MENU button pauses run and returns to main menu
+
+### Gameplay
+- First click never reveals a mine (safe zone 3×3 around click)
+- Cascade reveal on zero cells
+- Long-press (400ms) performs opposite mode action
+- Right-click toggles flag
+- Correct flags earn 10pts each on run over
+
+### UI/UX
+- Floating background shapes (circles, blobs, shards)
+- Spring animations on buttons (scale-down on press)
+- Screen transition animation (slide down/up)
+- Dark mode via CSS variables + `body.dark-mode`
+- Carousel dots indicate active/unlocked/completed boards
 
 ## Technical Notes
 
-- Board uses `transform-origin: top left` for correct zoom+scroll math
-- Cell size fixed at 28px × 28px (min-width ensures grid columns render)
-- Timer: `startTimer()` always clears existing interval first (no double-counting)
-- Continue flow: `loadSavedGame()` restores `this.timer`, then `startTimer()` continues from saved value
-- Points = correctFlags × 10 (flags on real mines at game-over)
-- Level up cost = 10 × 2^level (10, 20, 40, 80...)
-- Hard unlock stored in localStorage as `ms_hard_unlocked`
-- Game-over modal has hide (−) button; restores via floating ⚑ button
-- On loss: correctly flagged mines stay green, wrong flags turn red
+- Board uses `transform-origin: top left` for correct scroll math
+- Cell size fixed at 28×28px
+- Timer: `startTimer()` clears existing interval before starting (no double-counting)
+- Run state stored in `localStorage` as `ms_run_state` JSON
+- Other keys: `ms_points`, `ms_level`, `ms_hard_unlocked`, `darkMode`
+- Win detection: `checkWin()` checks all non-mine cells are revealed
+- Game over (mine hit): reveals mines with staggered 35ms delay, wrong flags with 25ms delay
 
 ## Project Structure
 
 ```
-├── main.py              # Flask server
+├── main.py              # Flask server (port 5000)
 ├── templates/
-│   └── index.html       # Game HTML template
+│   └── index.html       # Game HTML
 ├── static/
-│   ├── style.css        # Game styling with CSS variables for theming
-│   └── game.js          # Game logic with zoom, difficulty grid, and settings
+│   ├── style.css        # CSS with variables for light/dark theme
+│   └── game.js          # All game logic (FloatingBackground + Minesweeper classes)
 ```
 
-## Running the Game
+## Running
 
-The game runs on port 5000 using Flask:
 ```bash
 python main.py
 ```
 
-## How to Play
-
-1. Click a difficulty box (Easy / Normal / Hard) to see its details
-2. Confirm to start the game
-3. Use DIG mode to reveal cells, FLG mode to place flags
-4. Long-press for opposite action
-5. Use +/- zoom buttons to zoom in/out
-6. Drag to scroll the board — all edges are reachable
-7. Hit a mine and the game ends; correct flags earn points
-
 ## Recent Changes
 
-- April 15, 2026: Replaced sliders with 6-box difficulty grid, fixed board scrolling (asymmetric bounds, transform-origin:top left), fixed timer preservation on continue, added Hard unlock system, kept mines counter and level/XP bar
-- April 15, 2026: Added continue feature (save/restore board state via localStorage), points + level system, settings popup, flag removal in dig mode, screen transition animation
-- January 29, 2026: Added sliders for grid size, dark mode, zoom controls, custom flag/mine icons
-- January 28, 2026: Added menu with difficulty selection, long-press functionality
-- January 28, 2026: Initial creation with clean minimal UI matching reference design
+- April 16, 2026: Redesigned as "RogueSweeper" with roguelike 8-board run system, board carousel, Continue/Abort flow, Extra/Feats buttons replacing Shop, win detection, Board Finished modal, Run Over modal
+- April 15, 2026: Replaced sliders with difficulty grid, asymmetric scroll bounds, Hard unlock, timer fix on continue
+- April 15, 2026: Added continue feature, points + level system, settings popup, screen transition
