@@ -365,20 +365,20 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .board-stat { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
 .stat-label { font-size: .53rem; font-weight: 800; letter-spacing: .1em; color: var(--text-muted); text-transform: uppercase; }
 
-/* ── STYLE METER (bottom-left of game screen) ────────────── */
+/* ── STYLE METER (bottom controls row) ────────────── */
 .style-meter {
     position: absolute;
-    bottom: 72px;
-    left: 14px;
+    bottom: 66px;
+    left: calc(50% - 164px);
     z-index: 15;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
-    width: 118px;
-    height: 54px;
-    padding: 8px 12px;
-    border-radius: 20px;
+    gap: 5px;
+    width: 92px;
+    height: 46px;
+    padding: 6px 8px;
+    border-radius: 16px;
     background: color-mix(in srgb, var(--card) 92%, var(--sm-color) 8%);
     border: 2px solid color-mix(in srgb, var(--sm-color) 58%, var(--border) 42%);
     box-shadow: 0 5px 16px rgba(0,0,0,.16), inset 0 -6px 12px rgba(0,0,0,.045);
@@ -390,31 +390,31 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     box-shadow: 0 4px 12px rgba(0,0,0,.13), inset 0 -5px 10px rgba(0,0,0,.05);
 }
 .sm-score {
-    font-size: 1rem; font-weight: 900;
+    font-size: .82rem; font-weight: 900;
     line-height: 1;
     color: var(--text);
     transition: color .6s ease;
-    min-width: 34px; text-align: left;
+    min-width: 24px; text-align: left;
 }
 .sm-score-box {
     position: relative;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    min-width: 42px;
+    gap: 0;
+    min-width: 30px;
 }
 .sm-score-caption {
-    font-size: .46rem;
+    font-size: .38rem;
     font-weight: 900;
     line-height: 1;
     letter-spacing: .12em;
     color: var(--text-muted);
 }
 .sm-rank-wrap {
-    position: relative; width: 34px; height: 34px;
+    position: relative; width: 28px; height: 28px;
     z-index: 2;
-    flex: 0 0 34px;
+    flex: 0 0 28px;
 }
 .sm-ring-svg {
     position: absolute; inset: 0;
@@ -425,13 +425,13 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .sm-ring-bg {
     fill: none;
     stroke: rgba(0,0,0,0.12);
-    stroke-width: 5;
+    stroke-width: 4;
 }
 body.dark-mode .sm-ring-bg { stroke: rgba(255,255,255,0.08); }
 .sm-ring-fill {
     fill: none;
     stroke: var(--sm-color);
-    stroke-width: 5;
+    stroke-width: 4;
     stroke-linecap: round;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
@@ -441,10 +441,10 @@ body.dark-mode .sm-ring-bg { stroke: rgba(255,255,255,0.08); }
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', var(--sys-font);
-    font-size: 1.25rem; font-weight: 900;
+    font-size: 1rem; font-weight: 900;
     color: var(--sm-color);
     background: color-mix(in srgb, var(--card) 82%, var(--sm-color) 18%);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: inset 0 -3px 6px rgba(0,0,0,.08);
     transition: color .35s ease, background .35s ease;
 }

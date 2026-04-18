@@ -126,6 +126,9 @@ python main.py
 ## Recent Changes
 
 - April 18, 2026: Refined gameplay UI/state:
+  - Board completion now requires placing all mine flags; correct full flagging clears the board, incorrect full flagging loses the run
+  - Style meter made smaller and aligned with the dig/flag control row
+  - Style meter progression rebalanced so higher ranks are harder to maintain and S/Z are much harder to reach
   - Board carousel now resets to Board 1 after a loss or after clearing all 8 boards
   - Style meter now constantly decays while active with rank-based speeds and no grace period; higher ranks drain faster
   - Removed outer glow/flame effects from the style meter

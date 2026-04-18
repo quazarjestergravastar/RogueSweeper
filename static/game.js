@@ -2,7 +2,7 @@
 const NUM_BOARDS = 8;
 const RANK_LABELS = ['D', 'C', 'B', 'A', 'S', 'Z'];
 const RANK_COLORS = { D:'#4CAF50', C:'#2196F3', B:'#FFC107', A:'#FF9800', S:'#F44336', Z:'#9C27B0' };
-const RANK_DECAY  = { D:0.030, C:0.050, B:0.070, A:0.100, S:0.160, Z:0.220 };
+const RANK_DECAY  = { D:0.045, C:0.075, B:0.115, A:0.165, S:0.260, Z:0.380 };
 const RANK_MULT   = { D:1, C:1.5, B:2, A:3, S:5, Z:8 };
 const SM_CIRCUMF  = 2 * Math.PI * 20; // ≈ 125.66
 
@@ -271,13 +271,13 @@ class StyleMeter {
         const mult = RANK_MULT[this.rank];
 
         let fillBoost = 0, scoreGain = 0;
-        if      (type === 'dig')      { fillBoost = 0.15; scoreGain = 1 * mult; }
-        else if (type === 'quickdig') { fillBoost = 0.38; scoreGain = 3 * mult; }
-        else if (type === 'cascade')  { fillBoost = 0.06; scoreGain = 0.4 * mult; }
+        if      (type === 'dig')      { fillBoost = 0.08; scoreGain = 1 * mult; }
+        else if (type === 'quickdig') { fillBoost = 0.18; scoreGain = 3 * mult; }
+        else if (type === 'cascade')  { fillBoost = 0.015; scoreGain = 0.4 * mult; }
 
         /* Speed bonus */
-        if (dt < 1.5) fillBoost += 0.1;
-        else if (dt < 3) fillBoost += 0.05;
+        if (dt < 1.5) fillBoost += 0.035;
+        else if (dt < 3) fillBoost += 0.015;
 
         this.fill = Math.min(1, this.fill + fillBoost);
         const prevFloor = Math.floor(this.score);
@@ -1178,6 +1178,7 @@ class Minesweeper {
     }
     boardComplete() {
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
+        this.gameOver = true;
         const rs = this.runState;
         const boardNum = rs ? rs.currentBoard + 1 : 1;
         const isLast = rs && rs.currentBoard === NUM_BOARDS - 1;
@@ -1654,7 +1655,7 @@ class Minesweeper {
     handleLongPress(r, c) {
         if (this.gameOver || this.revealed[r][c]) return;
         if (this.mode==='dig') this.toggleFlag(r, c);
-        else if (!this.flagged[r][c]) { this.digCell(r, c); if (!this.gameOver && this.checkWin()) this.boardComplete(); }
+        else if (!this.flagged[r][c]) this.digCell(r, c);
         this.updateDisplay(); this.saveCurrentBoardToRun();
     }
 
@@ -1674,7 +1675,6 @@ class Minesweeper {
             if (this.flagged[r][c]) this.toggleFlag(r, c);
             else {
                 this.digCell(r, c);
-                if (!this.gameOver && this.checkWin()) this.boardComplete();
             }
         } else { this.toggleFlag(r, c); }
         this.updateDisplay(); this.saveCurrentBoardToRun();
@@ -1700,7 +1700,6 @@ class Minesweeper {
             this.sfx.play('quickdig');
         }
         this.updateDisplay();
-        if (!this.gameOver && this.checkWin()) this.boardComplete();
         this.saveCurrentBoardToRun();
         return true;
     }
@@ -1711,7 +1710,10 @@ class Minesweeper {
         const flagCount = adj.filter(([ar,ac]) => this.flagged[ar][ac]).length;
         const unrevealed = adj.filter(([ar,ac]) => !this.revealed[ar][ac] && !this.flagged[ar][ac]);
         if (flagCount + unrevealed.length === this.board[r][c] && unrevealed.length > 0) {
-            unrevealed.forEach(([ar,ac]) => this.toggleFlag(ar, ac));
+            for (const [ar, ac] of unrevealed) {
+                if (this.gameOver) break;
+                this.toggleFlag(ar, ac);
+            }
             this.updateDisplay(); this.saveCurrentBoardToRun();
             return true;
         }
@@ -1741,7 +1743,11 @@ class Minesweeper {
 
     digCell(r, c) {
         if (this.flagged[r][c]) return;
-        if (this.firstClick) { this.firstClick=false; this.placeMines(r, c); this.startTimer(); }
+        if (this.firstClick) {
+            this.firstClick=false; this.placeMines(r, c); this.startTimer();
+            this.evaluateFlagCompletion();
+            if (this.gameOver) return;
+        }
         this.sfx.play('dig');
         const res = this.styleMeter.onAction('dig');
         if (res && res.hit69) this._unlockSecret('score_69');
@@ -1751,6 +1757,7 @@ class Minesweeper {
 
     toggleFlag(r, c) {
         if (this.revealed[r][c]) return;
+        const placingFlag = !this.flagged[r][c];
         this.flagged[r][c] = !this.flagged[r][c];
         const cell = this.getCell(r, c);
         if (cell) {
@@ -1758,6 +1765,22 @@ class Minesweeper {
             const ex = cell.querySelector('.cell-svg-icon'); if (ex) ex.remove();
             if (this.flagged[r][c]) { cell.insertAdjacentHTML('beforeend', FLAG_SVG); this.sfx.play('flag'); }
             else this.sfx.play('unflag');
+        }
+        if (placingFlag) this.evaluateFlagCompletion();
+    }
+
+    evaluateFlagCompletion() {
+        if (this.gameOver || this.firstClick) return;
+        const flags = this.flagged.flat().filter(Boolean).length;
+        if (flags !== this.mines) return;
+        let allCorrect = true;
+        for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++) {
+            if (this.flagged[i][j] && this.board[i][j] !== -1) allCorrect = false;
+        }
+        if (allCorrect) this.boardComplete();
+        else {
+            this.gameOver = true;
+            this.endGame();
         }
     }
 
