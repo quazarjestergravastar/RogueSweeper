@@ -383,42 +383,11 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     border: 2px solid color-mix(in srgb, var(--sm-color) 58%, var(--border) 42%);
     box-shadow: 0 5px 16px rgba(0,0,0,.16), inset 0 -6px 12px rgba(0,0,0,.045);
     pointer-events: none;
-    overflow: visible;
+    overflow: hidden;
     transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, transform .22s ease;
-}
-.style-meter::before,
-.style-meter::after {
-    content: "";
-    position: absolute;
-    inset: -8px 8px auto 8px;
-    height: 24px;
-    border-radius: 999px;
-    background:
-        radial-gradient(circle at 20% 75%, var(--sm-color) 0 12%, transparent 30%),
-        radial-gradient(circle at 48% 55%, var(--sm-color) 0 10%, transparent 28%),
-        radial-gradient(circle at 76% 76%, var(--sm-color) 0 11%, transparent 30%);
-    opacity: .28;
-    filter: blur(5px);
-    transform: translateY(10px) scale(.9);
-    animation: styleFlameDrift 2.4s ease-in-out infinite;
-}
-.style-meter::after {
-    inset: auto 10px -7px 10px;
-    height: 18px;
-    opacity: .18;
-    animation-duration: 3.1s;
-    animation-direction: reverse;
 }
 .style-meter.is-decaying {
     box-shadow: 0 4px 12px rgba(0,0,0,.13), inset 0 -5px 10px rgba(0,0,0,.05);
-}
-.style-meter.is-decaying::before,
-.style-meter.is-decaying::after {
-    opacity: .12;
-}
-@keyframes styleFlameDrift {
-    0%,100% { transform: translateY(9px) scale(.88); opacity: .16; }
-    45% { transform: translateY(3px) scale(1); opacity: .31; }
 }
 .sm-score {
     font-size: 1rem; font-weight: 900;
@@ -497,17 +466,8 @@ body.dark-mode .sm-ring-bg { stroke: rgba(255,255,255,0.08); }
 }
 .sm-rank-wrap.rank-decay { animation: rankDecay .7s ease-out; }
 
-/* Z rank smolder effect */
-.style-meter:has(.z-smolder) {
-    box-shadow: 0 0 18px color-mix(in srgb, var(--sm-color) 35%, transparent), 0 5px 16px rgba(0,0,0,.16);
-}
 .sm-rank-wrap.z-smolder .sm-rank-label {
     background: #110808;
-    animation: smolderGlow 1.8s ease-in-out infinite;
-}
-@keyframes smolderGlow {
-    0%,100%{ box-shadow: 0 0 6px 2px rgba(150,0,0,.4); }
-    50%    { box-shadow: 0 0 14px 5px rgba(200,50,0,.6); }
 }
 .sm-rank-wrap.z-smolder .sm-ring-fill {
     animation: smolderRing 2.2s ease-in-out infinite;
@@ -626,6 +586,34 @@ body.dark-mode .sm-ring-bg { stroke: rgba(255,255,255,0.08); }
 .modal-content h2 { font-size: 1.2rem; font-weight: 900; margin-bottom: 8px; }
 .modal-content p   { font-size: .85rem; color: var(--text2); margin-bottom: 4px; }
 .points-earned { font-size: 1.05rem; font-weight: 800; color: var(--accent); margin: 6px 0 4px; }
+.bf-rank-badge {
+    --rank-color: var(--accent);
+    width: 116px;
+    min-height: 116px;
+    margin: 14px auto 10px;
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: color-mix(in srgb, var(--card) 80%, var(--rank-color) 20%);
+    border: 3px solid var(--rank-color);
+    box-shadow: inset 0 -8px 18px rgba(0,0,0,.08);
+}
+.bf-rank-badge span {
+    color: var(--rank-color);
+    font-family: 'Nunito', var(--sys-font);
+    font-size: 3.4rem;
+    font-weight: 1000;
+    line-height: .9;
+}
+.bf-rank-badge small {
+    color: var(--text-muted);
+    font-size: .48rem;
+    font-weight: 1000;
+    letter-spacing: .14em;
+}
 .bf-rank-line { font-size: .85rem; font-weight: 800; color: var(--sm-color); margin-bottom: 14px; transition: color .6s; }
 .modal-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
 .modal-buttons > * { flex: 1; }

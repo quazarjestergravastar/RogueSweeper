@@ -2,7 +2,6 @@
 const NUM_BOARDS = 8;
 const RANK_LABELS = ['D', 'C', 'B', 'A', 'S', 'Z'];
 const RANK_COLORS = { D:'#4CAF50', C:'#2196F3', B:'#FFC107', A:'#FF9800', S:'#F44336', Z:'#9C27B0' };
-const RANK_GRACE  = { D:60, C:50, B:40, A:35, S:20, Z:10 };
 const RANK_DECAY  = { D:0.030, C:0.050, B:0.070, A:0.100, S:0.160, Z:0.220 };
 const RANK_MULT   = { D:1, C:1.5, B:2, A:3, S:5, Z:8 };
 const SM_CIRCUMF  = 2 * Math.PI * 20; // ≈ 125.66
@@ -322,17 +321,11 @@ class StyleMeter {
             if (!this.active) return;
             const dt = Math.min(0.12, Math.max(0, (ts - this.lastDecayTick) / 1000));
             this.lastDecayTick = ts;
-            const idle  = (Date.now() - this.lastActionTime) / 1000;
-            const grace = RANK_GRACE[this.rank];
-            if (idle > grace) {
-                const rate = RANK_DECAY[this.rank];
-                this.fill = Math.max(0, this.fill - rate * dt);
-                if (this.el) this.el.classList.add('is-decaying');
-                if (this.fill <= 0 && this.rankIdx > 0) this._rankDown();
-                this._update();
-            } else if (this.el) {
-                this.el.classList.remove('is-decaying');
-            }
+            const rate = RANK_DECAY[this.rank];
+            this.fill = Math.max(0, this.fill - rate * dt);
+            if (this.el) this.el.classList.add('is-decaying');
+            if (this.fill <= 0 && this.rankIdx > 0) this._rankDown();
+            this._update();
             this.decayFrame = requestAnimationFrame(tick);
         };
         this.decayFrame = requestAnimationFrame(tick);
@@ -1218,9 +1211,16 @@ class Minesweeper {
         const el = document.getElementById('board-finished-modal');
         const rankLine = document.getElementById('bf-rank-line');
         if (rankLine) { rankLine.textContent = `Style: ${boardScore} pts · Rank: ${finalRank}`; rankLine.style.color = RANK_COLORS[finalRank]; }
+        const overallRank = this.getOverallRunRank(finalRank);
+        const rankBadge = document.getElementById('bf-rank-badge');
+        const rankBadgeLetter = document.getElementById('bf-rank-badge-letter');
+        if (rankBadge && rankBadgeLetter) {
+            rankBadgeLetter.textContent = overallRank;
+            rankBadge.style.setProperty('--rank-color', RANK_COLORS[overallRank]);
+        }
 
         if (isLast) {
-            if (rs) this.carouselIndex = rs.currentBoard;
+            this.carouselIndex = 0;
             this._clearRunState(); this.runState = null;
             document.getElementById('bf-title').textContent   = 'Run Complete!';
             document.getElementById('bf-message').textContent = 'All 8 boards cleared!';
@@ -1236,6 +1236,14 @@ class Minesweeper {
             document.getElementById('bf-menu-btn').textContent = 'Menu';
         }
         el.classList.add('show');
+    }
+    getOverallRunRank(fallbackRank = 'D') {
+        const ranks = this.runState && Array.isArray(this.runState.boardRanks)
+            ? this.runState.boardRanks.filter(rank => RANK_LABELS.includes(rank))
+            : [];
+        if (!ranks.length) return fallbackRank;
+        const avg = ranks.reduce((sum, rank) => sum + RANK_LABELS.indexOf(rank), 0) / ranks.length;
+        return RANK_LABELS[Math.max(0, Math.min(RANK_LABELS.length - 1, Math.round(avg)))];
     }
     checkWin() {
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++)
@@ -1821,7 +1829,7 @@ class Minesweeper {
                 delay+=25;
             }
         }
-        if (this.runState) this.carouselIndex = this.runState.currentBoard;
+        this.carouselIndex = 0;
         this._clearRunState(); this.runState=null;
         const earned = this.awardPoints(correctFlags);
         const stylePts = this.styleMeter ? this.styleMeter.getScore() : 0;

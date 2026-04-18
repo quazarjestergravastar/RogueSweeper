@@ -126,7 +126,11 @@ python main.py
 ## Recent Changes
 
 - April 18, 2026: Refined gameplay UI/state:
-  - Style meter redesigned as compact rounded box with rank/score, rank-colored glow particles, and smooth rounded progress outline
+  - Board carousel now resets to Board 1 after a loss or after clearing all 8 boards
+  - Style meter now constantly decays while active with rank-based speeds and no grace period; higher ranks drain faster
+  - Removed outer glow/flame effects from the style meter
+  - Board win popup now includes a large square overall-rank badge using the same D→Z rank scale
+  - Style meter redesigned as compact rounded box with rank/score and smooth rounded progress outline
   - Style meter decay now runs continuously after rank-specific grace periods to prevent idle exploitation
   - Feats notifications clear from the menu/tab indicators when viewed; unlocked feats now show individual per-item markers
   - Feats tab renamed to Secrets, with horizontal-scroll hint and a Boards divider between streak and board-clear achievements
