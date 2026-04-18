@@ -62,13 +62,10 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .floating-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
 .floating-shape {
     position: absolute; bottom: -80px;
-    background: linear-gradient(135deg, rgba(100,100,200,.06), rgba(200,100,100,.06));
-    border-radius: 50%;
     animation: floatUp linear infinite;
     will-change: transform, opacity;
 }
-.floating-shape.blob { border-radius: 40% 60% 70% 30% / 50% 40% 60% 50%; }
-.floating-shape.shard { border-radius: 4px; transform: rotate(45deg); }
+.floating-shape svg { display: block; width: 100%; height: 100%; }
 @keyframes floatUp {
     0% { transform:translateY(0) rotate(0deg); opacity:0; }
     10% { opacity:.7; }
@@ -336,21 +333,14 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .cell.pressed { transform: scale(.88); }
 .cell.revealed { background: var(--revealed); box-shadow: none; cursor: default; }
-.cell.flagged::after {
-    content: ''; position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--flag);
-    clip-path: polygon(50% 8%, 90% 88%, 10% 88%);
-    margin: 6px; border-radius: 2px;
-}
+.cell.flagged .cell-svg-icon { color: var(--flag); }
 .cell.mine { background: var(--mine) !important; animation: minePop .35s cubic-bezier(.3,.7,.3,1.5); }
-.cell.mine::after { content: ''; position: absolute; inset: 6px; background: rgba(255,255,255,.25); border-radius: 50%; }
 .cell.flag-wrong { background: #fff0f0 !important; }
-.cell.flag-wrong::after {
-    content: ''; position: absolute; inset: 0;
-    background: var(--flag-w);
-    clip-path: polygon(50% 8%, 90% 88%, 10% 88%);
-    margin: 6px; border-radius: 2px;
+.cell.flag-wrong .cell-svg-icon { color: var(--flag-w); }
+.cell-svg-icon {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
 }
 @keyframes minePop { 0%{transform:scale(1)} 30%{transform:scale(1.3)} 60%{transform:scale(.9)} 100%{transform:scale(1)} }
 

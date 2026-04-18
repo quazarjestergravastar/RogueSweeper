@@ -1,6 +1,18 @@
 /* ── CONSTANTS ──────────────────────────────────────────────── */
 const NUM_BOARDS = 8;
 
+/* ── SVG ICONS ───────────────────────────────────────────────── */
+const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,4 20,20 4,20"/></svg>`;
+const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="rgba(255,255,255,0.25)"/><line x1="12" y1="3" x2="12" y2="6" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="6" y2="12" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="12" x2="21" y2="12" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+const FLOAT_SVGS = {
+    circle: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="rgba(100,100,200,0.06)"/></svg>`,
+    blob:   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,8 C76,8 92,28 92,50 C92,72 72,92 50,92 C28,92 8,70 8,48 C8,24 25,8 50,8" fill="rgba(200,100,100,0.06)"/></svg>`,
+    shard:  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,50 50,90 10,50" fill="rgba(150,100,200,0.06)"/></svg>`,
+};
+
+const MINE_DOT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 10 10" style="display:inline-block;vertical-align:middle" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>`;
+
 const BOARD_CONFIGS = {
     easy: [
         { cols:8,  rows:10, mines:10 },
@@ -58,12 +70,14 @@ class FloatingBackground {
             if (old && old.parentNode) old.parentNode.removeChild(old);
         }
         const shape = document.createElement('div');
-        const types = ['', 'blob', 'shard'];
-        shape.className = `floating-shape ${types[Math.floor(Math.random() * 3)]}`;
+        const types = ['circle', 'blob', 'shard'];
+        const type = types[Math.floor(Math.random() * 3)];
+        shape.className = `floating-shape`;
         const size = 30 + Math.random() * 65;
         shape.style.width = `${size}px`; shape.style.height = `${size}px`;
         shape.style.left = `${Math.random() * 100}%`;
         shape.style.animationDuration = `${18 + Math.random() * 14}s`;
+        shape.innerHTML = FLOAT_SVGS[type];
         this.container.appendChild(shape);
         this.shapes.push(shape);
         setTimeout(() => {
@@ -252,7 +266,7 @@ class Minesweeper {
                 <div class="card-band" style="background:${bandColor}">BOARD ${boardIdx+1}</div>
                 <div class="card-num" style="color:${isUnlocked ? diffColor : '#aaa'}">${boardIdx+1}</div>
                 <div class="card-dims" style="color:${isUnlocked ? '' : 'var(--text-muted)'}">
-                    ${isUnlocked ? `${cfg.cols}×${cfg.rows} · ${cfg.mines}&#9679;` : 'LOCKED'}
+                    ${isUnlocked ? `${cfg.cols}×${cfg.rows} · ${cfg.mines}${MINE_DOT_SVG}` : 'LOCKED'}
                 </div>
             </div>`;
         };
@@ -755,7 +769,7 @@ class Minesweeper {
                 if (this.revealed[i][j]) {
                     cell.classList.add('revealed');
                     if (this.board[i][j] > 0) { cell.textContent = this.board[i][j]; cell.classList.add('n' + this.board[i][j]); }
-                } else if (this.flagged[i][j]) { cell.classList.add('flagged'); }
+                } else if (this.flagged[i][j]) { cell.classList.add('flagged'); cell.insertAdjacentHTML('beforeend', FLAG_SVG); }
             }
         const dig = document.getElementById('dig-btn'), flag = document.getElementById('flag-btn');
         if (this.mode === 'dig') { dig.classList.add('active'); flag.classList.remove('active'); }
@@ -854,7 +868,12 @@ class Minesweeper {
         if (this.revealed[r][c]) return;
         this.flagged[r][c] = !this.flagged[r][c];
         const cell = this.getCell(r, c);
-        if (cell) cell.classList.toggle('flagged', this.flagged[r][c]);
+        if (cell) {
+            cell.classList.toggle('flagged', this.flagged[r][c]);
+            const existing = cell.querySelector('.cell-svg-icon');
+            if (existing) existing.remove();
+            if (this.flagged[r][c]) cell.insertAdjacentHTML('beforeend', FLAG_SVG);
+        }
     }
 
     placeMines(exR, exC) {
@@ -921,7 +940,14 @@ class Minesweeper {
             if (mine && flag) { correctFlags++; }
             else if (mine && !flag) {
                 const d = delay;
-                setTimeout(() => { const c = this.getCell(i,j); if(c){c.classList.add('mine');c.classList.remove('flagged');} }, d);
+                setTimeout(() => {
+                    const c = this.getCell(i,j);
+                    if (c) {
+                        c.classList.add('mine'); c.classList.remove('flagged');
+                        const ex = c.querySelector('.cell-svg-icon'); if (ex) ex.remove();
+                        c.insertAdjacentHTML('beforeend', MINE_SVG);
+                    }
+                }, d);
                 delay += 35;
             } else if (!mine && flag) {
                 const d = delay;
