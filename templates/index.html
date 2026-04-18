@@ -134,13 +134,16 @@
 
             <!-- Style Meter: bottom-left -->
             <div class="style-meter hidden" id="style-meter">
-                <div class="sm-score num-font" id="sm-score">0</div>
+                <svg class="sm-ring-svg" viewBox="0 0 118 54" aria-hidden="true">
+                    <rect class="sm-ring-bg" x="4" y="4" width="110" height="46" rx="18"/>
+                    <rect class="sm-ring-fill" id="sm-ring-fill" x="4" y="4" width="110" height="46" rx="18" pathLength="1"/>
+                </svg>
                 <div class="sm-rank-wrap" id="sm-rank-wrap">
-                    <svg class="sm-ring-svg" viewBox="0 0 52 52" aria-hidden="true">
-                        <circle class="sm-ring-bg" cx="26" cy="26" r="20"/>
-                        <circle class="sm-ring-fill" id="sm-ring-fill" cx="26" cy="26" r="20"/>
-                    </svg>
                     <div class="sm-rank-label" id="sm-rank-letter">D</div>
+                </div>
+                <div class="sm-score-box">
+                    <span class="sm-score-caption">STYLE</span>
+                    <div class="sm-score num-font" id="sm-score">0</div>
                 </div>
             </div>
 
@@ -260,7 +263,7 @@
                 <button class="tab-btn" data-feats-tab="score">Score</button>
                 <button class="tab-btn" data-feats-tab="level">Level</button>
                 <button class="tab-btn" data-feats-tab="collector">Collection</button>
-                <button class="tab-btn" data-feats-tab="original" id="original-tab-btn">Original</button>
+                <button class="tab-btn" data-feats-tab="original" id="original-tab-btn">Secrets</button>
             </div>
             <div class="feats-list" id="feats-list"></div>
             <button class="close-settings-btn juicy-btn" id="feats-close-btn">Close</button>

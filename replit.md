@@ -125,6 +125,16 @@ python main.py
 
 ## Recent Changes
 
+- April 18, 2026: Refined gameplay UI/state:
+  - Style meter redesigned as compact rounded box with rank/score, rank-colored glow particles, and smooth rounded progress outline
+  - Style meter decay now runs continuously after rank-specific grace periods to prevent idle exploitation
+  - Feats notifications clear from the menu/tab indicators when viewed; unlocked feats now show individual per-item markers
+  - Feats tab renamed to Secrets, with horizontal-scroll hint and a Boards divider between streak and board-clear achievements
+  - Secret achievement state and notification markers are now saved per save slot
+  - Save files can be deleted from the save menu with confirmation
+  - Not Enough Points feedback is layered above store/purchase modals
+  - Board cards use non-clipping inset styling and run-end carousel position is preserved
+  - Flag icon changed to a rounded triangle
 - April 18, 2026: Major UI/UX pass:
   - Store OK/action buttons changed to square border-radius (8px)
   - Board carousel smooth slide animation (slideInLeft/Right keyframes)

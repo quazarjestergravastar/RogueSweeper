@@ -3,13 +3,12 @@ const NUM_BOARDS = 8;
 const RANK_LABELS = ['D', 'C', 'B', 'A', 'S', 'Z'];
 const RANK_COLORS = { D:'#4CAF50', C:'#2196F3', B:'#FFC107', A:'#FF9800', S:'#F44336', Z:'#9C27B0' };
 const RANK_GRACE  = { D:60, C:50, B:40, A:35, S:20, Z:10 };
-const RANK_DECAY  = { D:0.003, C:0.005, B:0.007, A:0.010, S:0.016, Z:0.022 };
+const RANK_DECAY  = { D:0.030, C:0.050, B:0.070, A:0.100, S:0.160, Z:0.220 };
 const RANK_MULT   = { D:1, C:1.5, B:2, A:3, S:5, Z:8 };
 const SM_CIRCUMF  = 2 * Math.PI * 20; // ≈ 125.66
 
 /* ── SVG ICONS ───────────────────────────────────────────────── */
-/* Rounded triangular flag */
-const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="10.5" y="3" width="2" height="18" rx="1"/><path d="M12.5 4.5 C16.5 5.8 19 8 17.5 11 C16 14 13.5 13.5 12.5 13 Z" /></svg>`;
+const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.2 C12.85 4.2 13.6 4.65 14.05 5.38 L20.15 15.55 C21.1 17.15 19.95 19.18 18.1 19.18 H5.9 C4.05 19.18 2.9 17.15 3.85 15.55 L9.95 5.38 C10.4 4.65 11.15 4.2 12 4.2 Z"/></svg>`;
 const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="rgba(255,255,255,0.28)"/><line x1="12" y1="4" x2="12" y2="7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="20" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="12" x2="7" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="12" x2="20" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="6.3" x2="8.5" y2="8.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="15.5" x2="17.7" y2="17.7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="17.7" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="8.5" x2="17.7" y2="6.3" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/></svg>`;
 
 /* ── FLOATING BACKGROUND SVGs ────────────────────────────────── */
@@ -232,7 +231,8 @@ class StyleMeter {
         this.score    = 0;
         this.lastActionTime = Date.now();
         this.active   = false;
-        this.decayInt = null;
+        this.decayFrame = null;
+        this.lastDecayTick = 0;
         this._69Pending = false;
 
         this.el         = document.getElementById('style-meter');
@@ -268,6 +268,7 @@ class StyleMeter {
         const now = Date.now();
         const dt  = (now - this.lastActionTime) / 1000;
         this.lastActionTime = now;
+        if (this.el) this.el.classList.remove('is-decaying');
         const mult = RANK_MULT[this.rank];
 
         let fillBoost = 0, scoreGain = 0;
@@ -316,20 +317,29 @@ class StyleMeter {
     }
     _startDecay() {
         this._stopDecay();
-        this.decayInt = setInterval(() => {
+        this.lastDecayTick = performance.now();
+        const tick = (ts) => {
             if (!this.active) return;
+            const dt = Math.min(0.12, Math.max(0, (ts - this.lastDecayTick) / 1000));
+            this.lastDecayTick = ts;
             const idle  = (Date.now() - this.lastActionTime) / 1000;
             const grace = RANK_GRACE[this.rank];
             if (idle > grace) {
                 const rate = RANK_DECAY[this.rank];
-                this.fill = Math.max(0, this.fill - rate);
+                this.fill = Math.max(0, this.fill - rate * dt);
+                if (this.el) this.el.classList.add('is-decaying');
                 if (this.fill <= 0 && this.rankIdx > 0) this._rankDown();
                 this._update();
+            } else if (this.el) {
+                this.el.classList.remove('is-decaying');
             }
-        }, 100);
+            this.decayFrame = requestAnimationFrame(tick);
+        };
+        this.decayFrame = requestAnimationFrame(tick);
     }
     _stopDecay() {
-        if (this.decayInt) { clearInterval(this.decayInt); this.decayInt = null; }
+        if (this.decayFrame) { cancelAnimationFrame(this.decayFrame); this.decayFrame = null; }
+        if (this.el) this.el.classList.remove('is-decaying');
     }
     _update() {
         if (!this.el) return;
@@ -337,7 +347,7 @@ class StyleMeter {
         if (this.rankLabel) this.rankLabel.textContent = this.rank;
         if (this.scoreEl)  this.scoreEl.textContent = Math.floor(this.score);
         if (this.ringFill) {
-            const offset = SM_CIRCUMF * (1 - this.fill);
+            const offset = Math.max(0, Math.min(1, 1 - this.fill));
             this.ringFill.style.strokeDashoffset = offset;
         }
     }
@@ -422,9 +432,11 @@ class Minesweeper {
         /* feats */
         this.feats = this._loadFeats();
         this.unviewedFeatIds = JSON.parse(localStorage.getItem('ms_unviewed_feats') || '[]');
+        this.newFeatItemIds = JSON.parse(localStorage.getItem('ms_new_feat_items') || localStorage.getItem('ms_unviewed_feats') || '[]');
 
         /* run state */
         this.runState = this._loadRunState();
+        this._loadActiveSlotSnapshot();
 
         /* menu UI */
         this.currentDifficulty = this.runState ? this.runState.difficulty : null;
@@ -447,6 +459,7 @@ class Minesweeper {
         this.renderCarousel();
         this.refreshMenuButtons();
         this._updateNotifDot();
+        this._updateTabDots();
         new FloatingBackground();
     }
 
@@ -474,6 +487,29 @@ class Minesweeper {
         } catch(e) { return d; }
     }
     _saveFeats() { localStorage.setItem('ms_feats', JSON.stringify(this.feats)); }
+
+    _defaultFeats() {
+        return { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
+    }
+
+    _loadActiveSlotSnapshot() {
+        const d = this.getSlotData(this.currentSlot);
+        if (!d) return;
+        this.points = d.points || 0;
+        this.level = d.level || 0;
+        this.hardUnlocked = d.hardUnlocked || false;
+        this.runState = d.runState || null;
+        this.feats = { ...this._defaultFeats(), ...(d.feats || {}) };
+        this.ownedThemes = d.ownedThemes || ['green'];
+        this.activeTheme = d.activeTheme || 'green';
+        this.infiniteCoins = d.infiniteCoins === true;
+        this.unviewedFeatIds = d.unviewedFeatIds || [];
+        this.newFeatItemIds = d.newFeatItemIds || this.unviewedFeatIds.slice();
+        if (d.darkMode !== undefined) {
+            document.body.classList.toggle('dark-mode', d.darkMode);
+            localStorage.setItem('darkMode', d.darkMode);
+        }
+    }
 
     _isFeatDone(id) {
         const f = this.feats;
@@ -525,14 +561,16 @@ class Minesweeper {
             if (!this.feats.completed[def.id] && this._isFeatDone(def.id)) {
                 this.feats.completed[def.id] = true;
                 anyNew = true;
-                this.unviewedFeatIds.push(def.id);
+                if (!this.unviewedFeatIds.includes(def.id)) this.unviewedFeatIds.push(def.id);
+                if (!this.newFeatItemIds.includes(def.id)) this.newFeatItemIds.push(def.id);
                 this.notifyQ.push(def);
             }
         }
         if (anyNew) {
             this._saveFeats();
-            localStorage.setItem('ms_unviewed_feats', JSON.stringify(this.unviewedFeatIds));
+            this._saveFeatIndicators();
             this._updateNotifDot();
+            this._updateTabDots();
         }
     }
 
@@ -541,17 +579,25 @@ class Minesweeper {
         this.feats.completed[id] = true;
         const def = FEAT_DEFS.find(d => d.id === id);
         if (def) {
-            this.unviewedFeatIds.push(id);
+            if (!this.unviewedFeatIds.includes(id)) this.unviewedFeatIds.push(id);
+            if (!this.newFeatItemIds.includes(id)) this.newFeatItemIds.push(id);
             this.notifyQ.push(def);
         }
         this._saveFeats();
-        localStorage.setItem('ms_unviewed_feats', JSON.stringify(this.unviewedFeatIds));
+        this._saveFeatIndicators();
         this._updateNotifDot();
+        this._updateTabDots();
     }
 
     _updateNotifDot() {
         const dot = document.getElementById('feats-notif-dot');
         if (dot) dot.classList.toggle('hidden', this.unviewedFeatIds.length === 0);
+    }
+
+    _saveFeatIndicators() {
+        localStorage.setItem('ms_unviewed_feats', JSON.stringify(this.unviewedFeatIds));
+        localStorage.setItem('ms_new_feat_items', JSON.stringify(this.newFeatItemIds));
+        if (Number.isInteger(this.currentSlot)) this.saveCurrentToSlot(this.currentSlot);
     }
 
     /* ══ SAVE SYSTEM ══════════════════════════════════════════ */
@@ -561,6 +607,8 @@ class Minesweeper {
             runState: this.runState, feats: this.feats,
             ownedThemes: this.ownedThemes, activeTheme: this.activeTheme,
             infiniteCoins: this.infiniteCoins,
+            unviewedFeatIds: this.unviewedFeatIds,
+            newFeatItemIds: this.newFeatItemIds,
             darkMode: document.body.classList.contains('dark-mode'),
             timestamp: Date.now()
         };
@@ -582,6 +630,8 @@ class Minesweeper {
             this.hardUnlocked = d.hardUnlocked || false;
             this.runState = d.runState || null;
             this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{}, ...(d.feats||{}) };
+            this.unviewedFeatIds = d.unviewedFeatIds || [];
+            this.newFeatItemIds = d.newFeatItemIds || this.unviewedFeatIds.slice();
             this.ownedThemes = d.ownedThemes || ['green'];
             this.activeTheme = d.activeTheme || 'green';
             this.infiniteCoins = d.infiniteCoins === true;
@@ -595,6 +645,8 @@ class Minesweeper {
             this.points = 0; this.level = 0; this.hardUnlocked = false;
             this.runState = null;
             this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
+            this.unviewedFeatIds = [];
+            this.newFeatItemIds = [];
             this.ownedThemes = ['green']; this.activeTheme = 'green'; this.infiniteCoins = false;
         }
         localStorage.setItem('ms_points', this.points);
@@ -603,11 +655,14 @@ class Minesweeper {
         localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
         localStorage.setItem('ms_active_theme', this.activeTheme);
         localStorage.setItem('ms_infinite_coins', this.infiniteCoins);
+        this._saveFeats();
+        this._saveFeatIndicators();
         document.body.classList.toggle('dev-mode', this.infiniteCoins);
         this.applyTheme(this.activeTheme);
         this.currentDifficulty = this.runState ? this.runState.difficulty : null;
         this.carouselIndex = this.runState ? this.runState.currentBoard : 0;
         this.renderDifficultyGrid(); this.renderLevelBar(); this.renderCarousel(); this.refreshMenuButtons();
+        this._updateNotifDot(); this._updateTabDots();
         if (this.currentDifficulty) {
             document.querySelectorAll('.diff-box').forEach(b => b.classList.remove('selected'));
             const box = document.getElementById(`diff-${this.currentDifficulty}`);
@@ -636,11 +691,42 @@ class Minesweeper {
                 const cost = this.levelUpCost(lvl);
                 const pct  = inf ? 100 : Math.min(100, Math.round((pts / cost) * 100));
                 const ago  = d && d.timestamp ? this._timeAgo(d.timestamp) : 'just now';
-                div.innerHTML = `<div class="save-slot-header"><span class="save-slot-name">Slot ${i+1}</span>${isActive ? '<span class="save-slot-badge">Active</span>' : ''}</div><span class="save-slot-info">${inf ? '∞' : pts.toLocaleString()} pts · ${ago}</span><div class="save-slot-bar-row"><span class="save-slot-bar-label">LVL ${lvl}</span><div class="save-slot-bar-wrap"><div class="save-slot-bar-fill" style="width:${pct}%"></div></div><span class="save-slot-bar-pts">${pct}%</span></div>`;
+                div.innerHTML = `<div class="save-slot-header"><span class="save-slot-name">Slot ${i+1}</span><span class="save-slot-actions">${isActive ? '<span class="save-slot-badge">Active</span>' : ''}<button class="save-delete-btn juicy-btn" data-delete-slot="${i}">Delete</button></span></div><span class="save-slot-info">${inf ? '∞' : pts.toLocaleString()} pts · ${ago}</span><div class="save-slot-bar-row"><span class="save-slot-bar-label">LVL ${lvl}</span><div class="save-slot-bar-wrap"><div class="save-slot-bar-fill" style="width:${pct}%"></div></div><span class="save-slot-bar-pts">${pct}%</span></div>`;
             }
             div.addEventListener('click', () => { this.sfx.play('btn'); this.switchSlot(i); });
+            const del = div.querySelector('.save-delete-btn');
+            if (del) del.addEventListener('click', e => { e.stopPropagation(); this.confirmDeleteSlot(i); });
             wrap.appendChild(div);
         }
+    }
+    confirmDeleteSlot(n) {
+        this.showDiffModal(`Delete Slot ${n+1}?`, 'This save file will be permanently removed.', [
+            {label:'Delete', cls:'abort-btn', action:()=>this.deleteSlot(n)},
+            {label:'Cancel', cls:'menu-link-btn', action:()=>{}}
+        ]);
+    }
+    deleteSlot(n) {
+        localStorage.removeItem(`ms_save_${n}`);
+        if (n === this.currentSlot) {
+            this.points = 0; this.level = 0; this.hardUnlocked = false; this.runState = null;
+            this.feats = this._defaultFeats();
+            this.unviewedFeatIds = []; this.newFeatItemIds = [];
+            this.ownedThemes = ['green']; this.activeTheme = 'green'; this.infiniteCoins = false;
+            this.currentDifficulty = null; this.carouselIndex = 0;
+            localStorage.setItem('ms_points', this.points);
+            localStorage.setItem('ms_level', this.level);
+            localStorage.setItem('ms_hard_unlocked', 'false');
+            localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
+            localStorage.setItem('ms_active_theme', this.activeTheme);
+            localStorage.setItem('ms_infinite_coins', 'false');
+            this._clearRunState(); this._saveFeats(); this._saveFeatIndicators();
+            document.body.classList.remove('dev-mode');
+            this.applyTheme(this.activeTheme);
+            this.renderDifficultyGrid(); this.renderLevelBar(); this.renderCarousel(); this.refreshMenuButtons();
+            this._updateNotifDot(); this._updateTabDots();
+        }
+        this.renderSavesModal();
+        this.sfx.play('error');
     }
     _timeAgo(ts) {
         const s = Math.floor((Date.now() - ts) / 1000);
@@ -746,6 +832,7 @@ class Minesweeper {
         const list = document.getElementById('feats-list');
         if (!list) return;
         const isDev = this.infiniteCoins;
+        this._markFeatTabSeen(tab);
 
         if (tab === 'original') {
             const secretDefs = FEAT_DEFS.filter(d => d.cat === 'original');
@@ -755,6 +842,7 @@ class Minesweeper {
                 return;
             }
             list.innerHTML = unlockedSecrets.map(d => this._renderFeatItem(d, true, isDev)).join('');
+            this._bindFeatItemMarkers(list);
             return;
         }
 
@@ -766,6 +854,19 @@ class Minesweeper {
                 runDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('') +
                 `<div class="feats-section-header" style="margin-top:8px">Board Score</div>` +
                 boardDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
+            this._bindFeatItemMarkers(list);
+            return;
+        }
+
+        if (tab === 'board') {
+            const streakDefs = FEAT_DEFS.filter(d => d.cat === 'board' && d.id.startsWith('consec_'));
+            const clearDefs = FEAT_DEFS.filter(d => d.cat === 'board' && d.id.startsWith('boards_'));
+            list.innerHTML =
+                `<div class="feats-section-header">Streaks</div>` +
+                streakDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('') +
+                `<div class="feats-section-header" style="margin-top:8px">Board Clears</div>` +
+                clearDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
+            this._bindFeatItemMarkers(list);
             return;
         }
 
@@ -775,26 +876,47 @@ class Minesweeper {
             return;
         }
         list.innerHTML = defs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
-
-        /* mark this tab's feats as viewed */
-        this.unviewedFeatIds = this.unviewedFeatIds.filter(id => {
-            const def = FEAT_DEFS.find(d => d.id === id);
-            return def && def.cat !== tab;
-        });
-        localStorage.setItem('ms_unviewed_feats', JSON.stringify(this.unviewedFeatIds));
-        this._updateNotifDot();
-        this._updateTabDots();
+        this._bindFeatItemMarkers(list);
     }
 
     _renderFeatItem(def, done, isDev) {
         const iconSvg = done ? (FEAT_ICONS_SVG[def.iconKey] || FEAT_ICONS_SVG.board) : FEAT_ICONS_SVG.lock;
         const devStyle = isDev && done ? ' dev-feat' : '';
-        return `<div class="feat-item ${done?'feat-done':'feat-locked'}${devStyle}">
+        const newMarker = done && this.newFeatItemIds.includes(def.id) ? '<span class="feat-new-marker"></span>' : '';
+        return `<div class="feat-item ${done?'feat-done':'feat-locked'}${devStyle}" data-feat-id="${def.id}">
             <div class="feat-icon">${iconSvg}</div>
             <div class="feat-text">
                 <span class="feat-name">${def.name}</span>
                 <span class="feat-desc">${def.desc}</span>
-            </div></div>`;
+            </div>${newMarker}</div>`;
+    }
+
+    _markFeatTabSeen(tab) {
+        const before = this.unviewedFeatIds.length;
+        this.unviewedFeatIds = this.unviewedFeatIds.filter(id => {
+            const def = FEAT_DEFS.find(d => d.id === id);
+            return def && def.cat !== tab;
+        });
+        if (before !== this.unviewedFeatIds.length) this._saveFeatIndicators();
+        this._updateNotifDot();
+        this._updateTabDots();
+    }
+
+    _bindFeatItemMarkers(list) {
+        list.querySelectorAll('.feat-item[data-feat-id]').forEach(item => {
+            item.addEventListener('click', () => this._markFeatItemSeen(item.dataset.featId));
+        });
+    }
+
+    _markFeatItemSeen(id) {
+        const before = this.newFeatItemIds.length + this.unviewedFeatIds.length;
+        this.newFeatItemIds = this.newFeatItemIds.filter(x => x !== id);
+        this.unviewedFeatIds = this.unviewedFeatIds.filter(x => x !== id);
+        const marker = document.querySelector(`.feat-item[data-feat-id="${id}"] .feat-new-marker`);
+        if (marker) marker.remove();
+        if (before !== this.newFeatItemIds.length + this.unviewedFeatIds.length) this._saveFeatIndicators();
+        this._updateNotifDot();
+        this._updateTabDots();
     }
 
     _updateTabDots() {
@@ -1098,6 +1220,7 @@ class Minesweeper {
         if (rankLine) { rankLine.textContent = `Style: ${boardScore} pts · Rank: ${finalRank}`; rankLine.style.color = RANK_COLORS[finalRank]; }
 
         if (isLast) {
+            if (rs) this.carouselIndex = rs.currentBoard;
             this._clearRunState(); this.runState = null;
             document.getElementById('bf-title').textContent   = 'Run Complete!';
             document.getElementById('bf-message').textContent = 'All 8 boards cleared!';
@@ -1155,7 +1278,7 @@ class Minesweeper {
         this.styleMeter.hide();
         document.getElementById('game-screen').classList.add('hidden');
         document.getElementById('menu-screen').classList.remove('hidden');
-        this.carouselIndex = this.runState ? this.runState.currentBoard : 0;
+        if (this.runState) this.carouselIndex = this.runState.currentBoard;
         if (this.runState && this.currentDifficulty) {
             document.querySelectorAll('.diff-box').forEach(b => b.classList.remove('selected'));
             const box = document.getElementById(`diff-${this.currentDifficulty}`);
@@ -1203,6 +1326,7 @@ class Minesweeper {
         /* Feats */
         document.getElementById('feats-btn').addEventListener('click', () => {
             this.sfx.play('modal'); this.featsTab='board';
+            this.unviewedFeatIds = []; this._saveFeatIndicators();
             document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab==='board'));
             this.renderFeatsPanel('board');
             document.getElementById('feats-modal').classList.add('show');
@@ -1210,7 +1334,7 @@ class Minesweeper {
         });
         document.getElementById('feats-btn').addEventListener('contextmenu', e => {
             e.preventDefault();
-            this.unviewedFeatIds = []; localStorage.setItem('ms_unviewed_feats', '[]');
+            this.unviewedFeatIds = []; this._saveFeatIndicators();
             this._updateNotifDot(); this._updateTabDots();
         });
         document.getElementById('feats-close-btn').addEventListener('click', () => { document.getElementById('feats-modal').classList.remove('show'); this.sfx.play('btn'); });
@@ -1697,6 +1821,7 @@ class Minesweeper {
                 delay+=25;
             }
         }
+        if (this.runState) this.carouselIndex = this.runState.currentBoard;
         this._clearRunState(); this.runState=null;
         const earned = this.awardPoints(correctFlags);
         const stylePts = this.styleMeter ? this.styleMeter.getScore() : 0;
