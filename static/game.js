@@ -10,49 +10,125 @@ const FLOAT_SVGS = {
     blob:   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,8 C76,8 92,28 92,50 C92,72 72,92 50,92 C28,92 8,70 8,48 C8,24 25,8 50,8" fill="rgba(200,100,100,0.06)"/></svg>`,
     shard:  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,50 50,90 10,50" fill="rgba(150,100,200,0.06)"/></svg>`,
 };
-
 const MINE_DOT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 10 10" style="display:inline-block;vertical-align:middle" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>`;
 
+/* ── BOARD CONFIGS ──────────────────────────────────────────── */
 const BOARD_CONFIGS = {
     easy: [
-        { cols:8,  rows:10, mines:10 },
-        { cols:9,  rows:10, mines:12 },
-        { cols:10, rows:11, mines:15 },
-        { cols:10, rows:12, mines:18 },
-        { cols:11, rows:12, mines:21 },
-        { cols:11, rows:13, mines:24 },
-        { cols:12, rows:13, mines:27 },
-        { cols:12, rows:14, mines:30 },
+        { cols:8,  rows:10, mines:10 }, { cols:9,  rows:10, mines:12 },
+        { cols:10, rows:11, mines:15 }, { cols:10, rows:12, mines:18 },
+        { cols:11, rows:12, mines:21 }, { cols:11, rows:13, mines:24 },
+        { cols:12, rows:13, mines:27 }, { cols:12, rows:14, mines:30 },
     ],
     normal: [
-        { cols:12, rows:14, mines:26 },
-        { cols:12, rows:15, mines:30 },
-        { cols:13, rows:16, mines:35 },
-        { cols:13, rows:17, mines:40 },
-        { cols:14, rows:18, mines:45 },
-        { cols:14, rows:19, mines:51 },
-        { cols:15, rows:20, mines:57 },
-        { cols:16, rows:22, mines:65 },
+        { cols:12, rows:14, mines:26 }, { cols:12, rows:15, mines:30 },
+        { cols:13, rows:16, mines:35 }, { cols:13, rows:17, mines:40 },
+        { cols:14, rows:18, mines:45 }, { cols:14, rows:19, mines:51 },
+        { cols:15, rows:20, mines:57 }, { cols:16, rows:22, mines:65 },
     ],
     hard: [
-        { cols:16, rows:18, mines:50 },
-        { cols:16, rows:20, mines:58 },
-        { cols:17, rows:21, mines:67 },
-        { cols:17, rows:22, mines:75 },
-        { cols:18, rows:23, mines:84 },
-        { cols:19, rows:24, mines:94 },
-        { cols:20, rows:26, mines:104 },
-        { cols:22, rows:28, mines:115 },
+        { cols:16, rows:18, mines:50 }, { cols:16, rows:20, mines:58 },
+        { cols:17, rows:21, mines:67 }, { cols:17, rows:22, mines:75 },
+        { cols:18, rows:23, mines:84 }, { cols:19, rows:24, mines:94 },
+        { cols:20, rows:26, mines:104 },{ cols:22, rows:28, mines:115 },
     ],
 };
 
 const DIFF_COLORS = { easy:'#4CAF50', normal:'#2196F3', hard:'#FF9800' };
-
 const DIFFICULTIES = {
     easy:   { key:'easy',   name:'Easy',   locked:false },
     normal: { key:'normal', name:'Normal', locked:false },
     hard:   { key:'hard',   name:'Hard',   unlockCost:800 },
 };
+
+/* ── THEMES ─────────────────────────────────────────────────── */
+const THEMES = {
+    green:  { name:'Green Theme',  accent:'#4CAF50', cost:0 },
+    red:    { name:'Red Theme',    accent:'#F44336', cost:150 },
+    blue:   { name:'Blue Theme',   accent:'#2196F3', cost:150 },
+    yellow: { name:'Yellow Theme', accent:'#FFC107', cost:150 },
+    purple: { name:'Purple Theme', accent:'#9C27B0', cost:150 },
+};
+
+/* ── FEATS DEFINITIONS ───────────────────────────────────────── */
+const FEAT_DEFS = [
+    { id:'boards_5',   cat:'board', name:'Board Clearer I',   desc:'Clear 5 boards total',                icon:'🏁' },
+    { id:'boards_10',  cat:'board', name:'Board Clearer II',  desc:'Clear 10 boards total',               icon:'🏁' },
+    { id:'boards_20',  cat:'board', name:'Board Clearer III', desc:'Clear 20 boards total',               icon:'🏁' },
+    { id:'boards_25',  cat:'board', name:'Board Clearer IV',  desc:'Clear 25 boards total',               icon:'🏁' },
+    { id:'consec_10',  cat:'board', name:'Streak I',          desc:'Clear 10 consecutive boards',         icon:'🔥' },
+    { id:'consec_20',  cat:'board', name:'Streak II',         desc:'Clear 20 consecutive boards',         icon:'🔥' },
+    { id:'consec_25',  cat:'board', name:'Streak III',        desc:'Clear 25 consecutive boards',         icon:'🔥' },
+    { id:'all_themes', cat:'board', name:'Collector',         desc:'Purchase all available themes',       icon:'🎨' },
+    { id:'score_500',  cat:'score', name:'500 Points',        desc:'Earn 500 total points',               icon:'⭐' },
+    { id:'score_1k',   cat:'score', name:'1,000 Points',      desc:'Earn 1,000 total points',             icon:'⭐' },
+    { id:'score_5k',   cat:'score', name:'5,000 Points',      desc:'Earn 5,000 total points',             icon:'💫' },
+    { id:'score_10k',  cat:'score', name:'10,000 Points',     desc:'Earn 10,000 total points',            icon:'💫' },
+    { id:'score_15k',  cat:'score', name:'15,000 Points',     desc:'Earn 15,000 total points',            icon:'💫' },
+    { id:'level_10',   cat:'level', name:'Level 10',          desc:'Reach level 10',                      icon:'📈' },
+    { id:'level_15',   cat:'level', name:'Level 15',          desc:'Reach level 15',                      icon:'📈' },
+    { id:'level_20',   cat:'level', name:'Level 20',          desc:'Reach level 20',                      icon:'📈' },
+    { id:'level_100',  cat:'level', name:'Level 100',         desc:'Reach level 100',                     icon:'🚀' },
+    { id:'level_250',  cat:'level', name:'Level 250',         desc:'Reach level 250',                     icon:'🚀' },
+    { id:'level_500',  cat:'level', name:'Level 500',         desc:'Reach level 500',                     icon:'🚀' },
+];
+
+/* ── SOUND ENGINE ───────────────────────────────────────────── */
+class SoundEngine {
+    constructor() { this.ctx = null; this.muted = false; }
+    _ctx() {
+        try {
+            if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            return this.ctx;
+        } catch(e) { return null; }
+    }
+    _tone(freq, type, t0, attack, decay, vol) {
+        try {
+            const ctx = this._ctx(); if (!ctx) return;
+            const osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = type; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, t0);
+            gain.gain.linearRampToValueAtTime(vol, t0 + attack);
+            gain.gain.exponentialRampToValueAtTime(0.001, t0 + attack + decay);
+            osc.start(t0); osc.stop(t0 + attack + decay + 0.05);
+        } catch(e) {}
+    }
+    _noise(dur) {
+        try {
+            const ctx = this._ctx(); if (!ctx) return;
+            const sr = ctx.sampleRate, n = Math.floor(sr * dur);
+            const buf = ctx.createBuffer(1, n, sr), d = buf.getChannelData(0);
+            for (let i = 0; i < n; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/n, 2.2);
+            const src = ctx.createBufferSource(), gain = ctx.createGain();
+            src.buffer = buf; src.connect(gain); gain.connect(ctx.destination);
+            gain.gain.value = 0.35; src.start(); src.stop(ctx.currentTime + dur);
+        } catch(e) {}
+    }
+    play(sound) {
+        if (this.muted) return;
+        try {
+            const ctx = this._ctx(); if (!ctx) return;
+            const t = ctx.currentTime;
+            switch(sound) {
+                case 'dig':      this._tone(900,'sine',t,0.004,0.06,0.1); break;
+                case 'reveal':   this._tone(380,'sine',t,0.002,0.035,0.06); break;
+                case 'flag':     this._tone(680,'triangle',t,0.005,0.1,0.09); this._tone(980,'sine',t+0.04,0.003,0.07,0.06); break;
+                case 'unflag':   this._tone(420,'sine',t,0.004,0.07,0.07); break;
+                case 'mine':     this._noise(0.32); break;
+                case 'btn':      this._tone(460,'sine',t,0.003,0.045,0.06); break;
+                case 'complete': [523,659,784].forEach((f,i) => this._tone(f,'triangle',t+i*0.1,0.015,0.26,0.13)); break;
+                case 'lvlup':    [523,659,784,1047].forEach((f,i) => this._tone(f,'triangle',t+i*0.07,0.012,0.2,0.11)); break;
+                case 'purchase': this._tone(1047,'sine',t,0.005,0.16,0.1); this._tone(1319,'sine',t+0.06,0.004,0.16,0.08); break;
+                case 'error':    this._tone(180,'sawtooth',t,0.005,0.14,0.08); break;
+                case 'redeem':   this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.08,0.004,0.12,0.09); this._tone(1320,'sine',t+0.16,0.004,0.18,0.1); break;
+                case 'modal':    this._tone(520,'sine',t,0.004,0.08,0.07); break;
+                case 'tab':      this._tone(600,'sine',t,0.003,0.05,0.06); break;
+            }
+        } catch(e) {}
+    }
+}
 
 /* ── FLOATING BACKGROUND ────────────────────────────────────── */
 class FloatingBackground {
@@ -91,7 +167,10 @@ class FloatingBackground {
 /* ── MINESWEEPER ────────────────────────────────────────────── */
 class Minesweeper {
     constructor() {
-        /* game board state */
+        /* ── sound ── */
+        this.sfx = new SoundEngine();
+
+        /* ── game board state ── */
         this.rows = 10; this.cols = 8; this.mines = 10;
         this.board = []; this.revealed = []; this.flagged = [];
         this.gameOver = false; this.firstClick = true;
@@ -105,23 +184,38 @@ class Minesweeper {
         this.lastX = 0; this.lastY = 0;
         this.dragThreshold = 8; this.animationId = null;
 
-        /* meta */
+        /* ── save slot ── */
+        this.currentSlot = parseInt(localStorage.getItem('ms_save_slot') || '0');
+
+        /* ── meta ── */
         this.points       = parseInt(localStorage.getItem('ms_points') || '0');
         this.level        = parseInt(localStorage.getItem('ms_level')  || '0');
         this.hardUnlocked = localStorage.getItem('ms_hard_unlocked') === 'true';
+        this.infiniteCoins = localStorage.getItem('ms_infinite_coins') === 'true';
 
-        /* roguelike run state */
+        /* ── themes ── */
+        this.ownedThemes  = JSON.parse(localStorage.getItem('ms_owned_themes') || '["green"]');
+        this.activeTheme  = localStorage.getItem('ms_active_theme') || 'green';
+        this._previewTheme = null;
+
+        /* ── feats ── */
+        this.feats = this._loadFeats();
+
+        /* ── roguelike run state ── */
         this.runState = this._loadRunState();
-        /*  runState = { active, difficulty, currentBoard (0-7),
-                         unlockedUpTo (0-7), paused, boardState } */
 
-        /* menu UI state */
+        /* ── menu UI state ── */
         this.currentDifficulty = this.runState ? this.runState.difficulty : null;
         this.carouselIndex     = this.runState ? this.runState.currentBoard : 0;
 
-        /* carousel swipe tracking */
+        /* ── store / feats tab state ── */
+        this.storeTab = 'themes';
+        this.featsTab = 'board';
+
+        /* ── carousel swipe ── */
         this.cSwipeStartX = 0; this.cSwiping = false;
 
+        this.applyTheme(this.activeTheme);
         this.loadSettings();
         this.bindMenuEvents();
         this.renderDifficultyGrid();
@@ -132,7 +226,7 @@ class Minesweeper {
         new FloatingBackground();
     }
 
-    /* ── RUN STATE ─────────────────────────────────── */
+    /* ══ RUN STATE ═════════════════════════════════════════════ */
     _loadRunState() {
         try { return JSON.parse(localStorage.getItem('ms_run_state')) || null; }
         catch(e) { return null; }
@@ -146,7 +240,285 @@ class Minesweeper {
         localStorage.removeItem('ms_run_state');
     }
 
-    /* ── LEVEL / POINTS ─────────────────────────────── */
+    /* ══ FEATS ═════════════════════════════════════════════════ */
+    _loadFeats() {
+        const d = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, completed:{} };
+        try {
+            const s = localStorage.getItem('ms_feats');
+            return s ? { ...d, ...JSON.parse(s) } : d;
+        } catch(e) { return d; }
+    }
+    _saveFeats() { localStorage.setItem('ms_feats', JSON.stringify(this.feats)); }
+
+    _isFeatDone(id) {
+        const f = this.feats;
+        switch(id) {
+            case 'boards_5':   return f.boardsCleared >= 5;
+            case 'boards_10':  return f.boardsCleared >= 10;
+            case 'boards_20':  return f.boardsCleared >= 20;
+            case 'boards_25':  return f.boardsCleared >= 25;
+            case 'consec_10':  return f.bestConsecutive >= 10;
+            case 'consec_20':  return f.bestConsecutive >= 20;
+            case 'consec_25':  return f.bestConsecutive >= 25;
+            case 'all_themes': return Object.keys(THEMES).every(k => this.ownedThemes.includes(k));
+            case 'score_500':  return f.totalEarned >= 500;
+            case 'score_1k':   return f.totalEarned >= 1000;
+            case 'score_5k':   return f.totalEarned >= 5000;
+            case 'score_10k':  return f.totalEarned >= 10000;
+            case 'score_15k':  return f.totalEarned >= 15000;
+            case 'level_10':   return this.level >= 10;
+            case 'level_15':   return this.level >= 15;
+            case 'level_20':   return this.level >= 20;
+            case 'level_100':  return this.level >= 100;
+            case 'level_250':  return this.level >= 250;
+            case 'level_500':  return this.level >= 500;
+        }
+        return false;
+    }
+
+    checkFeats() {
+        let anyNew = false;
+        for (const def of FEAT_DEFS) {
+            if (!this.feats.completed[def.id] && this._isFeatDone(def.id)) {
+                this.feats.completed[def.id] = true; anyNew = true;
+            }
+        }
+        if (anyNew) this._saveFeats();
+    }
+
+    /* ══ SAVE SYSTEM ══════════════════════════════════════════ */
+    _buildSaveData() {
+        return {
+            points: this.points, level: this.level, hardUnlocked: this.hardUnlocked,
+            runState: this.runState, feats: this.feats,
+            ownedThemes: this.ownedThemes, activeTheme: this.activeTheme,
+            infiniteCoins: this.infiniteCoins,
+            darkMode: document.body.classList.contains('dark-mode'),
+            timestamp: Date.now()
+        };
+    }
+    saveCurrentToSlot(n) {
+        localStorage.setItem(`ms_save_${n}`, JSON.stringify(this._buildSaveData()));
+    }
+    getSlotData(n) {
+        try { return JSON.parse(localStorage.getItem(`ms_save_${n}`)) || null; }
+        catch(e) { return null; }
+    }
+    switchSlot(n) {
+        if (n === this.currentSlot) { document.getElementById('saves-modal').classList.remove('show'); return; }
+        this.saveCurrentToSlot(this.currentSlot);
+        this.currentSlot = n;
+        localStorage.setItem('ms_save_slot', n);
+        const d = this.getSlotData(n);
+        if (d) {
+            this.points = d.points || 0;
+            this.level  = d.level || 0;
+            this.hardUnlocked = d.hardUnlocked || false;
+            this.runState = d.runState || null;
+            this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, completed:{}, ...(d.feats||{}) };
+            this.ownedThemes = d.ownedThemes || ['green'];
+            this.activeTheme = d.activeTheme || 'green';
+            this.infiniteCoins = d.infiniteCoins || false;
+            if (d.darkMode !== undefined) {
+                document.body.classList.toggle('dark-mode', d.darkMode);
+                const tog = document.getElementById('dark-mode-toggle');
+                if (tog) tog.checked = d.darkMode;
+                localStorage.setItem('darkMode', d.darkMode);
+            }
+        } else {
+            this.points = 0; this.level = 0; this.hardUnlocked = false;
+            this.runState = null;
+            this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, completed:{} };
+            this.ownedThemes = ['green']; this.activeTheme = 'green'; this.infiniteCoins = false;
+        }
+        localStorage.setItem('ms_points', this.points);
+        localStorage.setItem('ms_level', this.level);
+        localStorage.setItem('ms_hard_unlocked', this.hardUnlocked);
+        localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
+        localStorage.setItem('ms_active_theme', this.activeTheme);
+        this.applyTheme(this.activeTheme);
+        this.currentDifficulty = this.runState ? this.runState.difficulty : null;
+        this.carouselIndex = this.runState ? this.runState.currentBoard : 0;
+        this.renderDifficultyGrid();
+        this.renderLevelBar();
+        this.renderCarousel();
+        this.refreshMenuButtons();
+        if (this.currentDifficulty) {
+            document.querySelectorAll('.diff-box').forEach(b => b.classList.remove('selected'));
+            const box = document.getElementById(`diff-${this.currentDifficulty}`);
+            if (box) box.classList.add('selected');
+        }
+        document.getElementById('saves-modal').classList.remove('show');
+        this.sfx.play('btn');
+    }
+    renderSavesModal() {
+        const wrap = document.getElementById('save-slots');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            const d = this.getSlotData(i);
+            const isActive = i === this.currentSlot;
+            const isEmpty  = !d;
+            const div = document.createElement('div');
+            div.className = `save-slot${isActive ? ' active-slot' : ''}${isEmpty ? ' empty-slot' : ''}`;
+            if (isEmpty) {
+                div.innerHTML = `
+                    <div class="save-slot-header">
+                        <span class="save-slot-name">Slot ${i+1}</span>
+                        <span class="save-slot-badge" style="background:var(--border);color:var(--text-muted)">Empty</span>
+                    </div>
+                    <span class="save-slot-info">No data yet — click to start fresh</span>`;
+            } else {
+                const ago = this._timeAgo(d.timestamp);
+                div.innerHTML = `
+                    <div class="save-slot-header">
+                        <span class="save-slot-name">Slot ${i+1}</span>
+                        ${isActive ? '<span class="save-slot-badge">Active</span>' : ''}
+                    </div>
+                    <span class="save-slot-info">Lvl ${d.level||0} · ${(d.points||0).toLocaleString()} pts · ${ago}</span>`;
+            }
+            div.addEventListener('click', () => { this.sfx.play('btn'); this.switchSlot(i); });
+            wrap.appendChild(div);
+        }
+    }
+    _timeAgo(ts) {
+        if (!ts) return '';
+        const s = Math.floor((Date.now() - ts) / 1000);
+        if (s < 60) return 'just now';
+        if (s < 3600) return `${Math.floor(s/60)}m ago`;
+        if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+        return `${Math.floor(s/86400)}d ago`;
+    }
+
+    /* ══ THEMES ════════════════════════════════════════════════ */
+    applyTheme(key) {
+        const t = THEMES[key]; if (!t) return;
+        document.documentElement.style.setProperty('--accent', t.accent);
+    }
+    previewTheme(key) {
+        this._previewTheme = key;
+        const t = THEMES[key]; if (!t) return;
+        document.documentElement.style.setProperty('--accent', t.accent);
+    }
+    revertPreview() {
+        this._previewTheme = null;
+        this.applyTheme(this.activeTheme);
+    }
+    selectTheme(key) {
+        if (!this.ownedThemes.includes(key)) return;
+        this.activeTheme = key;
+        localStorage.setItem('ms_active_theme', key);
+        this.applyTheme(key);
+        this.renderStoreThemes();
+    }
+    purchaseTheme(key, onDone) {
+        const t = THEMES[key]; if (!t) return;
+        if (this.ownedThemes.includes(key)) { this.selectTheme(key); if (onDone) onDone(); return; }
+        const cost = t.cost;
+        if (!this.infiniteCoins && this.points < cost) {
+            this.sfx.play('error');
+            this.showDiffModal('Not enough points',
+                `<span style="color:var(--text2)">${t.name} costs <strong>${cost} points</strong>. You have <strong>${this.points} points</strong>.</span>`,
+                [{ label:'OK', cls:'restart-btn', action:()=>{} }]);
+            return;
+        }
+        /* show purchase confirm */
+        document.getElementById('purchase-title').textContent = `Buy ${t.name}?`;
+        document.getElementById('purchase-body').textContent  = this.infiniteCoins
+            ? `You have infinite coins — this is free!`
+            : `Cost: ${cost} points · You have: ${this.points} points`;
+        document.getElementById('purchase-modal').classList.add('show');
+        document.getElementById('purchase-confirm-btn').onclick = () => {
+            document.getElementById('purchase-modal').classList.remove('show');
+            if (!this.infiniteCoins) { this.points -= cost; localStorage.setItem('ms_points', this.points); }
+            this.ownedThemes.push(key);
+            localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
+            this.selectTheme(key);
+            this.renderLevelBar();
+            this.checkFeats();
+            this.sfx.play('purchase');
+            if (onDone) onDone();
+        };
+        document.getElementById('purchase-cancel-btn').onclick = () => {
+            document.getElementById('purchase-modal').classList.remove('show');
+            this.sfx.play('btn');
+        };
+        this.sfx.play('modal');
+    }
+    renderStoreThemes() {
+        const panel = document.getElementById('store-panel-themes');
+        if (!panel) return;
+        const isDark = document.body.classList.contains('dark-mode');
+        const s1 = isDark ? '#222' : '#444';
+        const s2 = isDark ? '#555' : '#888';
+        const s3 = isDark ? '#888' : '#bbb';
+        panel.innerHTML = `<div class="themes-grid">${Object.entries(THEMES).map(([key, t]) => {
+            const owned  = this.ownedThemes.includes(key);
+            const active = key === this.activeTheme;
+            const pill   = active ? `<span class="theme-cost-pill pill-active">Active</span>`
+                         : owned  ? `<span class="theme-cost-pill pill-owned">Owned</span>`
+                         :          `<span class="theme-cost-pill">${t.cost} pts</span>`;
+            return `<div class="theme-card${active ? ' theme-active-card' : ''}" data-theme-key="${key}">
+                <div class="theme-swatches">
+                    <div class="swatch" style="background:${s1}"></div>
+                    <div class="swatch" style="background:${s2}"></div>
+                    <div class="swatch" style="background:${s3}"></div>
+                    <div class="swatch" style="background:${t.accent}"></div>
+                </div>
+                <span class="theme-card-name">${t.name}</span>
+                ${pill}
+            </div>`;
+        }).join('')}</div>`;
+
+        panel.querySelectorAll('.theme-card').forEach(card => {
+            const key = card.dataset.themeKey;
+            let pressTimer = null, isPreviewing = false;
+
+            const startPress = () => {
+                pressTimer = setTimeout(() => {
+                    isPreviewing = true;
+                    this.previewTheme(key);
+                    card.style.boxShadow = `0 0 0 3px ${THEMES[this.activeTheme].accent}`;
+                }, 180);
+            };
+            const endPress = (wasClick) => {
+                clearTimeout(pressTimer);
+                if (isPreviewing) {
+                    this.revertPreview();
+                    card.style.boxShadow = '';
+                    isPreviewing = false;
+                } else if (wasClick) {
+                    const owned = this.ownedThemes.includes(key);
+                    if (owned) { this.selectTheme(key); this.sfx.play('btn'); }
+                    else { this.purchaseTheme(key, null); }
+                }
+            };
+
+            card.addEventListener('pointerdown', () => { startPress(); });
+            card.addEventListener('pointerup',   () => { endPress(true); });
+            card.addEventListener('pointerleave',() => { endPress(false); });
+            card.addEventListener('contextmenu', e => e.preventDefault());
+        });
+    }
+
+    /* ══ FEATS UI ══════════════════════════════════════════════ */
+    renderFeatsPanel(tab) {
+        const list = document.getElementById('feats-list');
+        if (!list) return;
+        const defs = FEAT_DEFS.filter(d => d.cat === tab);
+        list.innerHTML = defs.map(d => {
+            const done = !!(this.feats.completed && this.feats.completed[d.id]) || this._isFeatDone(d.id);
+            return `<div class="feat-item ${done ? 'feat-done' : 'feat-locked'}">
+                <div class="feat-icon">${done ? d.icon : '🔒'}</div>
+                <div class="feat-text">
+                    <span class="feat-name">${d.name}</span>
+                    <span class="feat-desc">${d.desc}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ══ LEVEL / POINTS ════════════════════════════════════════ */
     levelUpCost(level) { return 10 * Math.pow(2, level); }
     renderLevelBar() {
         const cost = this.levelUpCost(this.level);
@@ -155,22 +527,28 @@ class Minesweeper {
         document.getElementById('xp-bar-fill').style.width = `${Math.round(pct * 100)}%`;
         document.getElementById('xp-text').textContent     = `${this.points} / ${cost}`;
         document.getElementById('upgrade-btn').classList.toggle('hidden', this.points < cost);
+        const pd = document.getElementById('points-display');
+        if (pd) pd.textContent = this.infiniteCoins ? '∞' : this.points.toLocaleString();
     }
     awardPoints(n) {
         const earned = n * 10;
-        this.points += earned;
+        if (!this.infiniteCoins) this.points += earned;
+        else this.points = 999999;
         localStorage.setItem('ms_points', this.points);
+        this.feats.totalEarned += earned;
+        this._saveFeats();
         this.renderLevelBar();
+        this.checkFeats();
         return earned;
     }
 
-    /* ── SETTINGS ───────────────────────────────────── */
+    /* ══ SETTINGS ══════════════════════════════════════════════ */
     loadSettings() {
         const dark = localStorage.getItem('darkMode') === 'true';
         if (dark) { document.body.classList.add('dark-mode'); document.getElementById('dark-mode-toggle').checked = true; }
     }
 
-    /* ── DIFFICULTY GRID ────────────────────────────── */
+    /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
     renderDifficultyGrid() {
         const hardBox = document.getElementById('diff-hard');
         if (this.hardUnlocked) {
@@ -178,7 +556,6 @@ class Minesweeper {
         } else {
             hardBox.classList.remove('hard-unlocked'); hardBox.classList.add('diff-locked');
         }
-        /* dim grid if run is paused */
         const grid = document.getElementById('difficulty-grid');
         grid.classList.toggle('run-locked', !!(this.runState && this.runState.paused));
     }
@@ -196,6 +573,7 @@ class Minesweeper {
             wrap.appendChild(btn);
         });
         document.getElementById('diff-modal').classList.add('show');
+        this.sfx.play('modal');
     }
 
     selectDifficulty(key) {
@@ -205,6 +583,7 @@ class Minesweeper {
         if (box) box.classList.add('selected');
         this.renderCarousel();
         this.refreshMenuButtons();
+        this.sfx.play('btn');
     }
 
     onDifficultyClick(key) {
@@ -214,9 +593,9 @@ class Minesweeper {
             ]); return;
         }
         if (key === 'hard' && !this.hardUnlocked) {
-            const canAfford = this.points >= 800;
+            const canAfford = this.points >= 800 || this.infiniteCoins;
             this.showDiffModal('Unlock Hard?',
-                `Hard difficulty costs <strong>800 points</strong>.<br>You have <strong>${this.points} points</strong>.`,
+                `Hard difficulty costs <strong>800 points</strong>.<br>You have <strong>${this.infiniteCoins ? '∞' : this.points} points</strong>.`,
                 [
                     canAfford
                         ? { label:'Unlock', cls:'confirm-btn', action:() => this.unlockHard() }
@@ -228,16 +607,16 @@ class Minesweeper {
     }
 
     unlockHard() {
-        this.points -= 800;
-        localStorage.setItem('ms_points', this.points);
+        if (!this.infiniteCoins) { this.points -= 800; localStorage.setItem('ms_points', this.points); }
         this.hardUnlocked = true;
         localStorage.setItem('ms_hard_unlocked', 'true');
         this.renderLevelBar();
         this.renderDifficultyGrid();
         this.selectDifficulty('hard');
+        this.sfx.play('purchase');
     }
 
-    /* ── CAROUSEL ───────────────────────────────────── */
+    /* ══ CAROUSEL ══════════════════════════════════════════════ */
     getBoardConfig(boardIndex) {
         const diff = this.currentDifficulty || 'easy';
         return BOARD_CONFIGS[diff][boardIndex] || BOARD_CONFIGS.easy[0];
@@ -250,34 +629,28 @@ class Minesweeper {
         const diff       = this.currentDifficulty;
         const diffColor  = diff ? DIFF_COLORS[diff] : '#aaa';
 
-        const makeCard = (boardIdx, slot) => {
+        const makeCard = (boardIdx) => {
             if (boardIdx < 0 || boardIdx >= NUM_BOARDS) return '';
-            const cfg       = this.getBoardConfig(boardIdx);
+            const cfg        = this.getBoardConfig(boardIdx);
             const isUnlocked = boardIdx <= unlockedUp;
-            const isCompleted = rs && boardIdx < rs.currentBoard;
-            const isCurrent  = rs && boardIdx === rs.currentBoard && !rs.paused === false;
-            const lockedClass = isUnlocked ? (isCompleted ? 'is-completed' : '') : 'is-locked';
-            const bandColor   = isCompleted ? '#4CAF50' : (isUnlocked ? diffColor : '#bbb');
-            const statusText  = isCompleted ? 'DONE' : (isUnlocked ? (boardIdx === 0 ? 'BOARD 1' : `BOARD ${boardIdx+1}`) : 'LOCKED');
-            const numColor    = isUnlocked ? diffColor : '#aaa';
-
+            const isCompleted= rs && boardIdx < rs.currentBoard;
+            const lockedClass= isUnlocked ? (isCompleted ? 'is-completed' : '') : 'is-locked';
+            const bandColor  = isCompleted ? '#4CAF50' : (isUnlocked ? diffColor : '#bbb');
             return `
             <div class="board-card ${lockedClass}">
                 <div class="card-band" style="background:${bandColor}">BOARD ${boardIdx+1}</div>
-                <div class="card-num" style="color:${isUnlocked ? diffColor : '#aaa'}">${boardIdx+1}</div>
+                <div class="card-num num-font" style="color:${isUnlocked ? diffColor : '#aaa'}">${boardIdx+1}</div>
                 <div class="card-dims" style="color:${isUnlocked ? '' : 'var(--text-muted)'}">
                     ${isUnlocked ? `${cfg.cols}×${cfg.rows} · ${cfg.mines}${MINE_DOT_SVG}` : 'LOCKED'}
                 </div>
             </div>`;
         };
 
-        document.getElementById('slot-left').innerHTML   = makeCard(idx - 1, 'left');
-        document.getElementById('slot-center').innerHTML = makeCard(idx, 'center');
-        document.getElementById('slot-right').innerHTML  = makeCard(idx + 1, 'right');
-
+        document.getElementById('slot-left').innerHTML   = makeCard(idx - 1);
+        document.getElementById('slot-center').innerHTML = makeCard(idx);
+        document.getElementById('slot-right').innerHTML  = makeCard(idx + 1);
         document.getElementById('carousel-counter').textContent = `${idx + 1} / ${NUM_BOARDS}`;
 
-        /* dots */
         const dots = document.getElementById('carousel-dots');
         dots.innerHTML = Array.from({length: NUM_BOARDS}, (_, i) => {
             const isActive    = i === idx;
@@ -289,12 +662,9 @@ class Minesweeper {
         dots.querySelectorAll('.carousel-dot').forEach(dot => {
             dot.addEventListener('click', () => {
                 this.carouselIndex = parseInt(dot.dataset.dot);
-                this.renderCarousel();
-                this.updateBoardCounters();
-                this.refreshMenuButtons();
+                this.renderCarousel(); this.updateBoardCounters(); this.refreshMenuButtons();
             });
         });
-
         this.updateBoardCounters();
     }
 
@@ -339,7 +709,7 @@ class Minesweeper {
         wrapper.addEventListener('mouseup',     e => onEnd(e.clientX));
     }
 
-    /* ── MENU BUTTON STATE ──────────────────────────── */
+    /* ══ MENU BUTTON STATE ═════════════════════════════════════ */
     refreshMenuButtons() {
         const rs         = this.runState;
         const hasPaused  = !!(rs && rs.paused);
@@ -352,12 +722,10 @@ class Minesweeper {
         const abortBtn    = document.getElementById('abort-btn');
 
         if (hasPaused) {
-            /* run is paused: show Continue + Abort */
             playBtn.classList.add('hidden');
             continueBtn.classList.remove('hidden');
             abortBtn.classList.remove('hidden');
         } else {
-            /* no active run: show Start */
             continueBtn.classList.add('hidden');
             abortBtn.classList.add('hidden');
             if (diff && !['cs1','cs2','cs3'].includes(diff)) {
@@ -369,7 +737,7 @@ class Minesweeper {
         }
     }
 
-    /* ── RUN FLOW ───────────────────────────────────── */
+    /* ══ RUN FLOW ══════════════════════════════════════════════ */
     startRun() {
         if (!this.currentDifficulty) return;
         const boardIdx = this.carouselIndex;
@@ -381,6 +749,7 @@ class Minesweeper {
         };
         this._saveRunState();
         this.rows  = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
+        this.sfx.play('btn');
         this.transitionToGame(() => {
             this.createFreshBoard();
             this.bindGameEvents();
@@ -392,10 +761,10 @@ class Minesweeper {
     continueRun() {
         if (!this.runState) return;
         const rs = this.runState;
-        rs.paused = false;
-        this._saveRunState();
+        rs.paused = false; this._saveRunState();
         const cfg = this.getBoardConfig(rs.currentBoard);
         this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
+        this.sfx.play('btn');
         this.transitionToGame(() => {
             if (rs.boardState) {
                 const s = rs.boardState;
@@ -409,16 +778,11 @@ class Minesweeper {
                 this.zoomLevel = 1; this.scrollX = 0; this.scrollY = 0;
                 document.getElementById('zoom-level').textContent = '100%';
                 this.updateBoardPosition();
-                this.renderBoard();
-                this.renderSavedState();
-                this.updateDisplay();
-                this.bindGameEvents();
-                this.setupScrolling();
+                this.renderBoard(); this.renderSavedState(); this.updateDisplay();
+                this.bindGameEvents(); this.setupScrolling();
                 if (!this.firstClick) { if (this.timerInterval) clearInterval(this.timerInterval); this.startTimer(); }
             } else {
-                this.createFreshBoard();
-                this.bindGameEvents();
-                this.setupScrolling();
+                this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling();
             }
             this.updateBoardIndicator();
         });
@@ -429,42 +793,42 @@ class Minesweeper {
         this._clearRunState();
         this.runState = null;
         this.carouselIndex = 0;
-        this.renderDifficultyGrid();
-        this.renderCarousel();
-        this.refreshMenuButtons();
+        this.renderDifficultyGrid(); this.renderCarousel(); this.refreshMenuButtons();
+        this.sfx.play('btn');
     }
 
     pauseRun() {
-        /* save current board state into run state and go to menu */
         if (!this.runState) return;
         const state = {
             rows: this.rows, cols: this.cols, mines: this.mines,
             board: this.board, revealed: this.revealed, flagged: this.flagged,
             timer: this.timer, mode: this.mode, firstClick: this.firstClick
         };
-        this.runState.paused = true;
-        this.runState.boardState = state;
+        this.runState.paused = true; this.runState.boardState = state;
         this._saveRunState();
     }
 
     boardComplete() {
-        /* called when all non-mine cells are revealed */
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
         const rs       = this.runState;
         const boardNum = rs ? rs.currentBoard + 1 : 1;
         const isLast   = rs && rs.currentBoard === NUM_BOARDS - 1;
 
-        /* count correct flags and award points */
         let correctFlags = 0;
         for (let i = 0; i < this.rows; i++)
             for (let j = 0; j < this.cols; j++)
                 if (this.board[i][j] === -1 && this.flagged[i][j]) correctFlags++;
         const earned = this.awardPoints(correctFlags);
 
+        /* feats tracking */
+        this.feats.boardsCleared++;
+        this.feats.currentConsecutive++;
+        this.feats.bestConsecutive = Math.max(this.feats.bestConsecutive, this.feats.currentConsecutive);
+        this._saveFeats(); this.checkFeats();
+        this.sfx.play('complete');
+
         if (isLast) {
-            /* run complete */
-            this._clearRunState();
-            this.runState = null;
+            this._clearRunState(); this.runState = null;
             const el = document.getElementById('board-finished-modal');
             document.getElementById('bf-title').textContent = 'Run Complete!';
             document.getElementById('bf-message').textContent = 'All 8 boards cleared! Progression resets.';
@@ -473,12 +837,9 @@ class Minesweeper {
             document.getElementById('bf-menu-btn').textContent = 'Back to Menu';
             el.classList.add('show');
         } else {
-            /* board complete, continue to next */
             if (rs) {
-                rs.currentBoard++;
-                rs.unlockedUpTo = Math.max(rs.unlockedUpTo, rs.currentBoard);
-                rs.boardState = null;
-                this._saveRunState();
+                rs.currentBoard++; rs.unlockedUpTo = Math.max(rs.unlockedUpTo, rs.currentBoard);
+                rs.boardState = null; this._saveRunState();
             }
             const el = document.getElementById('board-finished-modal');
             document.getElementById('bf-title').textContent    = `Board ${boardNum} Complete!`;
@@ -502,10 +863,7 @@ class Minesweeper {
         if (!this.runState) { this.showMenu(); return; }
         const cfg = this.getBoardConfig(this.runState.currentBoard);
         this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
-        this.createFreshBoard();
-        this.bindGameEvents();
-        this.setupScrolling();
-        this.updateBoardIndicator();
+        this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
     }
 
     updateBoardIndicator() {
@@ -515,7 +873,7 @@ class Minesweeper {
         el.textContent = `${n}/8`;
     }
 
-    /* ── TRANSITIONS ────────────────────────────────── */
+    /* ══ TRANSITIONS ═══════════════════════════════════════════ */
     transitionToGame(callback) {
         const overlay = document.getElementById('screen-transition');
         overlay.className = 'screen-transition';
@@ -543,13 +901,10 @@ class Minesweeper {
             const box = document.getElementById(`diff-${this.currentDifficulty}`);
             if (box) box.classList.add('selected');
         }
-        this.renderDifficultyGrid();
-        this.renderCarousel();
-        this.renderLevelBar();
-        this.refreshMenuButtons();
+        this.renderDifficultyGrid(); this.renderCarousel(); this.renderLevelBar(); this.refreshMenuButtons();
     }
 
-    /* ── MENU EVENTS ────────────────────────────────── */
+    /* ══ MENU EVENTS ═══════════════════════════════════════════ */
     bindMenuEvents() {
         /* difficulty boxes */
         document.getElementById('diff-easy')  .addEventListener('click', () => this.onDifficultyClick('easy'));
@@ -566,31 +921,85 @@ class Minesweeper {
         document.getElementById('continue-btn').addEventListener('click', () => this.continueRun());
         document.getElementById('abort-btn').addEventListener('click', () => this.abortRun());
 
-        /* extra / feats */
-        document.getElementById('extra-btn').addEventListener('click', () =>
-            this.showDiffModal('Extra', 'Coming soon.', [{ label:'OK', cls:'restart-btn', action:() => {} }]));
-        document.getElementById('feats-btn').addEventListener('click', () =>
-            this.showDiffModal('Feats', 'Coming soon.', [{ label:'OK', cls:'restart-btn', action:() => {} }]));
+        /* ── STORE ── */
+        document.getElementById('store-btn').addEventListener('click', () => {
+            this.sfx.play('modal');
+            this.storeTab = 'themes';
+            document.querySelectorAll('#store-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.storeTab === 'themes'));
+            document.querySelectorAll('#store-modal .tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('store-panel-themes').classList.add('active');
+            this.renderStoreThemes();
+            document.getElementById('store-modal').classList.add('show');
+        });
+        document.getElementById('store-close-btn').addEventListener('click', () => {
+            document.getElementById('store-modal').classList.remove('show');
+            this.revertPreview();
+            this.sfx.play('btn');
+        });
+        document.getElementById('store-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('store-modal')) {
+                document.getElementById('store-modal').classList.remove('show');
+                this.revertPreview();
+            }
+        });
+        document.querySelectorAll('#store-tab-bar .tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.storeTab;
+                this.sfx.play('tab');
+                if (tab === 'cs1' || tab === 'cs2') {
+                    document.getElementById('coming-soon-modal').classList.add('show');
+                    return;
+                }
+                this.storeTab = tab;
+                document.querySelectorAll('#store-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.storeTab === tab));
+                document.querySelectorAll('#store-modal .tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`store-panel-${tab}`).classList.add('active');
+                if (tab === 'themes') this.renderStoreThemes();
+            });
+        });
 
-        /* board finished modal */
+        /* ── FEATS ── */
+        document.getElementById('feats-btn').addEventListener('click', () => {
+            this.sfx.play('modal');
+            this.featsTab = 'board';
+            document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab === 'board'));
+            this.renderFeatsPanel('board');
+            document.getElementById('feats-modal').classList.add('show');
+        });
+        document.getElementById('feats-close-btn').addEventListener('click', () => {
+            document.getElementById('feats-modal').classList.remove('show'); this.sfx.play('btn');
+        });
+        document.getElementById('feats-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('feats-modal'))
+                document.getElementById('feats-modal').classList.remove('show');
+        });
+        document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.featsTab;
+                this.sfx.play('tab');
+                this.featsTab = tab;
+                document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab === tab));
+                this.renderFeatsPanel(tab);
+            });
+        });
+
+        /* ── BOARD FINISHED MODAL ── */
         document.getElementById('bf-continue-btn').addEventListener('click', () => this.startNextBoard());
         document.getElementById('bf-menu-btn').addEventListener('click', () => {
             document.getElementById('board-finished-modal').classList.remove('show');
             this.showMenu();
         });
 
-        /* game over modal */
+        /* ── GAME OVER MODAL ── */
         document.getElementById('menu-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.remove('show');
             document.getElementById('modal-restore-btn').classList.add('hidden');
-            this._clearRunState(); this.runState = null;
-            this.showMenu();
+            this._clearRunState(); this.runState = null; this.showMenu();
         });
         document.getElementById('restart-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.remove('show');
             document.getElementById('modal-restore-btn').classList.add('hidden');
-            this._clearRunState(); this.runState = null;
-            this.showMenu();
+            this._clearRunState(); this.runState = null; this.showMenu();
         });
         document.getElementById('modal-hide-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.remove('show');
@@ -601,21 +1010,22 @@ class Minesweeper {
             document.getElementById('modal-restore-btn').classList.add('hidden');
         });
 
-        /* back button (in game) */
+        /* ── BACK BUTTON ── */
         document.getElementById('back-btn').addEventListener('click', () => {
-            this.pauseRun();
-            this.showMenu();
+            this.pauseRun(); this.showMenu(); this.sfx.play('btn');
         });
 
-        /* zoom */
-        document.getElementById('zoom-in') .addEventListener('click', () => this.zoom(0.25));
-        document.getElementById('zoom-out').addEventListener('click', () => this.zoom(-0.25));
+        /* ── ZOOM ── */
+        document.getElementById('zoom-in') .addEventListener('click', () => { this.zoom(0.25); this.sfx.play('btn'); });
+        document.getElementById('zoom-out').addEventListener('click', () => { this.zoom(-0.25); this.sfx.play('btn'); });
 
-        /* settings */
-        document.getElementById('settings-open-btn').addEventListener('click', () =>
-            document.getElementById('settings-modal').classList.add('show'));
-        document.getElementById('settings-close-btn').addEventListener('click', () =>
-            document.getElementById('settings-modal').classList.remove('show'));
+        /* ── SETTINGS ── */
+        document.getElementById('settings-open-btn').addEventListener('click', () => {
+            document.getElementById('settings-modal').classList.add('show'); this.sfx.play('modal');
+        });
+        document.getElementById('settings-close-btn').addEventListener('click', () => {
+            document.getElementById('settings-modal').classList.remove('show'); this.sfx.play('btn');
+        });
         document.getElementById('settings-modal').addEventListener('click', e => {
             if (e.target === document.getElementById('settings-modal'))
                 document.getElementById('settings-modal').classList.remove('show');
@@ -623,24 +1033,86 @@ class Minesweeper {
         document.getElementById('dark-mode-toggle').addEventListener('change', e => {
             document.body.classList.toggle('dark-mode', e.target.checked);
             localStorage.setItem('darkMode', e.target.checked);
+            this.sfx.play('btn');
         });
 
-        /* level up */
+        /* ── SAVE FILES ── */
+        document.getElementById('save-file-open-btn').addEventListener('click', () => {
+            this.saveCurrentToSlot(this.currentSlot);
+            this.renderSavesModal();
+            document.getElementById('saves-modal').classList.add('show');
+            this.sfx.play('modal');
+        });
+        document.getElementById('saves-close-btn').addEventListener('click', () => {
+            document.getElementById('saves-modal').classList.remove('show'); this.sfx.play('btn');
+        });
+        document.getElementById('saves-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('saves-modal'))
+                document.getElementById('saves-modal').classList.remove('show');
+        });
+
+        /* ── REDEEM CODE ── */
+        document.getElementById('redeem-toggle-btn').addEventListener('click', () => {
+            const wrap = document.getElementById('redeem-input-wrap');
+            wrap.classList.toggle('hidden');
+            if (!wrap.classList.contains('hidden')) {
+                document.getElementById('redeem-input').focus();
+                document.getElementById('redeem-msg').classList.add('hidden');
+            }
+            this.sfx.play('btn');
+        });
+        document.getElementById('redeem-submit-btn').addEventListener('click', () => this._handleRedeem());
+        document.getElementById('redeem-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') this._handleRedeem();
+        });
+
+        /* ── PURCHASE / COMING SOON MODALS ── */
+        document.getElementById('coming-soon-close-btn').addEventListener('click', () => {
+            document.getElementById('coming-soon-modal').classList.remove('show'); this.sfx.play('btn');
+        });
+
+        /* ── LEVEL UP ── */
         document.getElementById('upgrade-btn').addEventListener('click', () => {
             const cost = this.levelUpCost(this.level);
-            if (this.points >= cost) {
-                this.points -= cost; this.level++;
+            if (this.points >= cost || this.infiniteCoins) {
+                if (!this.infiniteCoins) this.points -= cost;
+                this.level++;
                 localStorage.setItem('ms_points', this.points);
                 localStorage.setItem('ms_level', this.level);
                 this.renderLevelBar();
+                this.checkFeats();
+                this.sfx.play('lvlup');
             }
         });
 
-        /* carousel swipe */
+        /* ── CAROUSEL SWIPE ── */
         this.bindCarouselSwipe();
     }
 
-    /* ── ZOOM ───────────────────────────────────────── */
+    _handleRedeem() {
+        const input = document.getElementById('redeem-input');
+        const msg   = document.getElementById('redeem-msg');
+        const code  = (input.value || '').trim().toUpperCase();
+        msg.classList.remove('hidden', 'success', 'error');
+        if (code === '123ABC') {
+            this.infiniteCoins = true;
+            this.points = 999999;
+            localStorage.setItem('ms_infinite_coins', 'true');
+            localStorage.setItem('ms_points', this.points);
+            this.renderLevelBar();
+            msg.textContent = '✓ Infinite coins activated!';
+            msg.classList.add('success');
+            input.value = '';
+            document.getElementById('redeem-input-wrap').classList.add('hidden');
+            this.sfx.play('redeem');
+        } else {
+            msg.textContent = '✗ Invalid code.';
+            msg.classList.add('error');
+            this.sfx.play('error');
+        }
+    }
+
+    /* ══ ZOOM ══════════════════════════════════════════════════ */
     zoom(delta) {
         const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoomLevel + delta));
         if (newZoom === this.zoomLevel) return;
@@ -652,7 +1124,7 @@ class Minesweeper {
         this.clampScroll(); this.updateBoardPosition();
     }
 
-    /* ── BOARD SCROLLING ────────────────────────────── */
+    /* ══ BOARD SCROLLING ═══════════════════════════════════════ */
     setupScrolling() {
         const container = document.getElementById('zoom-container');
         const newContainer = container.cloneNode(false);
@@ -725,7 +1197,7 @@ class Minesweeper {
         if (wrapper) wrapper.style.transform = `translate3d(${this.scrollX}px,${this.scrollY}px,0)`;
     }
 
-    /* ── BOARD SETUP ────────────────────────────────── */
+    /* ══ BOARD SETUP ═══════════════════════════════════════════ */
     createFreshBoard() {
         this.board = []; this.revealed = []; this.flagged = [];
         this.gameOver = false; this.firstClick = true;
@@ -776,7 +1248,7 @@ class Minesweeper {
         else                     { flag.classList.add('active'); dig.classList.remove('active'); }
     }
 
-    /* ── GAME EVENTS ────────────────────────────────── */
+    /* ══ GAME EVENTS ═══════════════════════════════════════════ */
     bindGameEvents() {
         const gb = document.getElementById('game-board');
         const newGb = gb.cloneNode(true);
@@ -822,11 +1294,13 @@ class Minesweeper {
             this.mode = 'dig';
             document.getElementById('dig-btn').classList.add('active');
             document.getElementById('flag-btn').classList.remove('active');
+            this.sfx.play('btn');
         };
         document.getElementById('flag-btn').onclick = () => {
             this.mode = 'flag';
             document.getElementById('flag-btn').classList.add('active');
             document.getElementById('dig-btn').classList.remove('active');
+            this.sfx.play('btn');
         };
     }
 
@@ -834,8 +1308,7 @@ class Minesweeper {
         if (this.gameOver || this.revealed[r][c]) return;
         if (this.mode === 'dig') this.toggleFlag(r, c);
         else if (!this.flagged[r][c]) { this.digCell(r, c); if (!this.gameOver && this.checkWin()) this.boardComplete(); }
-        this.updateDisplay();
-        this.saveCurrentBoardToRun();
+        this.updateDisplay(); this.saveCurrentBoardToRun();
     }
 
     handleCellTap(r, c) {
@@ -844,8 +1317,7 @@ class Minesweeper {
             if (this.flagged[r][c]) this.toggleFlag(r, c);
             else { this.digCell(r, c); if (!this.gameOver && this.checkWin()) this.boardComplete(); }
         } else { this.toggleFlag(r, c); }
-        this.updateDisplay();
-        this.saveCurrentBoardToRun();
+        this.updateDisplay(); this.saveCurrentBoardToRun();
     }
 
     saveCurrentBoardToRun() {
@@ -861,6 +1333,7 @@ class Minesweeper {
     digCell(r, c) {
         if (this.flagged[r][c]) return;
         if (this.firstClick) { this.firstClick = false; this.placeMines(r, c); this.startTimer(); }
+        this.sfx.play('dig');
         this.reveal(r, c);
     }
 
@@ -872,7 +1345,12 @@ class Minesweeper {
             cell.classList.toggle('flagged', this.flagged[r][c]);
             const existing = cell.querySelector('.cell-svg-icon');
             if (existing) existing.remove();
-            if (this.flagged[r][c]) cell.insertAdjacentHTML('beforeend', FLAG_SVG);
+            if (this.flagged[r][c]) {
+                cell.insertAdjacentHTML('beforeend', FLAG_SVG);
+                this.sfx.play('flag');
+            } else {
+                this.sfx.play('unflag');
+            }
         }
     }
 
@@ -910,6 +1388,7 @@ class Minesweeper {
         if (this.board[r][c] > 0) {
             if (cell) { cell.textContent = this.board[r][c]; cell.classList.add('n' + this.board[r][c]); }
         } else {
+            this.sfx.play('reveal');
             for (let di=-1;di<=1;di++) for (let dj=-1;dj<=1;dj++)
                 if (di!==0||dj!==0) setTimeout(()=>this.reveal(r+di,c+dj),18);
         }
@@ -933,7 +1412,10 @@ class Minesweeper {
 
     endGame() {
         clearInterval(this.timerInterval); this.timerInterval = null;
-        /* reveal mines + wrong flags */
+        this.sfx.play('mine');
+        /* feats: break consecutive streak */
+        this.feats.currentConsecutive = 0; this._saveFeats();
+
         let correctFlags = 0, delay = 0;
         for (let i = 0; i < this.rows; i++) for (let j = 0; j < this.cols; j++) {
             const mine = this.board[i][j] === -1, flag = this.flagged[i][j];
@@ -955,7 +1437,6 @@ class Minesweeper {
                 delay += 25;
             }
         }
-        /* clear run state — run over means fresh start */
         this._clearRunState(); this.runState = null;
         const earned = this.awardPoints(correctFlags);
         setTimeout(() => {

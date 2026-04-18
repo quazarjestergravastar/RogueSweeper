@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>RogueSweeper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -30,6 +33,7 @@
                         <div class="xp-bar-fill" id="xp-bar-fill"></div>
                     </div>
                     <span class="xp-text" id="xp-text">0 / 10</span>
+                    <span class="points-badge" id="points-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:2px"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg><span id="points-display">0</span></span>
                 </div>
             </div>
 
@@ -76,17 +80,17 @@
             <div class="counters-row juicy-card">
                 <div class="counter-item">
                     <span class="counter-label">W</span>
-                    <span class="counter-value" id="cols-value">—</span>
+                    <span class="counter-value num-font" id="cols-value">—</span>
                 </div>
                 <div class="counter-divider"></div>
                 <div class="counter-item">
                     <span class="counter-label">H</span>
-                    <span class="counter-value" id="rows-value">—</span>
+                    <span class="counter-value num-font" id="rows-value">—</span>
                 </div>
                 <div class="counter-divider"></div>
                 <div class="counter-item">
                     <span class="counter-label">MINES</span>
-                    <span class="counter-value" id="mines-value">—</span>
+                    <span class="counter-value num-font" id="mines-value">—</span>
                 </div>
             </div>
 
@@ -97,7 +101,7 @@
             </div>
 
             <div class="extras-row">
-                <button class="extra-btn juicy-btn" id="extra-btn">EXTRA</button>
+                <button class="extra-btn juicy-btn" id="store-btn">STORE</button>
                 <button class="feats-btn juicy-btn" id="feats-btn">FEATS</button>
             </div>
 
@@ -109,15 +113,15 @@
                 <div class="stats-panel juicy-card">
                     <div class="stat">
                         <span class="stat-label">MINES</span>
-                        <span class="stat-value" id="remaining">0</span>
+                        <span class="stat-value num-font" id="remaining">0</span>
                     </div>
                     <div class="stat board-stat">
                         <span class="stat-label">BOARD</span>
-                        <span class="stat-value" id="board-indicator">1/8</span>
+                        <span class="stat-value num-font" id="board-indicator">1/8</span>
                     </div>
                     <div class="stat">
                         <span class="stat-label">TIME</span>
-                        <span class="stat-value" id="time">000</span>
+                        <span class="stat-value num-font" id="time">000</span>
                     </div>
                 </div>
                 <div class="mode-toggle juicy-card">
@@ -134,14 +138,14 @@
                 <button class="back-btn juicy-btn" id="back-btn">MENU</button>
                 <div class="zoom-controls juicy-card">
                     <button class="zoom-btn juicy-btn" id="zoom-out">-</button>
-                    <span class="zoom-level" id="zoom-level">100%</span>
+                    <span class="zoom-level num-font" id="zoom-level">100%</span>
                     <button class="zoom-btn juicy-btn" id="zoom-in">+</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Game Over / Run Over Modal -->
+    <!-- ── GAME OVER MODAL ── -->
     <div class="modal-overlay" id="game-over-modal">
         <div class="modal-content juicy-card">
             <button class="modal-hide-btn juicy-btn" id="modal-hide-btn" title="Hide"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
@@ -156,7 +160,7 @@
     </div>
     <button class="modal-restore-btn juicy-btn hidden" id="modal-restore-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 2v20M6 2h11l-3.5 5L17 12H6"/></svg></button>
 
-    <!-- Board Finished Modal -->
+    <!-- ── BOARD FINISHED MODAL ── -->
     <div class="modal-overlay" id="board-finished-modal">
         <div class="modal-content juicy-card">
             <h2 id="bf-title">Board Complete!</h2>
@@ -169,7 +173,7 @@
         </div>
     </div>
 
-    <!-- Generic (Difficulty / Unlock / Shop) Modal -->
+    <!-- ── GENERIC DIFF MODAL ── -->
     <div class="modal-overlay" id="diff-modal">
         <div class="modal-content juicy-card">
             <h2 id="diff-modal-title"></h2>
@@ -178,7 +182,7 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- ── SETTINGS MODAL ── -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content juicy-card">
             <h2>Settings</h2>
@@ -189,7 +193,76 @@
                     <span class="switch-slider"></span>
                 </label>
             </div>
+            <button class="save-file-open-btn juicy-btn" id="save-file-open-btn">Save Files</button>
+            <div class="redeem-section">
+                <button class="redeem-toggle-btn juicy-btn" id="redeem-toggle-btn">Redeem Code</button>
+                <div class="redeem-input-wrap hidden" id="redeem-input-wrap">
+                    <input type="text" class="redeem-input" id="redeem-input" placeholder="Enter code..." maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
+                    <button class="redeem-submit-btn juicy-btn" id="redeem-submit-btn">Apply</button>
+                </div>
+                <p class="redeem-msg hidden" id="redeem-msg"></p>
+            </div>
             <button class="close-settings-btn juicy-btn" id="settings-close-btn">Done</button>
+        </div>
+    </div>
+
+    <!-- ── SAVES MODAL ── -->
+    <div class="modal-overlay" id="saves-modal">
+        <div class="modal-content juicy-card">
+            <h2>Save Files</h2>
+            <div class="save-slots" id="save-slots"></div>
+            <button class="close-settings-btn juicy-btn" id="saves-close-btn">Close</button>
+        </div>
+    </div>
+
+    <!-- ── STORE MODAL ── -->
+    <div class="modal-overlay" id="store-modal">
+        <div class="modal-content juicy-card store-modal-content">
+            <h2>Store</h2>
+            <div class="modal-tab-bar" id="store-tab-bar">
+                <button class="tab-btn active" data-store-tab="themes">Themes</button>
+                <button class="tab-btn" data-store-tab="cs1">???</button>
+                <button class="tab-btn" data-store-tab="cs2">???</button>
+            </div>
+            <div class="tab-panel active" id="store-panel-themes"></div>
+            <div class="tab-panel" id="store-panel-cs1"></div>
+            <div class="tab-panel" id="store-panel-cs2"></div>
+            <button class="close-settings-btn juicy-btn" id="store-close-btn">Close</button>
+        </div>
+    </div>
+
+    <!-- ── FEATS MODAL ── -->
+    <div class="modal-overlay" id="feats-modal">
+        <div class="modal-content juicy-card feats-modal-content">
+            <h2>Feats</h2>
+            <div class="modal-tab-bar" id="feats-tab-bar">
+                <button class="tab-btn active" data-feats-tab="board">Boards</button>
+                <button class="tab-btn" data-feats-tab="score">Score</button>
+                <button class="tab-btn" data-feats-tab="level">Level</button>
+            </div>
+            <div class="feats-list" id="feats-list"></div>
+            <button class="close-settings-btn juicy-btn" id="feats-close-btn">Close</button>
+        </div>
+    </div>
+
+    <!-- ── PURCHASE CONFIRM MODAL ── -->
+    <div class="modal-overlay" id="purchase-modal">
+        <div class="modal-content juicy-card">
+            <h2 id="purchase-title">Purchase Theme</h2>
+            <p id="purchase-body" style="color:var(--text2);margin:8px 0 18px;font-size:.88rem"></p>
+            <div class="modal-buttons">
+                <button class="confirm-btn juicy-btn" id="purchase-confirm-btn">Buy</button>
+                <button class="menu-link-btn juicy-btn" id="purchase-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── COMING SOON MODAL (secondary) ── -->
+    <div class="modal-overlay coming-soon-overlay" id="coming-soon-modal">
+        <div class="modal-content juicy-card">
+            <h2>Coming Soon</h2>
+            <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem">This content isn't available yet. Stay tuned!</p>
+            <button class="confirm-btn juicy-btn" id="coming-soon-close-btn">OK</button>
         </div>
     </div>
 
