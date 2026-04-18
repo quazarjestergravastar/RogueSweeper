@@ -2,15 +2,34 @@
 const NUM_BOARDS = 8;
 
 /* ── SVG ICONS ───────────────────────────────────────────────── */
-const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,4 20,20 4,20"/></svg>`;
-const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="rgba(255,255,255,0.25)"/><line x1="12" y1="3" x2="12" y2="6" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="6" y2="12" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="12" x2="21" y2="12" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round"/></svg>`;
+const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="10" y="3" width="2" height="18" rx="1"/><path d="M12 4 Q18 7 16 11 Q14 15 12 12 Z" rx="2"/></svg>`;
+const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="rgba(255,255,255,0.28)"/><line x1="12" y1="4" x2="12" y2="7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="20" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="12" x2="7" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="12" x2="20" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="6.3" x2="8.5" y2="8.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="15.5" x2="17.7" y2="17.7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="17.7" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="8.5" x2="17.7" y2="6.3" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/></svg>`;
 
+/* ── FLOATING BACKGROUND SVGs ────────────────────────────────── */
 const FLOAT_SVGS = {
-    circle: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="rgba(100,100,200,0.06)"/></svg>`,
-    blob:   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,8 C76,8 92,28 92,50 C92,72 72,92 50,92 C28,92 8,70 8,48 C8,24 25,8 50,8" fill="rgba(200,100,100,0.06)"/></svg>`,
-    shard:  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,50 50,90 10,50" fill="rgba(150,100,200,0.06)"/></svg>`,
+    circle:  (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="${c}" stroke-width="6"/></svg>`,
+    blob:    (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 C72,10 90,28 90,50 C90,72 70,92 48,90 C26,88 8,70 10,48 C12,26 28,10 50,10" fill="${c}"/></svg>`,
+    shard:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,12 88,50 50,88 12,50" fill="${c}"/></svg>`,
+    ring:    (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="60 40"/></svg>`,
+    roundsq: (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="12" y="12" width="76" height="76" rx="20" fill="${c}"/></svg>`,
+    cross:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="10" fill="${c}"/><rect x="10" y="38" width="80" height="24" rx="10" fill="${c}"/></svg>`,
+    tri:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,15 L88,82 Q88,88 82,88 L18,88 Q12,88 12,82 Z" fill="${c}"/></svg>`,
+    dot:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="28" fill="${c}"/></svg>`,
 };
+
 const MINE_DOT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 10 10" style="display:inline-block;vertical-align:middle" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>`;
+
+/* ── SVG ICONS FOR FEATS ──────────────────────────────────── */
+const FEAT_ICONS_SVG = {
+    board:     `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="9,12 11,14 15,10"/></svg>`,
+    streak:    `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 L4 14 h7 l-1 8 9-12h-7z"/></svg>`,
+    collector: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/></svg>`,
+    score:     `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,3 15.1,8.3 21,9.3 16.5,13.6 17.6,19.5 12,16.5 6.4,19.5 7.5,13.6 3,9.3 8.9,8.3"/></svg>`,
+    score_hi:  `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.1,7.3 21,8.3 16.5,12.6 17.6,18.5 12,15.5 6.4,18.5 7.5,12.6 3,8.3 8.9,7.3"/><circle cx="12" cy="10" r="2" fill="currentColor" stroke="none"/></svg>`,
+    level:     `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>`,
+    level_hi:  `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L14 8 L20 8 L15 12 L17 18 L12 14 L7 18 L9 12 L4 8 L10 8 Z"/><line x1="12" y1="2" x2="12" y2="22" stroke-opacity="0"/><line x1="4" y1="22" x2="20" y2="22"/></svg>`,
+    lock:      `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
+};
 
 /* ── BOARD CONFIGS ──────────────────────────────────────────── */
 const BOARD_CONFIGS = {
@@ -52,30 +71,30 @@ const THEMES = {
 
 /* ── FEATS DEFINITIONS ───────────────────────────────────────── */
 const FEAT_DEFS = [
-    { id:'boards_5',   cat:'board', name:'Board Clearer I',   desc:'Clear 5 boards total',                icon:'🏁' },
-    { id:'boards_10',  cat:'board', name:'Board Clearer II',  desc:'Clear 10 boards total',               icon:'🏁' },
-    { id:'boards_20',  cat:'board', name:'Board Clearer III', desc:'Clear 20 boards total',               icon:'🏁' },
-    { id:'boards_25',  cat:'board', name:'Board Clearer IV',  desc:'Clear 25 boards total',               icon:'🏁' },
-    { id:'consec_10',  cat:'board', name:'Streak I',          desc:'Clear 10 consecutive boards',         icon:'🔥' },
-    { id:'consec_20',  cat:'board', name:'Streak II',         desc:'Clear 20 consecutive boards',         icon:'🔥' },
-    { id:'consec_25',  cat:'board', name:'Streak III',        desc:'Clear 25 consecutive boards',         icon:'🔥' },
-    { id:'all_themes', cat:'board', name:'Collector',         desc:'Purchase all available themes',       icon:'🎨' },
-    { id:'score_500',  cat:'score', name:'500 Points',        desc:'Earn 500 total points',               icon:'⭐' },
-    { id:'score_1k',   cat:'score', name:'1,000 Points',      desc:'Earn 1,000 total points',             icon:'⭐' },
-    { id:'score_5k',   cat:'score', name:'5,000 Points',      desc:'Earn 5,000 total points',             icon:'💫' },
-    { id:'score_10k',  cat:'score', name:'10,000 Points',     desc:'Earn 10,000 total points',            icon:'💫' },
-    { id:'score_15k',  cat:'score', name:'15,000 Points',     desc:'Earn 15,000 total points',            icon:'💫' },
-    { id:'level_10',   cat:'level', name:'Level 10',          desc:'Reach level 10',                      icon:'📈' },
-    { id:'level_15',   cat:'level', name:'Level 15',          desc:'Reach level 15',                      icon:'📈' },
-    { id:'level_20',   cat:'level', name:'Level 20',          desc:'Reach level 20',                      icon:'📈' },
-    { id:'level_100',  cat:'level', name:'Level 100',         desc:'Reach level 100',                     icon:'🚀' },
-    { id:'level_250',  cat:'level', name:'Level 250',         desc:'Reach level 250',                     icon:'🚀' },
-    { id:'level_500',  cat:'level', name:'Level 500',         desc:'Reach level 500',                     icon:'🚀' },
+    { id:'boards_5',   cat:'board',     name:'Board Clearer I',   desc:'Clear 5 boards total',                iconKey:'board' },
+    { id:'boards_10',  cat:'board',     name:'Board Clearer II',  desc:'Clear 10 boards total',               iconKey:'board' },
+    { id:'boards_20',  cat:'board',     name:'Board Clearer III', desc:'Clear 20 boards total',               iconKey:'board' },
+    { id:'boards_25',  cat:'board',     name:'Board Clearer IV',  desc:'Clear 25 boards total',               iconKey:'board' },
+    { id:'consec_10',  cat:'board',     name:'Streak I',          desc:'Clear 10 consecutive boards',         iconKey:'streak' },
+    { id:'consec_20',  cat:'board',     name:'Streak II',         desc:'Clear 20 consecutive boards',         iconKey:'streak' },
+    { id:'consec_25',  cat:'board',     name:'Streak III',        desc:'Clear 25 consecutive boards',         iconKey:'streak' },
+    { id:'score_500',  cat:'score',     name:'500 Points',        desc:'Earn 500 total points',               iconKey:'score' },
+    { id:'score_1k',   cat:'score',     name:'1,000 Points',      desc:'Earn 1,000 total points',             iconKey:'score' },
+    { id:'score_5k',   cat:'score',     name:'5,000 Points',      desc:'Earn 5,000 total points',             iconKey:'score_hi' },
+    { id:'score_10k',  cat:'score',     name:'10,000 Points',     desc:'Earn 10,000 total points',            iconKey:'score_hi' },
+    { id:'score_15k',  cat:'score',     name:'15,000 Points',     desc:'Earn 15,000 total points',            iconKey:'score_hi' },
+    { id:'level_10',   cat:'level',     name:'Level 10',          desc:'Reach level 10',                      iconKey:'level' },
+    { id:'level_15',   cat:'level',     name:'Level 15',          desc:'Reach level 15',                      iconKey:'level' },
+    { id:'level_20',   cat:'level',     name:'Level 20',          desc:'Reach level 20',                      iconKey:'level' },
+    { id:'level_100',  cat:'level',     name:'Level 100',         desc:'Reach level 100',                     iconKey:'level_hi' },
+    { id:'level_250',  cat:'level',     name:'Level 250',         desc:'Reach level 250',                     iconKey:'level_hi' },
+    { id:'level_500',  cat:'level',     name:'Level 500',         desc:'Reach level 500',                     iconKey:'level_hi' },
+    { id:'all_themes', cat:'collector', name:'Color Collector',   desc:'Purchase all available themes',       iconKey:'collector' },
 ];
 
 /* ── SOUND ENGINE ───────────────────────────────────────────── */
 class SoundEngine {
-    constructor() { this.ctx = null; this.muted = false; }
+    constructor() { this.ctx = null; this.muted = false; this.sfxVolume = 0.8; }
     _ctx() {
         try {
             if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -86,11 +105,12 @@ class SoundEngine {
     _tone(freq, type, t0, attack, decay, vol) {
         try {
             const ctx = this._ctx(); if (!ctx) return;
+            const v = vol * this.sfxVolume;
             const osc = ctx.createOscillator(), gain = ctx.createGain();
             osc.connect(gain); gain.connect(ctx.destination);
             osc.type = type; osc.frequency.value = freq;
             gain.gain.setValueAtTime(0, t0);
-            gain.gain.linearRampToValueAtTime(vol, t0 + attack);
+            gain.gain.linearRampToValueAtTime(v, t0 + attack);
             gain.gain.exponentialRampToValueAtTime(0.001, t0 + attack + decay);
             osc.start(t0); osc.stop(t0 + attack + decay + 0.05);
         } catch(e) {}
@@ -103,11 +123,11 @@ class SoundEngine {
             for (let i = 0; i < n; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/n, 2.2);
             const src = ctx.createBufferSource(), gain = ctx.createGain();
             src.buffer = buf; src.connect(gain); gain.connect(ctx.destination);
-            gain.gain.value = 0.35; src.start(); src.stop(ctx.currentTime + dur);
+            gain.gain.value = 0.35 * this.sfxVolume; src.start(); src.stop(ctx.currentTime + dur);
         } catch(e) {}
     }
     play(sound) {
-        if (this.muted) return;
+        if (this.muted || this.sfxVolume === 0) return;
         try {
             const ctx = this._ctx(); if (!ctx) return;
             const t = ctx.currentTime;
@@ -134,11 +154,25 @@ class SoundEngine {
 class FloatingBackground {
     constructor() {
         this.container = document.getElementById('floating-bg');
-        this.shapes = []; this.maxShapes = 12; this.init();
+        this.shapes = []; this.maxShapes = 14; this.init();
+    }
+    _getThemeColor() {
+        const accent = getComputedStyle(document.documentElement)
+            .getPropertyValue('--accent').trim() || '#4CAF50';
+        return accent;
+    }
+    _hexToRgb(hex) {
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, '#$1$1$2$2$3$3'));
+        return r ? { r: parseInt(r[1],16), g: parseInt(r[2],16), b: parseInt(r[3],16) } : { r:100, g:160, b:200 };
+    }
+    _makeColor(opacity) {
+        const hex = this._getThemeColor();
+        const { r, g, b } = this._hexToRgb(hex);
+        return `rgba(${r},${g},${b},${opacity})`;
     }
     init() {
-        for (let i = 0; i < 5; i++) setTimeout(() => this.spawnShape(), i * 500);
-        setInterval(() => this.spawnShape(), 2800);
+        for (let i = 0; i < 6; i++) setTimeout(() => this.spawnShape(), i * 400);
+        setInterval(() => this.spawnShape(), 2400);
     }
     spawnShape() {
         if (this.shapes.length >= this.maxShapes) {
@@ -146,21 +180,22 @@ class FloatingBackground {
             if (old && old.parentNode) old.parentNode.removeChild(old);
         }
         const shape = document.createElement('div');
-        const types = ['circle', 'blob', 'shard'];
-        const type = types[Math.floor(Math.random() * 3)];
-        shape.className = `floating-shape`;
-        const size = 30 + Math.random() * 65;
+        const keys = Object.keys(FLOAT_SVGS);
+        const type = keys[Math.floor(Math.random() * keys.length)];
+        shape.className = 'floating-shape';
+        const size = 28 + Math.random() * 60;
         shape.style.width = `${size}px`; shape.style.height = `${size}px`;
         shape.style.left = `${Math.random() * 100}%`;
-        shape.style.animationDuration = `${18 + Math.random() * 14}s`;
-        shape.innerHTML = FLOAT_SVGS[type];
+        shape.style.animationDuration = `${16 + Math.random() * 16}s`;
+        const opacity = 0.04 + Math.random() * 0.06;
+        shape.innerHTML = FLOAT_SVGS[type](this._makeColor(opacity));
         this.container.appendChild(shape);
         this.shapes.push(shape);
         setTimeout(() => {
             const idx = this.shapes.indexOf(shape);
             if (idx > -1) this.shapes.splice(idx, 1);
             if (shape.parentNode) shape.parentNode.removeChild(shape);
-        }, 35000);
+        }, 38000);
     }
 }
 
@@ -318,7 +353,7 @@ class Minesweeper {
             this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, completed:{}, ...(d.feats||{}) };
             this.ownedThemes = d.ownedThemes || ['green'];
             this.activeTheme = d.activeTheme || 'green';
-            this.infiniteCoins = d.infiniteCoins || false;
+            this.infiniteCoins = d.infiniteCoins === true;
             if (d.darkMode !== undefined) {
                 document.body.classList.toggle('dark-mode', d.darkMode);
                 const tog = document.getElementById('dark-mode-toggle');
@@ -336,6 +371,7 @@ class Minesweeper {
         localStorage.setItem('ms_hard_unlocked', this.hardUnlocked);
         localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
         localStorage.setItem('ms_active_theme', this.activeTheme);
+        localStorage.setItem('ms_infinite_coins', this.infiniteCoins);
         this.applyTheme(this.activeTheme);
         this.currentDifficulty = this.runState ? this.runState.difficulty : null;
         this.carouselIndex = this.runState ? this.runState.currentBoard : 0;
@@ -370,12 +406,23 @@ class Minesweeper {
                     <span class="save-slot-info">No data yet — click to start fresh</span>`;
             } else {
                 const ago = this._timeAgo(d.timestamp);
+                const lvl = d.level || 0;
+                const pts = d.points || 0;
+                const cost = this.levelUpCost(lvl);
+                const pct = Math.min(100, Math.round((pts / cost) * 100));
                 div.innerHTML = `
                     <div class="save-slot-header">
                         <span class="save-slot-name">Slot ${i+1}</span>
                         ${isActive ? '<span class="save-slot-badge">Active</span>' : ''}
                     </div>
-                    <span class="save-slot-info">Lvl ${d.level||0} · ${(d.points||0).toLocaleString()} pts · ${ago}</span>`;
+                    <span class="save-slot-info">${(pts).toLocaleString()} pts · ${ago}</span>
+                    <div class="save-slot-bar-row">
+                        <span class="save-slot-bar-label">LVL ${lvl}</span>
+                        <div class="save-slot-bar-wrap">
+                            <div class="save-slot-bar-fill" style="width:${pct}%"></div>
+                        </div>
+                        <span class="save-slot-bar-pts">${pct}%</span>
+                    </div>`;
             }
             div.addEventListener('click', () => { this.sfx.play('btn'); this.switchSlot(i); });
             wrap.appendChild(div);
@@ -422,7 +469,6 @@ class Minesweeper {
                 [{ label:'OK', cls:'restart-btn', action:()=>{} }]);
             return;
         }
-        /* show purchase confirm */
         document.getElementById('purchase-title').textContent = `Buy ${t.name}?`;
         document.getElementById('purchase-body').textContent  = this.infiniteCoins
             ? `You have infinite coins — this is free!`
@@ -449,20 +495,34 @@ class Minesweeper {
         const panel = document.getElementById('store-panel-themes');
         if (!panel) return;
         const isDark = document.body.classList.contains('dark-mode');
-        const s1 = isDark ? '#222' : '#444';
-        const s2 = isDark ? '#555' : '#888';
-        const s3 = isDark ? '#888' : '#bbb';
+        /* Use theme-appropriate tones for dark mode swatches */
+        const s1 = isDark ? '#1e1e1e' : '#3a3a3a';
+        const s2 = isDark ? '#333333' : '#666666';
+        const s3 = isDark ? '#4a4a4a' : '#999999';
         panel.innerHTML = `<div class="themes-grid">${Object.entries(THEMES).map(([key, t]) => {
             const owned  = this.ownedThemes.includes(key);
             const active = key === this.activeTheme;
             const pill   = active ? `<span class="theme-cost-pill pill-active">Active</span>`
                          : owned  ? `<span class="theme-cost-pill pill-owned">Owned</span>`
                          :          `<span class="theme-cost-pill">${t.cost} pts</span>`;
-            return `<div class="theme-card${active ? ' theme-active-card' : ''}" data-theme-key="${key}">
+            /* Slightly lighten very dark swatches so they're visible against card background */
+            const adjustColor = (hex) => {
+                if (!isDark) return hex;
+                const r = parseInt(hex.slice(1,3),16);
+                const g = parseInt(hex.slice(3,5),16);
+                const b = parseInt(hex.slice(5,7),16);
+                const lum = (r*299+g*587+b*114)/1000;
+                if (lum < 25) {
+                    const boost = 35;
+                    return `rgb(${Math.min(255,r+boost)},${Math.min(255,g+boost)},${Math.min(255,b+boost)})`;
+                }
+                return hex;
+            };
+            return `<div class="theme-card${active ? ' theme-active-card' : ''}" data-theme-key="${key}" style="${active ? `border-color:${t.accent};box-shadow:0 0 0 2px ${t.accent}` : ''}">
                 <div class="theme-swatches">
-                    <div class="swatch" style="background:${s1}"></div>
-                    <div class="swatch" style="background:${s2}"></div>
-                    <div class="swatch" style="background:${s3}"></div>
+                    <div class="swatch" style="background:${adjustColor(s1)}"></div>
+                    <div class="swatch" style="background:${adjustColor(s2)}"></div>
+                    <div class="swatch" style="background:${adjustColor(s3)}"></div>
                     <div class="swatch" style="background:${t.accent}"></div>
                 </div>
                 <span class="theme-card-name">${t.name}</span>
@@ -478,7 +538,7 @@ class Minesweeper {
                 pressTimer = setTimeout(() => {
                     isPreviewing = true;
                     this.previewTheme(key);
-                    card.style.boxShadow = `0 0 0 3px ${THEMES[this.activeTheme].accent}`;
+                    card.style.boxShadow = `0 0 0 3px ${THEMES[key].accent}`;
                 }, 180);
             };
             const endPress = (wasClick) => {
@@ -508,8 +568,11 @@ class Minesweeper {
         const defs = FEAT_DEFS.filter(d => d.cat === tab);
         list.innerHTML = defs.map(d => {
             const done = !!(this.feats.completed && this.feats.completed[d.id]) || this._isFeatDone(d.id);
+            const iconSvg = done
+                ? (FEAT_ICONS_SVG[d.iconKey] || FEAT_ICONS_SVG.board)
+                : FEAT_ICONS_SVG.lock;
             return `<div class="feat-item ${done ? 'feat-done' : 'feat-locked'}">
-                <div class="feat-icon">${done ? d.icon : '🔒'}</div>
+                <div class="feat-icon">${iconSvg}</div>
                 <div class="feat-text">
                     <span class="feat-name">${d.name}</span>
                     <span class="feat-desc">${d.desc}</span>
@@ -519,22 +582,31 @@ class Minesweeper {
     }
 
     /* ══ LEVEL / POINTS ════════════════════════════════════════ */
-    levelUpCost(level) { return 10 * Math.pow(2, level); }
+    /* Gradually scaling: starts at 100, increases smoothly */
+    levelUpCost(level) {
+        return Math.round(100 + level * 30 + level * level * 3);
+    }
     renderLevelBar() {
         const cost = this.levelUpCost(this.level);
-        const pct  = Math.min(1, this.points / cost);
+        const pct  = this.infiniteCoins ? 1 : Math.min(1, this.points / cost);
         document.getElementById('level-label').textContent = `LVL ${this.level}`;
         document.getElementById('xp-bar-fill').style.width = `${Math.round(pct * 100)}%`;
-        document.getElementById('xp-text').textContent     = `${this.points} / ${cost}`;
-        document.getElementById('upgrade-btn').classList.toggle('hidden', this.points < cost);
+        if (this.infiniteCoins) {
+            document.getElementById('xp-text').textContent = `∞ / ${cost}`;
+        } else {
+            document.getElementById('xp-text').textContent = `${this.points} / ${cost}`;
+        }
+        document.getElementById('upgrade-btn').classList.toggle('hidden',
+            this.infiniteCoins ? false : this.points < cost);
         const pd = document.getElementById('points-display');
         if (pd) pd.textContent = this.infiniteCoins ? '∞' : this.points.toLocaleString();
     }
     awardPoints(n) {
         const earned = n * 10;
-        if (!this.infiniteCoins) this.points += earned;
-        else this.points = 999999;
-        localStorage.setItem('ms_points', this.points);
+        if (!this.infiniteCoins) {
+            this.points += earned;
+            localStorage.setItem('ms_points', this.points);
+        }
         this.feats.totalEarned += earned;
         this._saveFeats();
         this.renderLevelBar();
@@ -546,6 +618,12 @@ class Minesweeper {
     loadSettings() {
         const dark = localStorage.getItem('darkMode') === 'true';
         if (dark) { document.body.classList.add('dark-mode'); document.getElementById('dark-mode-toggle').checked = true; }
+        const vol = parseFloat(localStorage.getItem('ms_sfx_volume') ?? '0.8');
+        this.sfx.sfxVolume = vol;
+        const slider = document.getElementById('sfx-volume-slider');
+        const display = document.getElementById('sfx-vol-display');
+        if (slider) slider.value = Math.round(vol * 100);
+        if (display) display.textContent = `${Math.round(vol * 100)}%`;
     }
 
     /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
@@ -622,7 +700,7 @@ class Minesweeper {
         return BOARD_CONFIGS[diff][boardIndex] || BOARD_CONFIGS.easy[0];
     }
 
-    renderCarousel() {
+    renderCarousel(slideDir) {
         const idx        = this.carouselIndex;
         const rs         = this.runState;
         const unlockedUp = rs ? rs.unlockedUpTo : 0;
@@ -646,6 +724,15 @@ class Minesweeper {
             </div>`;
         };
 
+        const wrapper = document.getElementById('carousel-wrapper');
+        /* Apply slide animation */
+        if (slideDir) {
+            wrapper.classList.remove('slide-next', 'slide-prev');
+            void wrapper.offsetWidth;
+            wrapper.classList.add(slideDir === 1 ? 'slide-next' : 'slide-prev');
+            setTimeout(() => wrapper.classList.remove('slide-next', 'slide-prev'), 350);
+        }
+
         document.getElementById('slot-left').innerHTML   = makeCard(idx - 1);
         document.getElementById('slot-center').innerHTML = makeCard(idx);
         document.getElementById('slot-right').innerHTML  = makeCard(idx + 1);
@@ -661,8 +748,10 @@ class Minesweeper {
         }).join('');
         dots.querySelectorAll('.carousel-dot').forEach(dot => {
             dot.addEventListener('click', () => {
-                this.carouselIndex = parseInt(dot.dataset.dot);
-                this.renderCarousel(); this.updateBoardCounters(); this.refreshMenuButtons();
+                const newIdx = parseInt(dot.dataset.dot);
+                const dir = newIdx > this.carouselIndex ? 1 : -1;
+                this.carouselIndex = newIdx;
+                this.renderCarousel(dir); this.updateBoardCounters(); this.refreshMenuButtons();
             });
         });
         this.updateBoardCounters();
@@ -686,7 +775,7 @@ class Minesweeper {
         const newIdx = this.carouselIndex + dir;
         if (newIdx < 0 || newIdx >= NUM_BOARDS) return;
         this.carouselIndex = newIdx;
-        this.renderCarousel();
+        this.renderCarousel(dir);
         this.refreshMenuButtons();
     }
 
@@ -777,6 +866,7 @@ class Minesweeper {
                 gb.style.transform = 'scale(1)';
                 this.zoomLevel = 1; this.scrollX = 0; this.scrollY = 0;
                 document.getElementById('zoom-level').textContent = '100%';
+                this.updateCellFontSize();
                 this.updateBoardPosition();
                 this.renderBoard(); this.renderSavedState(); this.updateDisplay();
                 this.bindGameEvents(); this.setupScrolling();
@@ -820,7 +910,6 @@ class Minesweeper {
                 if (this.board[i][j] === -1 && this.flagged[i][j]) correctFlags++;
         const earned = this.awardPoints(correctFlags);
 
-        /* feats tracking */
         this.feats.boardsCleared++;
         this.feats.currentConsecutive++;
         this.feats.bestConsecutive = Math.max(this.feats.bestConsecutive, this.feats.currentConsecutive);
@@ -1036,6 +1125,18 @@ class Minesweeper {
             this.sfx.play('btn');
         });
 
+        /* ── SFX VOLUME ── */
+        const volSlider = document.getElementById('sfx-volume-slider');
+        const volDisplay = document.getElementById('sfx-vol-display');
+        if (volSlider) {
+            volSlider.addEventListener('input', () => {
+                const v = parseInt(volSlider.value) / 100;
+                this.sfx.sfxVolume = v;
+                localStorage.setItem('ms_sfx_volume', v);
+                if (volDisplay) volDisplay.textContent = `${Math.round(v * 100)}%`;
+            });
+        }
+
         /* ── SAVE FILES ── */
         document.getElementById('save-file-open-btn').addEventListener('click', () => {
             this.saveCurrentToSlot(this.currentSlot);
@@ -1051,20 +1152,17 @@ class Minesweeper {
                 document.getElementById('saves-modal').classList.remove('show');
         });
 
-        /* ── REDEEM CODE ── */
-        document.getElementById('redeem-toggle-btn').addEventListener('click', () => {
-            const wrap = document.getElementById('redeem-input-wrap');
-            wrap.classList.toggle('hidden');
-            if (!wrap.classList.contains('hidden')) {
-                document.getElementById('redeem-input').focus();
-                document.getElementById('redeem-msg').classList.add('hidden');
-            }
-            this.sfx.play('btn');
-        });
-        document.getElementById('redeem-submit-btn').addEventListener('click', () => this._handleRedeem());
-        document.getElementById('redeem-input').addEventListener('keydown', e => {
-            if (e.key === 'Enter') this._handleRedeem();
-        });
+        /* ── REDEEM CODE (inline input) ── */
+        const redeemInput = document.getElementById('redeem-input');
+        const redeemApply = document.getElementById('redeem-apply-btn');
+        if (redeemInput) {
+            redeemInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') this._handleRedeem();
+            });
+        }
+        if (redeemApply) {
+            redeemApply.addEventListener('click', () => this._handleRedeem());
+        }
 
         /* ── PURCHASE / COMING SOON MODALS ── */
         document.getElementById('coming-soon-close-btn').addEventListener('click', () => {
@@ -1096,15 +1194,14 @@ class Minesweeper {
         msg.classList.remove('hidden', 'success', 'error');
         if (code === '123ABC') {
             this.infiniteCoins = true;
-            this.points = 999999;
             localStorage.setItem('ms_infinite_coins', 'true');
-            localStorage.setItem('ms_points', this.points);
             this.renderLevelBar();
             msg.textContent = '✓ Infinite coins activated!';
             msg.classList.add('success');
             input.value = '';
-            document.getElementById('redeem-input-wrap').classList.add('hidden');
             this.sfx.play('redeem');
+        } else if (code === '') {
+            msg.classList.add('hidden');
         } else {
             msg.textContent = '✗ Invalid code.';
             msg.classList.add('error');
@@ -1121,7 +1218,16 @@ class Minesweeper {
         const el = document.getElementById('zoom-level');
         el.textContent = Math.round(this.zoomLevel * 100) + '%';
         el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 140);
+        this.updateCellFontSize();
         this.clampScroll(); this.updateBoardPosition();
+    }
+
+    /* Scale cell font size inversely with zoom for readability */
+    updateCellFontSize() {
+        /* At zoom=1.0: 0.82rem; at zoom=0.5: ~1.06rem; at zoom=2.0: ~0.65rem */
+        const base = 0.82;
+        const scaled = Math.min(1.4, Math.max(0.5, base / Math.sqrt(this.zoomLevel)));
+        document.documentElement.style.setProperty('--cell-font-size', `${scaled.toFixed(3)}rem`);
     }
 
     /* ══ BOARD SCROLLING ═══════════════════════════════════════ */
@@ -1215,6 +1321,7 @@ class Minesweeper {
         gb.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
         gb.style.transform = 'scale(1)';
         document.getElementById('zoom-level').textContent = '100%';
+        this.updateCellFontSize();
         this.updateBoardPosition();
         document.getElementById('dig-btn').classList.add('active');
         document.getElementById('flag-btn').classList.remove('active');
@@ -1413,7 +1520,6 @@ class Minesweeper {
     endGame() {
         clearInterval(this.timerInterval); this.timerInterval = null;
         this.sfx.play('mine');
-        /* feats: break consecutive streak */
         this.feats.currentConsecutive = 0; this._saveFeats();
 
         let correctFlags = 0, delay = 0;

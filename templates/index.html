@@ -32,7 +32,7 @@
                     <div class="xp-bar-wrap">
                         <div class="xp-bar-fill" id="xp-bar-fill"></div>
                     </div>
-                    <span class="xp-text" id="xp-text">0 / 10</span>
+                    <span class="xp-text" id="xp-text">0 / 100</span>
                     <span class="points-badge" id="points-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:2px"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg><span id="points-display">0</span></span>
                 </div>
             </div>
@@ -124,15 +124,16 @@
                         <span class="stat-value num-font" id="time">000</span>
                     </div>
                 </div>
-                <div class="mode-toggle juicy-card">
-                    <button class="mode-btn juicy-btn active" id="dig-btn">DIG</button>
-                    <button class="mode-btn juicy-btn" id="flag-btn">FLG</button>
-                </div>
             </div>
             <div class="zoom-container" id="zoom-container">
                 <div class="board-wrapper" id="board-wrapper">
                     <div class="game-board" id="game-board"></div>
                 </div>
+            </div>
+            <!-- Mode toggle: bottom center, larger for thumb reach -->
+            <div class="mode-toggle-bottom" id="mode-toggle">
+                <button class="mode-btn juicy-btn active" id="dig-btn">DIG</button>
+                <button class="mode-btn juicy-btn" id="flag-btn">FLG</button>
             </div>
             <div class="game-controls">
                 <button class="back-btn juicy-btn" id="back-btn">MENU</button>
@@ -193,12 +194,16 @@
                     <span class="switch-slider"></span>
                 </label>
             </div>
+            <div class="sfx-slider-row">
+                <span class="sfx-slider-label">SFX Volume</span>
+                <input type="range" class="sfx-slider" id="sfx-volume-slider" min="0" max="100" value="80" step="1">
+                <span class="sfx-vol-value" id="sfx-vol-display">80%</span>
+            </div>
             <button class="save-file-open-btn juicy-btn" id="save-file-open-btn">Save Files</button>
             <div class="redeem-section">
-                <button class="redeem-toggle-btn juicy-btn" id="redeem-toggle-btn">Redeem Code</button>
-                <div class="redeem-input-wrap hidden" id="redeem-input-wrap">
-                    <input type="text" class="redeem-input" id="redeem-input" placeholder="Enter code..." maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
-                    <button class="redeem-submit-btn juicy-btn" id="redeem-submit-btn">Apply</button>
+                <div class="redeem-field-wrap">
+                    <input type="text" class="redeem-inline-input" id="redeem-input" placeholder="Redeem Code..." maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
+                    <button class="redeem-apply-btn" id="redeem-apply-btn">Apply</button>
                 </div>
                 <p class="redeem-msg hidden" id="redeem-msg"></p>
             </div>
@@ -239,6 +244,7 @@
                 <button class="tab-btn active" data-feats-tab="board">Boards</button>
                 <button class="tab-btn" data-feats-tab="score">Score</button>
                 <button class="tab-btn" data-feats-tab="level">Level</button>
+                <button class="tab-btn" data-feats-tab="collector">Collection</button>
             </div>
             <div class="feats-list" id="feats-list"></div>
             <button class="close-settings-btn juicy-btn" id="feats-close-btn">Close</button>
