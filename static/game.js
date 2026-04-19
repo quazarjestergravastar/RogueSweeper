@@ -157,23 +157,24 @@ class SoundEngine {
             const ctx = this._ctx(); if (!ctx) return;
             const t = ctx.currentTime;
             switch(sound) {
-                case 'dig':      this._tone(780,'sine',t,0.003,0.045,0.08); this._tone(1120,'triangle',t+0.018,0.002,0.04,0.035); break;
-                case 'reveal':   this._tone(380,'sine',t,0.002,0.035,0.06); break;
-                case 'flag':     this._tone(540,'triangle',t,0.004,0.075,0.07); this._tone(980,'sine',t+0.035,0.003,0.06,0.05); this._tone(740,'square',t+0.07,0.002,0.045,0.025); break;
-                case 'unflag':   this._tone(420,'sine',t,0.004,0.07,0.07); break;
-                case 'mine':     this._noise(0.36,0.32); this._tone(120,'sawtooth',t,0.004,0.32,0.12); break;
-                case 'btn':      this._tone(460,'sine',t,0.003,0.045,0.06); break;
-                case 'complete': [392,523,659,784].forEach((f,i) => this._tone(f,'triangle',t+i*0.075,0.012,0.22,0.1)); this._tone(1047,'sine',t+0.28,0.006,0.24,0.08); break;
-                case 'lvlup':    [523,659,784,1047].forEach((f,i) => this._tone(f,'triangle',t+i*0.07,0.012,0.2,0.11)); break;
-                case 'purchase': this._tone(784,'triangle',t,0.004,0.1,0.08); this._tone(1047,'sine',t+0.05,0.004,0.14,0.08); this._tone(1568,'sine',t+0.12,0.003,0.18,0.07); break;
-                case 'error':    this._tone(180,'sawtooth',t,0.005,0.14,0.08); break;
+                case 'dig':      this._tone(820,'sine',t,0.003,0.042,0.09); this._tone(1160,'triangle',t+0.016,0.002,0.038,0.04); break;
+                case 'reveal':   this._tone(440,'sine',t,0.002,0.025,0.055); this._tone(660,'sine',t+0.012,0.001,0.022,0.03); break;
+                case 'flag':     this._tone(600,'triangle',t,0.004,0.068,0.08); this._tone(1020,'sine',t+0.032,0.003,0.058,0.06); this._tone(800,'square',t+0.066,0.002,0.04,0.028); this._tone(1400,'sine',t+0.09,0.001,0.03,0.018); break;
+                case 'unflag':   this._tone(400,'sine',t,0.004,0.065,0.07); this._tone(280,'triangle',t+0.03,0.003,0.06,0.04); break;
+                case 'mine':     this._noise(0.42,0.36); this._tone(110,'sawtooth',t,0.003,0.36,0.14); this._tone(180,'sawtooth',t+0.04,0.003,0.28,0.10); break;
+                case 'btn':      this._tone(480,'sine',t,0.003,0.040,0.06); break;
+                case 'complete': [392,523,659,784,1047].forEach((f,i) => this._tone(f,'triangle',t+i*0.07,0.012,0.22,0.1)); this._tone(1568,'sine',t+0.33,0.006,0.28,0.08); this._tone(1047,'sine',t+0.38,0.004,0.22,0.07); break;
+                case 'lvlup':    [523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.19,0.11)); break;
+                case 'purchase': this._tone(880,'triangle',t,0.004,0.095,0.09); this._tone(1100,'sine',t+0.048,0.004,0.13,0.09); this._tone(1650,'sine',t+0.11,0.003,0.19,0.08); this._tone(1047,'triangle',t+0.18,0.003,0.14,0.07); break;
+                case 'error':    this._tone(160,'sawtooth',t,0.005,0.15,0.09); this._tone(120,'sawtooth',t+0.07,0.004,0.14,0.07); break;
                 case 'redeem':   this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.08,0.004,0.12,0.09); this._tone(1320,'sine',t+0.16,0.004,0.18,0.1); break;
-                case 'modal':    this._tone(520,'sine',t,0.004,0.08,0.07); break;
-                case 'tab':      this._tone(600,'sine',t,0.003,0.05,0.06); break;
-                case 'rankup':   this._tone(880,'sine',t,0.005,0.09,0.12); this._tone(1100,'sine',t+0.08,0.004,0.14,0.10); break;
-                case 'quickdig': this._tone(1200,'sine',t,0.003,0.04,0.09); this._tone(960,'triangle',t+0.03,0.003,0.07,0.07); break;
-                case 'ultrakill':this._noise(0.15); this._tone(220,'sawtooth',t,0.002,0.25,0.18); break;
-                case 'runover':  this._noise(0.22,0.18); this._tone(260,'triangle',t,0.006,0.18,0.08); this._tone(180,'sine',t+0.12,0.006,0.22,0.06); break;
+                case 'modal':    this._tone(540,'sine',t,0.004,0.075,0.07); this._tone(680,'sine',t+0.035,0.003,0.065,0.05); break;
+                case 'tab':      this._tone(620,'sine',t,0.003,0.048,0.058); this._tone(780,'sine',t+0.02,0.002,0.038,0.04); break;
+                case 'rankup':   this._tone(880,'sine',t,0.005,0.085,0.13); this._tone(1100,'sine',t+0.075,0.004,0.13,0.11); this._tone(1320,'triangle',t+0.15,0.003,0.16,0.09); break;
+                case 'quickdig': this._tone(1260,'sine',t,0.003,0.038,0.092); this._tone(1000,'triangle',t+0.028,0.003,0.065,0.075); this._tone(1500,'sine',t+0.052,0.002,0.04,0.04); break;
+                case 'ultrakill':this._noise(0.18,0.28); this._tone(200,'sawtooth',t,0.002,0.28,0.20); this._tone(140,'sawtooth',t+0.06,0.003,0.22,0.14); break;
+                case 'runover':  this._noise(0.28,0.22); this._tone(240,'triangle',t,0.005,0.20,0.09); this._tone(160,'sine',t+0.10,0.006,0.26,0.07); this._tone(110,'sawtooth',t+0.22,0.004,0.22,0.06); break;
+                case 'boardwin': [392,523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.28,0.11)); this._tone(1568,'sine',t+0.38,0.006,0.35,0.09); this._tone(2093,'sine',t+0.48,0.005,0.30,0.09); break;
             }
         } catch(e) {}
     }
@@ -452,7 +453,6 @@ class Minesweeper {
         if (this.infiniteCoins) document.body.classList.add('dev-mode');
         this.loadSettings();
         this.loadTexts();
-        setInterval(() => this.loadTexts(), 1500);
         this.bindMenuEvents();
         this.renderDifficultyGrid();
         this.renderLevelBar();
@@ -1076,7 +1076,9 @@ class Minesweeper {
             const rankLetter = rs && rs.boardRanks && rs.boardRanks[boardIdx];
             const rankColor  = rankLetter ? RANK_COLORS[rankLetter] : '';
             const bandColor = isRecent && rankColor ? rankColor : (isC ? '#4CAF50' : (isU ? diffColor : '#bbb'));
-            return `<div class="board-card ${lockedCls}${isRecent?' is-most-recent':''}" style="${isRecent && rankColor ? `border-color:${rankColor};--recent-rank-color:${rankColor}` : ''}">
+            const tintBg = isC && rankColor ? `background: color-mix(in srgb, var(--card) 86%, ${rankColor} 14%);` : '';
+            const borderStyle = isRecent && rankColor ? `border-color:${rankColor};--recent-rank-color:${rankColor};` : '';
+            return `<div class="board-card ${lockedCls}${isRecent?' is-most-recent':''}" style="${tintBg}${borderStyle}">
                 <div class="card-band" style="background:${bandColor}">BOARD ${boardIdx+1}</div>
                 <div class="card-num num-font" style="color:${isU?diffColor:'#aaa'}">${boardIdx+1}</div>
                 <div class="card-dims" style="color:${isU?'':'var(--text-muted)'}">
@@ -1110,7 +1112,6 @@ class Minesweeper {
         dots.querySelectorAll('.carousel-dot').forEach(dot => {
             dot.addEventListener('click', () => {
                 const ni = parseInt(dot.dataset.dot);
-                if (this.runState && ni !== this.runState.currentBoard) return;
                 const dir = ni > this.carouselIndex ? 1 : -1;
                 this.carouselIndex = ni;
                 this.renderCarousel(dir); this.updateBoardCounters(); this.refreshMenuButtons();
@@ -1132,7 +1133,6 @@ class Minesweeper {
     }
 
     navigateCarousel(dir) {
-        if (this.runState) return;
         const ni = this.carouselIndex + dir;
         if (ni < 0 || ni >= NUM_BOARDS) return;
         this.carouselIndex = ni;
@@ -1278,6 +1278,7 @@ class Minesweeper {
         if (isLast) {
             this.carouselIndex = 0;
             this._clearRunState(); this.runState = null;
+            this.sfx.play('boardwin');
             document.getElementById('bf-title').textContent   = this.t('runComplete','Run Complete!');
             document.getElementById('bf-message').textContent = this.t('allBoardsCleared','All 8 boards cleared!');
             document.getElementById('bf-points').textContent  = earned > 0 ? `+${earned} pts` : '';
@@ -1373,20 +1374,10 @@ class Minesweeper {
             document.getElementById('store-panel-themes').classList.add('active');
             this.renderStoreThemes();
             document.getElementById('store-modal').classList.add('show');
+            if (this._updateStoreArrows) this._updateStoreArrows();
         });
         document.getElementById('store-close-btn').addEventListener('click', () => { document.getElementById('store-modal').classList.remove('show'); this.revertPreview(); this.sfx.play('btn'); });
         document.getElementById('store-modal').addEventListener('click', e => { if (e.target===document.getElementById('store-modal')) { document.getElementById('store-modal').classList.remove('show'); this.revertPreview(); } });
-        document.querySelectorAll('#store-tab-bar .tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.storeTab; this.sfx.play('tab');
-                if (tab==='cs1'||tab==='cs2') { document.getElementById('coming-soon-modal').classList.add('show'); return; }
-                this.storeTab = tab;
-                document.querySelectorAll('#store-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.storeTab===tab));
-                document.querySelectorAll('#store-modal .tab-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(`store-panel-${tab}`).classList.add('active');
-                if (tab==='themes') this.renderStoreThemes();
-            });
-        });
 
         /* Feats */
         document.getElementById('feats-btn').addEventListener('click', () => {
@@ -1397,6 +1388,7 @@ class Minesweeper {
             document.getElementById('feats-modal').classList.add('show');
             this._updateTabDots();
             this.updateFeatsTabProgress('board');
+            if (this._updateFeatsArrows) this._updateFeatsArrows();
         });
         document.getElementById('feats-btn').addEventListener('contextmenu', e => {
             e.preventDefault();
@@ -1405,15 +1397,6 @@ class Minesweeper {
         });
         document.getElementById('feats-close-btn').addEventListener('click', () => { document.getElementById('feats-modal').classList.remove('show'); this.sfx.play('btn'); });
         document.getElementById('feats-modal').addEventListener('click', e => { if (e.target===document.getElementById('feats-modal')) document.getElementById('feats-modal').classList.remove('show'); });
-        document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.featsTab; this.sfx.play('tab');
-                this.featsTab = tab;
-                document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab===tab));
-                this.renderFeatsPanel(tab);
-                this.updateFeatsTabProgress(tab);
-            });
-        });
 
         /* Board Finished Modal */
         document.getElementById('bf-continue-btn').addEventListener('click', () => this.startNextBoard());
@@ -1426,8 +1409,21 @@ class Minesweeper {
             this._clearRunState(); this.runState = null; this.showMenu();
         });
         document.getElementById('restart-btn').addEventListener('click', () => {
+            const prevDiff = this.currentDifficulty || 'normal';
             document.getElementById('game-over-modal').classList.remove('show');
-            this._clearRunState(); this.runState = null; this.showMenu();
+            this._clearRunState(); this.runState = null;
+            this.currentDifficulty = prevDiff;
+            this.carouselIndex = 0;
+            this.runStyleScore = 0; this.boardStyleScore = 0;
+            this.runState = {
+                active: true, difficulty: prevDiff, currentBoard: 0,
+                unlockedUpTo: 0, paused: false, boardState: null, boardRanks: []
+            };
+            this._saveRunState();
+            const cfg = this.getBoardConfig(0);
+            this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
+            this.sfx.play('btn');
+            this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
         });
         this.bindHoldToHide('modal-hold-hide-btn', 'game-over-modal');
 
@@ -1494,6 +1490,73 @@ class Minesweeper {
 
         /* TING modal close */
         document.getElementById('ting-close-btn').addEventListener('click', () => { document.getElementById('ting-modal').classList.remove('show'); this.sfx.play('btn'); });
+
+        /* ── Feats tab arrow navigation ── */
+        const _featsTabs = ['board','score','level','collector','original'];
+        const _featsPrev = document.getElementById('feats-tab-prev');
+        const _featsNext = document.getElementById('feats-tab-next');
+        const _updateFeatsArrows = () => {
+            const idx = _featsTabs.indexOf(this.featsTab);
+            if (_featsPrev) _featsPrev.classList.toggle('disabled', idx <= 0);
+            if (_featsNext) _featsNext.classList.toggle('disabled', idx >= _featsTabs.length - 1);
+        };
+        const _setFeatsTab = (tab) => {
+            this.featsTab = tab;
+            document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab === tab));
+            this.renderFeatsPanel(tab);
+            this.updateFeatsTabProgress(tab);
+            this._markFeatTabSeen(tab);
+            _updateFeatsArrows();
+            this.sfx.play('tab');
+        };
+        if (_featsPrev) _featsPrev.addEventListener('click', () => {
+            const idx = _featsTabs.indexOf(this.featsTab);
+            if (idx > 0) _setFeatsTab(_featsTabs[idx - 1]);
+        });
+        if (_featsNext) _featsNext.addEventListener('click', () => {
+            const idx = _featsTabs.indexOf(this.featsTab);
+            if (idx < _featsTabs.length - 1) _setFeatsTab(_featsTabs[idx + 1]);
+        });
+        /* Also wire tab button clicks through the same helper so arrows stay in sync */
+        document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => _setFeatsTab(btn.dataset.featsTab));
+        });
+        _updateFeatsArrows();
+        this._updateFeatsArrows = _updateFeatsArrows;
+
+        /* ── Store tab arrow navigation ── */
+        const _storeTabs = ['themes','cs1','cs2'];
+        const _storePrev = document.getElementById('store-tab-prev');
+        const _storeNext = document.getElementById('store-tab-next');
+        const _updateStoreArrows = () => {
+            const idx = _storeTabs.indexOf(this.storeTab);
+            if (_storePrev) _storePrev.classList.toggle('disabled', idx <= 0);
+            if (_storeNext) _storeNext.classList.toggle('disabled', idx >= _storeTabs.length - 1);
+        };
+        const _setStoreTab = (tab) => {
+            if (tab === 'cs1' || tab === 'cs2') { document.getElementById('coming-soon-modal').classList.add('show'); return; }
+            this.storeTab = tab;
+            document.querySelectorAll('#store-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.storeTab === tab));
+            document.querySelectorAll('#store-modal .tab-panel').forEach(p => p.classList.remove('active'));
+            const panel = document.getElementById(`store-panel-${tab}`);
+            if (panel) panel.classList.add('active');
+            if (tab === 'themes') this.renderStoreThemes();
+            _updateStoreArrows();
+            this.sfx.play('tab');
+        };
+        if (_storePrev) _storePrev.addEventListener('click', () => {
+            const idx = _storeTabs.indexOf(this.storeTab);
+            if (idx > 0) _setStoreTab(_storeTabs[idx - 1]);
+        });
+        if (_storeNext) _storeNext.addEventListener('click', () => {
+            const idx = _storeTabs.indexOf(this.storeTab);
+            if (idx < _storeTabs.length - 1) _setStoreTab(_storeTabs[idx + 1]);
+        });
+        document.querySelectorAll('#store-tab-bar .tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => _setStoreTab(btn.dataset.storeTab));
+        });
+        _updateStoreArrows();
+        this._updateStoreArrows = _updateStoreArrows;
     }
 
     _handleFunCode() {
@@ -1567,15 +1630,33 @@ class Minesweeper {
 
     /* ══ ZOOM ══════════════════════════════════════════════════ */
     zoom(delta) {
-        const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoomLevel + delta));
-        if (newZoom === this.zoomLevel) return;
-        this.zoomLevel = newZoom;
-        document.getElementById('game-board').style.transform = `scale(${this.zoomLevel})`;
+        const target = Math.min(this.maxZoom, Math.max(this.minZoom, (this._zoomTarget !== undefined ? this._zoomTarget : this.zoomLevel) + delta));
+        if (target === this._zoomTarget) return;
+        this._zoomTarget = target;
         const el = document.getElementById('zoom-level');
-        el.textContent = Math.round(this.zoomLevel * 100) + '%';
-        el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 140);
-        this.updateCellFontSize();
-        this.clampScroll(); this.updateBoardPosition();
+        if (el) { el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 140); }
+        if (!this._zoomAnimating) this._animateZoom();
+    }
+
+    _animateZoom() {
+        this._zoomAnimating = true;
+        const step = () => {
+            const diff = this._zoomTarget - this.zoomLevel;
+            if (Math.abs(diff) < 0.003) {
+                this.zoomLevel = this._zoomTarget;
+                this._zoomAnimating = false;
+            } else {
+                this.zoomLevel += diff * 0.18;
+                this._zoomFrame = requestAnimationFrame(step);
+            }
+            const board = document.getElementById('game-board');
+            if (board) board.style.transform = `scale(${this.zoomLevel})`;
+            const el = document.getElementById('zoom-level');
+            if (el) el.textContent = Math.round(this.zoomLevel * 100) + '%';
+            this.updateCellFontSize();
+            this.clampScroll(); this.updateBoardPosition();
+        };
+        step();
     }
     updateCellFontSize() {
         const scaled = Math.min(1.4, Math.max(0.5, 0.82 / Math.sqrt(this.zoomLevel)));
@@ -1652,7 +1733,7 @@ class Minesweeper {
         this.board=[]; this.revealed=[]; this.flagged=[];
         this.gameOver=false; this.firstClick=true;
         this.timer=0; this.mode='dig'; this.circleMode=false;
-        this.scrollX=0; this.scrollY=0; this.zoomLevel=1;
+        this.scrollX=0; this.scrollY=0; this.zoomLevel=1; this._zoomTarget=1; this._zoomAnimating=false;
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval=null; }
 
         for (let i=0; i<this.rows; i++) {

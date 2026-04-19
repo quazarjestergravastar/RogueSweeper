@@ -132,12 +132,13 @@
                 </div>
             </div>
 
+            <!-- Style meter: compact square HUD -->
             <div class="style-meter hidden" id="style-meter">
-                <svg class="sm-ring-svg" viewBox="0 0 104 50" aria-hidden="true">
-                    <rect class="sm-ring-bg" x="4" y="4" width="96" height="42" rx="17"/>
-                    <rect class="sm-ring-fill" id="sm-ring-fill" x="4" y="4" width="96" height="42" rx="17" pathLength="1"/>
-                </svg>
                 <div class="sm-rank-wrap" id="sm-rank-wrap">
+                    <svg class="sm-ring-svg" viewBox="0 0 58 58" aria-hidden="true">
+                        <rect class="sm-ring-bg" x="3" y="3" width="52" height="52" rx="15"/>
+                        <rect class="sm-ring-fill" id="sm-ring-fill" x="3" y="3" width="52" height="52" rx="15" pathLength="1"/>
+                    </svg>
                     <div class="sm-rank-label" id="sm-rank-letter">D</div>
                 </div>
                 <div class="sm-score-box">
@@ -261,10 +262,14 @@
     <div class="modal-overlay" id="store-modal">
         <div class="modal-content juicy-card store-modal-content">
             <h2 data-text="store">Store</h2>
-            <div class="modal-tab-bar" id="store-tab-bar">
-                <button class="tab-btn active" data-store-tab="themes" data-text="themes">Themes</button>
-                <button class="tab-btn" data-store-tab="cs1">???</button>
-                <button class="tab-btn" data-store-tab="cs2">???</button>
+            <div class="tab-nav-container" id="store-tab-nav">
+                <button class="tab-nav-arrow tab-nav-prev juicy-btn" id="store-tab-prev" aria-label="Previous tab">&#8249;</button>
+                <div class="modal-tab-bar" id="store-tab-bar">
+                    <button class="tab-btn active" data-store-tab="themes" data-text="themes">Themes</button>
+                    <button class="tab-btn" data-store-tab="cs1">???</button>
+                    <button class="tab-btn" data-store-tab="cs2">???</button>
+                </div>
+                <button class="tab-nav-arrow tab-nav-next juicy-btn" id="store-tab-next" aria-label="Next tab">&#8250;</button>
             </div>
             <div class="tab-panel active" id="store-panel-themes"></div>
             <div class="tab-panel" id="store-panel-cs1"></div>
@@ -277,14 +282,17 @@
     <div class="modal-overlay" id="feats-modal">
         <div class="modal-content juicy-card feats-modal-content">
             <h2 data-text="feats">Feats</h2>
-            <div class="modal-tab-bar" id="feats-tab-bar">
-                <button class="tab-btn active" data-feats-tab="board" data-text="boards">Boards</button>
-                <button class="tab-btn" data-feats-tab="score" data-text="score">Score</button>
-                <button class="tab-btn" data-feats-tab="level" data-text="level">Level</button>
-                <button class="tab-btn" data-feats-tab="collector" data-text="collection">Collection</button>
-                <button class="tab-btn" data-feats-tab="original" id="original-tab-btn" data-text="secrets">Secrets</button>
+            <div class="tab-nav-container" id="feats-tab-nav">
+                <button class="tab-nav-arrow tab-nav-prev juicy-btn" id="feats-tab-prev" aria-label="Previous tab">&#8249;</button>
+                <div class="modal-tab-bar" id="feats-tab-bar">
+                    <button class="tab-btn active" data-feats-tab="board" data-text="boards">Boards</button>
+                    <button class="tab-btn" data-feats-tab="score" data-text="score">Score</button>
+                    <button class="tab-btn" data-feats-tab="level" data-text="level">Level</button>
+                    <button class="tab-btn" data-feats-tab="collector" data-text="collection">Collection</button>
+                    <button class="tab-btn" data-feats-tab="original" id="original-tab-btn" data-text="secrets">Secrets</button>
+                </div>
+                <button class="tab-nav-arrow tab-nav-next juicy-btn" id="feats-tab-next" aria-label="Next tab">&#8250;</button>
             </div>
-            <div class="feats-tab-progress" id="feats-tab-progress" data-side="right"></div>
             <div class="feats-list" id="feats-list"></div>
             <button class="close-settings-btn juicy-btn" id="feats-close-btn" data-text="close">Close</button>
         </div>
