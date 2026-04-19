@@ -20,15 +20,15 @@
 
             <div class="title-section">
                 <div class="title-block">
-                    <h1 class="game-title">RogueSweeper</h1>
-                    <p class="game-subtitle">MineSweeper Gone Rogue</p>
+                    <h1 class="game-title" data-text="title">RogueSweeper</h1>
+                    <p class="game-subtitle" data-text="subtitle">MineSweeper Gone Rogue</p>
                 </div>
                 <button class="settings-icon-btn juicy-btn" id="settings-open-btn" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
             </div>
 
             <div class="level-section juicy-card" id="level-section">
                 <div class="level-row">
-                    <button class="upgrade-btn juicy-btn hidden" id="upgrade-btn">LEVEL UP</button>
+                    <button class="upgrade-btn juicy-btn hidden" id="upgrade-btn" data-text="levelUp">LEVEL UP</button>
                     <span class="level-label" id="level-label">LVL 0</span>
                     <div class="xp-bar-wrap">
                         <div class="xp-bar-fill" id="xp-bar-fill"></div>
@@ -41,15 +41,15 @@
             <div class="difficulty-grid juicy-card" id="difficulty-grid">
                 <div class="diff-box" id="diff-easy">
                     <div class="diff-icon-wrap easy-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,4 22,20 2,20"/></svg></div>
-                    <span class="diff-name">Easy</span>
+                    <span class="diff-name" data-text="easy">Easy</span>
                 </div>
                 <div class="diff-box" id="diff-normal">
                     <div class="diff-icon-wrap normal-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/></svg></div>
-                    <span class="diff-name">Normal</span>
+                    <span class="diff-name" data-text="normal">Normal</span>
                 </div>
                 <div class="diff-box diff-locked" id="diff-hard">
                     <div class="diff-icon-wrap hard-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 22,12 12,22 2,12"/></svg></div>
-                    <span class="diff-name">Hard</span>
+                    <span class="diff-name" data-text="hard">Hard</span>
                 </div>
                 <div class="diff-box diff-soon" id="diff-cs1">
                     <div class="diff-icon-wrap soon-wrap">?</div>
@@ -67,7 +67,7 @@
 
             <div class="board-carousel-section juicy-card" id="board-carousel-section">
                 <div class="carousel-header">
-                    <span class="carousel-label">BOARDS</span>
+                    <span class="carousel-label" data-text="boards">BOARDS</span>
                     <span class="carousel-counter" id="carousel-counter">1 / 8</span>
                 </div>
                 <div class="carousel-wrapper" id="carousel-wrapper">
@@ -90,20 +90,20 @@
                 </div>
                 <div class="counter-divider"></div>
                 <div class="counter-item">
-                    <span class="counter-label">MINES</span>
+                    <span class="counter-label" data-text="mines">MINES</span>
                     <span class="counter-value num-font" id="mines-value">—</span>
                 </div>
             </div>
 
             <div class="play-row" id="play-row">
-                <button class="play-btn juicy-btn hidden" id="play-btn">START</button>
-                <button class="continue-btn juicy-btn hidden" id="continue-btn">CONTINUE</button>
-                <button class="abort-btn juicy-btn hidden" id="abort-btn">ABORT</button>
+                <button class="play-btn juicy-btn hidden" id="play-btn" data-text="start">START</button>
+                <button class="continue-btn juicy-btn hidden" id="continue-btn" data-text="continue">CONTINUE</button>
+                <button class="abort-btn juicy-btn hidden" id="abort-btn" data-text="abort">ABORT</button>
             </div>
 
             <div class="extras-row">
-                <button class="extra-btn juicy-btn" id="store-btn">STORE</button>
-                <button class="feats-btn juicy-btn" id="feats-btn">FEATS <span class="notif-dot hidden" id="feats-notif-dot"></span></button>
+                <button class="extra-btn juicy-btn" id="store-btn" data-text="store">STORE</button>
+                <button class="feats-btn juicy-btn" id="feats-btn"><span data-text="feats">FEATS</span> <span class="notif-dot hidden" id="feats-notif-dot"></span></button>
             </div>
 
         </div>
@@ -113,15 +113,15 @@
             <div class="header">
                 <div class="stats-panel juicy-card">
                     <div class="stat">
-                        <span class="stat-label">MINES</span>
+                        <span class="stat-label" data-text="mines">MINES</span>
                         <span class="stat-value num-font" id="remaining">0</span>
                     </div>
                     <div class="stat board-stat">
-                        <span class="stat-label">BOARD</span>
+                        <span class="stat-label" data-text="board">BOARD</span>
                         <span class="stat-value num-font" id="board-indicator">1/8</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-label">TIME</span>
+                        <span class="stat-label" data-text="time">TIME</span>
                         <span class="stat-value num-font" id="time">000</span>
                     </div>
                 </div>
@@ -132,28 +132,27 @@
                 </div>
             </div>
 
-            <!-- Style Meter: bottom-left -->
             <div class="style-meter hidden" id="style-meter">
-                <svg class="sm-ring-svg" viewBox="0 0 118 54" aria-hidden="true">
-                    <rect class="sm-ring-bg" x="4" y="4" width="110" height="46" rx="18"/>
-                    <rect class="sm-ring-fill" id="sm-ring-fill" x="4" y="4" width="110" height="46" rx="18" pathLength="1"/>
+                <svg class="sm-ring-svg" viewBox="0 0 104 50" aria-hidden="true">
+                    <rect class="sm-ring-bg" x="4" y="4" width="96" height="42" rx="17"/>
+                    <rect class="sm-ring-fill" id="sm-ring-fill" x="4" y="4" width="96" height="42" rx="17" pathLength="1"/>
                 </svg>
                 <div class="sm-rank-wrap" id="sm-rank-wrap">
                     <div class="sm-rank-label" id="sm-rank-letter">D</div>
                 </div>
                 <div class="sm-score-box">
-                    <span class="sm-score-caption">STYLE</span>
+                    <span class="sm-score-caption" data-text="style">STYLE</span>
                     <div class="sm-score num-font" id="sm-score">0</div>
                 </div>
             </div>
 
             <!-- Mode toggle: bottom center -->
             <div class="mode-toggle-bottom" id="mode-toggle">
-                <button class="mode-btn juicy-btn active" id="dig-btn">DIG</button>
-                <button class="mode-btn juicy-btn" id="flag-btn">FLG</button>
+                <button class="mode-btn juicy-btn active" id="dig-btn" data-text="dig">DIG</button>
+                <button class="mode-btn juicy-btn" id="flag-btn" data-text="flagShort">FLG</button>
             </div>
             <div class="game-controls">
-                <button class="back-btn juicy-btn" id="back-btn">MENU</button>
+                <button class="back-btn juicy-btn" id="back-btn" data-text="menu">MENU</button>
                 <div class="zoom-controls juicy-card">
                     <button class="zoom-btn juicy-btn" id="zoom-out">-</button>
                     <span class="zoom-level num-font" id="zoom-level">100%</span>
@@ -166,32 +165,41 @@
     <!-- ── GAME OVER MODAL ── -->
     <div class="modal-overlay" id="game-over-modal">
         <div class="modal-content juicy-card">
-            <button class="modal-hide-btn juicy-btn" id="modal-hide-btn" title="Hide"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-            <h2 id="modal-title">Run Over</h2>
+            <button class="hold-hide-btn juicy-btn" id="modal-hold-hide-btn" data-text="holdToPeek">HOLD TO PEEK</button>
+            <h2 id="modal-title" data-text="runOver">Run Over</h2>
             <p id="modal-message"></p>
             <p class="points-earned" id="points-earned"></p>
+            <div class="result-feedback">
+                <div class="bf-rank-badge compact" id="go-rank-badge">
+                    <span id="go-rank-badge-letter">D</span>
+                    <small data-text="styleRank">STYLE RANK</small>
+                </div>
+                <p class="bf-rank-line" id="go-rank-line"></p>
+            </div>
             <div class="modal-buttons">
-                <button class="restart-btn juicy-btn" id="restart-btn">New Run</button>
-                <button class="menu-link-btn juicy-btn" id="menu-btn">Menu</button>
+                <button class="restart-btn juicy-btn" id="restart-btn" data-text="newRun">New Run</button>
+                <button class="menu-link-btn juicy-btn" id="menu-btn" data-text="menu">Menu</button>
             </div>
         </div>
     </div>
-    <button class="modal-restore-btn juicy-btn hidden" id="modal-restore-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 2v20M6 2h11l-3.5 5L17 12H6"/></svg></button>
 
     <!-- ── BOARD FINISHED MODAL ── -->
     <div class="modal-overlay" id="board-finished-modal">
         <div class="modal-content juicy-card">
-            <h2 id="bf-title">Board Complete!</h2>
+            <button class="hold-hide-btn juicy-btn" id="bf-hold-hide-btn" data-text="holdToPeek">HOLD TO PEEK</button>
+            <h2 id="bf-title" data-text="boardComplete">Board Complete!</h2>
             <p id="bf-message"></p>
             <p class="points-earned" id="bf-points"></p>
-            <div class="bf-rank-badge" id="bf-rank-badge">
-                <span id="bf-rank-badge-letter">D</span>
-                <small>OVERALL RANK</small>
+            <div class="result-feedback">
+                <div class="bf-rank-badge" id="bf-rank-badge">
+                    <span id="bf-rank-badge-letter">D</span>
+                    <small data-text="overallRank">OVERALL RANK</small>
+                </div>
+                <p class="bf-rank-line" id="bf-rank-line"></p>
             </div>
-            <p class="bf-rank-line" id="bf-rank-line"></p>
             <div class="modal-buttons">
-                <button class="confirm-btn juicy-btn" id="bf-continue-btn">Continue</button>
-                <button class="menu-link-btn juicy-btn" id="bf-menu-btn">Menu</button>
+                <button class="confirm-btn juicy-btn" id="bf-continue-btn" data-text="continue">Continue</button>
+                <button class="menu-link-btn juicy-btn" id="bf-menu-btn" data-text="menu">Menu</button>
             </div>
         </div>
     </div>
@@ -208,80 +216,88 @@
     <!-- ── SETTINGS MODAL ── -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content juicy-card">
-            <h2>Settings</h2>
+            <h2 data-text="settings">Settings</h2>
             <div class="settings-row">
-                <span class="toggle-label">Dark Mode</span>
+                <span class="toggle-label" data-text="darkMode">Dark Mode</span>
                 <label class="switch">
                     <input type="checkbox" id="dark-mode-toggle">
                     <span class="switch-slider"></span>
                 </label>
             </div>
+            <div class="settings-row">
+                <span class="toggle-label" data-text="styleMeterRight">Style Meter Right</span>
+                <label class="switch">
+                    <input type="checkbox" id="style-meter-position-toggle">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
             <div class="sfx-slider-row">
-                <span class="sfx-slider-label">SFX Volume</span>
+                <span class="sfx-slider-label" data-text="sfxVolume">SFX Volume</span>
                 <input type="range" class="sfx-slider" id="sfx-volume-slider" min="0" max="100" value="80" step="1">
                 <span class="sfx-vol-value" id="sfx-vol-display">80%</span>
             </div>
-            <button class="save-file-open-btn juicy-btn" id="save-file-open-btn">Save Files</button>
+            <button class="save-file-open-btn juicy-btn" id="save-file-open-btn" data-text="saveFiles">Save Files</button>
             <div class="redeem-section">
                 <div class="redeem-field-wrap">
-                    <input type="text" class="redeem-inline-input" id="redeem-input" placeholder="Fun Code..." maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
-                    <button class="redeem-apply-btn" id="redeem-apply-btn">Apply</button>
+                    <input type="text" class="redeem-inline-input" id="redeem-input" placeholder="Fun Code..." data-placeholder="funCode" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
+                    <button class="redeem-apply-btn" id="redeem-apply-btn" data-text="apply">Apply</button>
                 </div>
                 <p class="redeem-msg hidden" id="redeem-msg"></p>
             </div>
-            <button class="close-settings-btn juicy-btn" id="settings-close-btn">Done</button>
+            <button class="close-settings-btn juicy-btn" id="settings-close-btn" data-text="done">Done</button>
         </div>
     </div>
 
     <!-- ── SAVES MODAL ── -->
     <div class="modal-overlay" id="saves-modal">
         <div class="modal-content juicy-card">
-            <h2>Save Files</h2>
+            <h2 data-text="saveFiles">Save Files</h2>
             <div class="save-slots" id="save-slots"></div>
-            <button class="close-settings-btn juicy-btn" id="saves-close-btn">Close</button>
+            <button class="close-settings-btn juicy-btn" id="saves-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── STORE MODAL ── -->
     <div class="modal-overlay" id="store-modal">
         <div class="modal-content juicy-card store-modal-content">
-            <h2>Store</h2>
+            <h2 data-text="store">Store</h2>
             <div class="modal-tab-bar" id="store-tab-bar">
-                <button class="tab-btn active" data-store-tab="themes">Themes</button>
+                <button class="tab-btn active" data-store-tab="themes" data-text="themes">Themes</button>
                 <button class="tab-btn" data-store-tab="cs1">???</button>
                 <button class="tab-btn" data-store-tab="cs2">???</button>
             </div>
             <div class="tab-panel active" id="store-panel-themes"></div>
             <div class="tab-panel" id="store-panel-cs1"></div>
             <div class="tab-panel" id="store-panel-cs2"></div>
-            <button class="close-settings-btn juicy-btn" id="store-close-btn">Close</button>
+            <button class="close-settings-btn juicy-btn" id="store-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── FEATS MODAL ── -->
     <div class="modal-overlay" id="feats-modal">
         <div class="modal-content juicy-card feats-modal-content">
-            <h2>Feats</h2>
+            <h2 data-text="feats">Feats</h2>
             <div class="modal-tab-bar" id="feats-tab-bar">
-                <button class="tab-btn active" data-feats-tab="board">Boards</button>
-                <button class="tab-btn" data-feats-tab="score">Score</button>
-                <button class="tab-btn" data-feats-tab="level">Level</button>
-                <button class="tab-btn" data-feats-tab="collector">Collection</button>
-                <button class="tab-btn" data-feats-tab="original" id="original-tab-btn">Secrets</button>
+                <button class="tab-btn active" data-feats-tab="board" data-text="boards">Boards</button>
+                <button class="tab-btn" data-feats-tab="score" data-text="score">Score</button>
+                <button class="tab-btn" data-feats-tab="level" data-text="level">Level</button>
+                <button class="tab-btn" data-feats-tab="collector" data-text="collection">Collection</button>
+                <button class="tab-btn" data-feats-tab="original" id="original-tab-btn" data-text="secrets">Secrets</button>
             </div>
+            <div class="feats-tab-progress" id="feats-tab-progress" data-side="right"></div>
             <div class="feats-list" id="feats-list"></div>
-            <button class="close-settings-btn juicy-btn" id="feats-close-btn">Close</button>
+            <button class="close-settings-btn juicy-btn" id="feats-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── PURCHASE CONFIRM MODAL ── -->
     <div class="modal-overlay" id="purchase-modal">
         <div class="modal-content juicy-card">
-            <h2 id="purchase-title">Purchase Theme</h2>
+            <h2 id="purchase-title" data-text="purchaseTheme">Purchase Theme</h2>
             <p id="purchase-body" style="color:var(--text2);margin:8px 0 18px;font-size:.88rem"></p>
             <div class="modal-buttons">
-                <button class="confirm-btn juicy-btn" id="purchase-confirm-btn">Buy</button>
-                <button class="menu-link-btn juicy-btn" id="purchase-cancel-btn">Cancel</button>
+                <button class="confirm-btn juicy-btn" id="purchase-confirm-btn" data-text="buy">Buy</button>
+                <button class="menu-link-btn juicy-btn" id="purchase-cancel-btn" data-text="cancel">Cancel</button>
             </div>
         </div>
     </div>
@@ -289,18 +305,18 @@
     <!-- ── COMING SOON MODAL ── -->
     <div class="modal-overlay coming-soon-overlay" id="coming-soon-modal">
         <div class="modal-content juicy-card">
-            <h2>Coming Soon</h2>
-            <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem">This content isn't available yet. Stay tuned!</p>
-            <button class="confirm-btn juicy-btn" id="coming-soon-close-btn">OK</button>
+            <h2 data-text="comingSoon">Coming Soon</h2>
+            <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem" data-text="comingSoonBody">This content isn't available yet. Stay tuned!</p>
+            <button class="confirm-btn juicy-btn" id="coming-soon-close-btn" data-text="ok">OK</button>
         </div>
     </div>
 
     <!-- ── TING MODAL (delayed, meta Easter egg) ── -->
     <div class="modal-overlay" id="ting-modal">
         <div class="modal-content juicy-card">
-            <h2 id="ting-title">There Is No Game</h2>
-            <p id="ting-body" style="color:var(--text2);margin:8px 0 18px;font-size:.88rem">There is no game, really?</p>
-            <button class="confirm-btn juicy-btn" id="ting-close-btn">I see.</button>
+            <h2 id="ting-title" data-text="tingTitle">There Is No Game</h2>
+            <p id="ting-body" style="color:var(--text2);margin:8px 0 18px;font-size:.88rem" data-text="tingBody">There is no game, really?</p>
+            <button class="confirm-btn juicy-btn" id="ting-close-btn" data-text="iSee">I see.</button>
         </div>
     </div>
 

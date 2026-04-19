@@ -10,7 +10,7 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 
 ### Menu
 - Title "RogueSweeper" with subtitle "MineSweeper Gone Rogue"
-- Settings button (gear icon, top-right) opens settings modal with dark-mode, SFX volume, save files, redeem code
+- Settings button (gear icon, top-right) opens settings modal with dark-mode, style meter position, SFX volume, save files, and fun code
 - Level / XP bar with LEVEL UP button (cost = 100 + level*30 + level²*3, smooth scaling from 100)
 - 2×3 Difficulty grid:
   - Easy (green triangle, always unlocked)
@@ -22,12 +22,12 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
   - Smooth slide-in animation on navigation
   - Board 1 always unlocked; subsequent boards unlock through run progression
   - Locked boards show "LOCKED" text and dimmed appearance
-  - Completed boards show green border
+  - Completed boards show visible rounded-square rank badges; most recently completed board is colored by its achieved rank
   - Card colors/band match selected difficulty
 - W / H / MINES counters (reflect carousel-selected board's config)
 - Play row (mutually exclusive states):
   - No run active: "START" button (greyed when locked board selected)
-  - Run paused: "CONTINUE" (green) + "ABORT" (red) buttons
+  - Active/paused run: "CONTINUE" (green) + "ABORT" (red) buttons; difficulty switching and replaying completed boards are blocked until the run ends
 - Store and Feats buttons (side by side)
 
 ### Roguelike Run System
@@ -38,6 +38,7 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 - Hitting a mine → "Run Over" popup, run state cleared
 - Returning to menu mid-run pauses the run (boardState saved); Continue/Abort shown on return
 - Abort clears run state and resets to board 1
+- Active runs are forward-only: completed boards cannot be replayed in the same run, and the selected difficulty remains locked until win/loss/abort
 
 ### BOARD_CONFIGS (progressive scaling per difficulty)
 - Easy: 8 boards scaling from 8×10/10mines to 12×14/30mines
@@ -47,6 +48,7 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 ### Game Screen
 - Header: MINES remaining | BOARD N/8 | TIME elapsed
 - DIG / FLG mode toggle: positioned at bottom center of screen above controls, large thumb-friendly buttons (72×48px)
+- Style meter: compact soft-card meter beneath the mines counter by default; settings can move it to the right side
 - Scrollable board (drag, with inertia; transform-origin: top left)
 - Asymmetric scroll clamp: scrollX/Y ∈ [-(overflow+pad), pad]
 - Zoom in/out buttons (50%–250%, 25% steps)
@@ -59,6 +61,8 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 - Long-press (400ms) performs opposite mode action
 - Right-click toggles flag
 - Correct flags earn 10pts each on run over
+- Board completion requires all non-mine tiles revealed and all required mine flags placed correctly
+- Placing the full mine count with any incorrect flag immediately loses the run
 
 ### Store
 - Themes tab with horizontally scrollable tab bar
@@ -80,6 +84,7 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 - Save Files button
 - Redeem Code: inline input + Apply button in single row (no toggle)
   - "123ABC" = true infinite coins (no point cap)
+  - "edgelord" unlocks the secret "it's just a phase" feat and free Black Theme
 
 ### Save System (3 slots)
 - Save slots show level bar (mini XP bar) instead of numeric level
@@ -87,7 +92,7 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 - ∞ display only shows when cheat is active for that save
 
 ### Themes
-- green, red, blue, yellow, purple
+- green, red, blue, yellow, purple, plus secret black
 - Themes affect: accent color, UI highlights, progress bars, particles
 - Dark mode uses JS-applied accent (no hardcoded green override in CSS)
 
@@ -102,8 +107,9 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 - Cell size fixed at 28×28px; font-size scales via `--cell-font-size` CSS var
 - Timer: `startTimer()` clears existing interval before starting (no double-counting)
 - Run state stored in `localStorage` as `ms_run_state` JSON
-- Other keys: `ms_points`, `ms_level`, `ms_hard_unlocked`, `darkMode`, `ms_infinite_coins`, `ms_sfx_volume`, `ms_save_slot`, `ms_save_0/1/2`
-- Win detection: `checkWin()` checks all non-mine cells are revealed
+- Other keys: `ms_points`, `ms_level`, `ms_hard_unlocked`, `darkMode`, `ms_infinite_coins`, `ms_sfx_volume`, `ms_style_meter_right`, `ms_save_slot`, `ms_save_0/1/2`
+- Win detection: `checkWin()` delegates to `isBoardSolved()` requiring safe tiles revealed plus correct full flagging
+- Editable UI copy is stored in `static/text.json` and reloaded in-game with no-cache polling
 - Game over (mine hit): reveals mines with staggered 35ms delay, wrong flags with 25ms delay
 
 ## Project Structure
@@ -114,6 +120,7 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 │   └── index.html       # Game HTML
 ├── static/
 │   ├── style.css        # CSS with variables for light/dark theme
+│   ├── text.json        # Live-editable UI text strings
 │   └── game.js          # All game logic (FloatingBackground + Minesweeper classes)
 ```
 
