@@ -132,6 +132,19 @@ python main.py
 
 ## Recent Changes
 
+- April 20, 2026: Major game update:
+  - **RPTS/PTS split**: Run Points (RPTS) are now strictly separate from main Points (PTS). Flag bonuses on mid-run boards go to RPTS; only flush on win/loss/abort
+  - **Loading screen**: Replaced spinning circle with rotating square card that cycles through mine icons + horizontal progress bar (ease-in fill)
+  - **Mine Market redesign**: Full-row layout (no gradients). Scratch card and Slot Machine now have separate BUY and USE buttons (purchase-gated flow). New MENU button pauses run (pausedInMarket state) and CONTINUE button at footer
+  - **Abort confirmation**: Clicking ABORT now shows a confirmation modal ("All RPTS will be lost") before actually aborting
+  - **Slot machine redesign**: Removed drag lever. New SPIN button starts all reels; STOP button stops reels left-to-right one at a time. Each reel starts at staggered offset to show different mines. Faster spin speed (28ms interval). Stop indicators appear per reel
+  - **Feat rename**: "ultrakill" feat renamed to "Progression is Dead" (desc: "Points are fuel / Boards are full")
+  - **Removed**: "There Is No Game" (ting) easter egg, ting modal, _triggerTING, _trackSaveSwitch
+  - **Store tabs**: Changed from Common/??? to Common/Uncommon (empty Uncommon tab)
+  - **Carousel indicators**: #mm-car-ind-l and #mm-car-ind-r highlight when paused in Mine Market
+  - **SFX overhaul**: All sounds remade with richer layered tones and improved dynamics
+  - **continueRun**: Now handles pausedInMarket flag — reopens Mine Market directly
+
 - April 18, 2026: Refined gameplay UI/state:
   - Board completion now requires placing all mine flags; correct full flagging clears the board, incorrect full flagging loses the run
   - Style meter made smaller and aligned with the dig/flag control row

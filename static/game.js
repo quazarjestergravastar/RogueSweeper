@@ -154,8 +154,7 @@ const FEAT_DEFS = [
     { id:'all_level_done', cat:'collector', name:'Level Completionist',desc:'Complete all level feats',                iconKey:'meta' },
     { id:'circle_board',   cat:'original',  name:'Geometric Shift',   desc:'Transform the board into a circle',       iconKey:'circle',  secret:true },
     { id:'score_69',       cat:'original',  name:'Nice.',             desc:'Score exactly 69 style in one action',    iconKey:'score_hi',secret:true },
-    { id:'ultrakill',      cat:'original',  name:"AIN'T SEEN NOTHIN'",desc:'Discover the hidden ULTRAKILL Easter egg', iconKey:'secret',  secret:true },
-    { id:'ting',           cat:'original',  name:'There Is No Game', desc:'Find the meta-event',                      iconKey:'secret',  secret:true },
+    { id:'ultrakill',      cat:'original',  name:'Progression is Dead', desc:'Points are fuel\nBoards are full',      iconKey:'secret',  secret:true },
     { id:'edgelord_phase', cat:'original',  name:"it's just a phase", desc:'Unlock the black theme',                  iconKey:'secret',  secret:true },
 ];
 
@@ -199,31 +198,126 @@ class SoundEngine {
             const ctx = this._ctx(); if (!ctx) return;
             const t = ctx.currentTime;
             switch(sound) {
-                case 'dig':       this._tone(820,'sine',t,0.003,0.042,0.09); this._tone(1160,'triangle',t+0.016,0.002,0.038,0.04); break;
-                case 'reveal':    this._tone(440,'sine',t,0.002,0.025,0.055); this._tone(660,'sine',t+0.012,0.001,0.022,0.03); break;
-                case 'flag':      this._tone(600,'triangle',t,0.004,0.068,0.08); this._tone(1020,'sine',t+0.032,0.003,0.058,0.06); this._tone(800,'square',t+0.066,0.002,0.04,0.028); this._tone(1400,'sine',t+0.09,0.001,0.03,0.018); break;
-                case 'unflag':    this._tone(400,'sine',t,0.004,0.065,0.07); this._tone(280,'triangle',t+0.03,0.003,0.06,0.04); break;
-                case 'mine':      this._noise(0.42,0.36); this._tone(110,'sawtooth',t,0.003,0.36,0.14); this._tone(180,'sawtooth',t+0.04,0.003,0.28,0.10); break;
-                case 'btn':       this._tone(480,'sine',t,0.003,0.040,0.06); break;
-                case 'complete':  [392,523,659,784,1047].forEach((f,i) => this._tone(f,'triangle',t+i*0.07,0.012,0.22,0.1)); this._tone(1568,'sine',t+0.33,0.006,0.28,0.08); this._tone(1047,'sine',t+0.38,0.004,0.22,0.07); break;
-                case 'lvlup':     [523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.19,0.11)); break;
-                case 'purchase':  this._tone(880,'triangle',t,0.004,0.095,0.09); this._tone(1100,'sine',t+0.048,0.004,0.13,0.09); this._tone(1650,'sine',t+0.11,0.003,0.19,0.08); this._tone(1047,'triangle',t+0.18,0.003,0.14,0.07); break;
-                case 'error':     this._tone(160,'sawtooth',t,0.005,0.15,0.09); this._tone(120,'sawtooth',t+0.07,0.004,0.14,0.07); break;
-                case 'redeem':    this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.08,0.004,0.12,0.09); this._tone(1320,'sine',t+0.16,0.004,0.18,0.1); break;
-                case 'modal':     this._tone(540,'sine',t,0.004,0.075,0.07); this._tone(680,'sine',t+0.035,0.003,0.065,0.05); break;
-                case 'tab':       this._tone(620,'sine',t,0.003,0.048,0.058); this._tone(780,'sine',t+0.02,0.002,0.038,0.04); break;
-                case 'rankup':    this._tone(880,'sine',t,0.005,0.085,0.13); this._tone(1100,'sine',t+0.075,0.004,0.13,0.11); this._tone(1320,'triangle',t+0.15,0.003,0.16,0.09); break;
-                case 'quickdig':  this._tone(1260,'sine',t,0.003,0.038,0.092); this._tone(1000,'triangle',t+0.028,0.003,0.065,0.075); this._tone(1500,'sine',t+0.052,0.002,0.04,0.04); break;
-                case 'ultrakill': this._noise(0.18,0.28); this._tone(200,'sawtooth',t,0.002,0.28,0.20); this._tone(140,'sawtooth',t+0.06,0.003,0.22,0.14); break;
-                case 'runover':   this._noise(0.28,0.22); this._tone(240,'triangle',t,0.005,0.20,0.09); this._tone(160,'sine',t+0.10,0.006,0.26,0.07); this._tone(110,'sawtooth',t+0.22,0.004,0.22,0.06); break;
-                case 'boardwin':  [392,523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.28,0.11)); this._tone(1568,'sine',t+0.38,0.006,0.35,0.09); this._tone(2093,'sine',t+0.48,0.005,0.30,0.09); break;
-                case 'slot_spin': this._tone(300 + Math.random()*200,'triangle',t,0.002,0.04,0.06); break;
-                case 'slot_stop': this._tone(660,'sine',t,0.004,0.08,0.1); this._tone(880,'sine',t+0.06,0.003,0.1,0.08); break;
-                case 'mine_place':this._tone(700,'triangle',t,0.006,0.08,0.1); this._tone(500,'sine',t+0.05,0.004,0.1,0.08); break;
-                case 'mine_mine_fx': [1047,1319,1568].forEach((f,i) => this._tone(f,'triangle',t+i*0.04,0.008,0.12,0.1)); break;
-                case 'grenade_fx':   this._noise(0.5,0.5); this._tone(80,'sawtooth',t,0.002,0.45,0.2); this._tone(120,'sine',t+0.05,0.003,0.35,0.15); break;
-                case 'totem_fx':     [523,659,784,1047,1319,1568].forEach((f,i) => this._tone(f,'sine',t+i*0.06,0.006,0.18,0.1)); break;
-                case 'scratch_reveal': this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.07,0.004,0.12,0.09); break;
+                case 'dig':
+                    this._tone(900,'sine',t,0.002,0.032,0.11);
+                    this._tone(1280,'triangle',t+0.012,0.002,0.028,0.055);
+                    this._noise(0.06, 0.08);
+                    break;
+                case 'reveal':
+                    this._tone(520,'sine',t,0.002,0.018,0.065);
+                    this._tone(740,'sine',t+0.01,0.001,0.016,0.038);
+                    break;
+                case 'flag':
+                    this._tone(700,'triangle',t,0.003,0.05,0.09);
+                    this._tone(1050,'sine',t+0.028,0.003,0.06,0.07);
+                    this._tone(1400,'sine',t+0.068,0.002,0.045,0.055);
+                    this._tone(1760,'sine',t+0.1,0.002,0.038,0.04);
+                    break;
+                case 'unflag':
+                    this._tone(500,'sine',t,0.003,0.05,0.075);
+                    this._tone(340,'triangle',t+0.025,0.003,0.055,0.05);
+                    break;
+                case 'mine':
+                    this._noise(0.55,0.45);
+                    this._tone(90,'sawtooth',t,0.002,0.42,0.18);
+                    this._tone(55,'sawtooth',t+0.05,0.003,0.34,0.14);
+                    this._tone(140,'sine',t+0.12,0.004,0.22,0.08);
+                    break;
+                case 'btn':
+                    this._tone(520,'sine',t,0.002,0.032,0.055);
+                    this._tone(680,'sine',t+0.015,0.001,0.022,0.03);
+                    break;
+                case 'complete':
+                    [440,554,659,880,1108].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.01,0.24,0.11));
+                    this._tone(1760,'sine',t+0.32,0.005,0.30,0.09);
+                    this._tone(1318,'sine',t+0.38,0.004,0.24,0.08);
+                    break;
+                case 'lvlup':
+                    [523,659,784,1047,1319,1568].forEach((f,i) => this._tone(f,'triangle',t+i*0.06,0.01,0.22,0.12));
+                    this._tone(2093,'sine',t+0.36,0.006,0.28,0.1);
+                    break;
+                case 'purchase':
+                    this._tone(1046,'triangle',t,0.004,0.08,0.10);
+                    this._tone(1319,'sine',t+0.042,0.004,0.12,0.10);
+                    this._tone(1760,'sine',t+0.095,0.003,0.18,0.09);
+                    this._tone(2093,'sine',t+0.16,0.003,0.16,0.08);
+                    break;
+                case 'error':
+                    this._tone(180,'sawtooth',t,0.004,0.12,0.10);
+                    this._tone(130,'sawtooth',t+0.065,0.004,0.16,0.09);
+                    this._noise(0.12, 0.18);
+                    break;
+                case 'redeem':
+                    this._tone(1046,'sine',t,0.005,0.09,0.10);
+                    this._tone(1319,'sine',t+0.07,0.004,0.12,0.10);
+                    this._tone(1568,'sine',t+0.14,0.004,0.20,0.11);
+                    this._tone(2093,'sine',t+0.22,0.004,0.24,0.12);
+                    break;
+                case 'modal':
+                    this._tone(600,'sine',t,0.003,0.055,0.08);
+                    this._tone(760,'sine',t+0.03,0.003,0.055,0.06);
+                    break;
+                case 'tab':
+                    this._tone(680,'sine',t,0.002,0.034,0.06);
+                    this._tone(860,'sine',t+0.018,0.002,0.028,0.042);
+                    break;
+                case 'rankup':
+                    this._tone(880,'sine',t,0.004,0.10,0.14);
+                    this._tone(1108,'sine',t+0.07,0.004,0.14,0.12);
+                    this._tone(1320,'triangle',t+0.15,0.003,0.18,0.10);
+                    this._tone(1760,'sine',t+0.23,0.003,0.22,0.09);
+                    break;
+                case 'quickdig':
+                    this._tone(1400,'sine',t,0.002,0.028,0.10);
+                    this._tone(1100,'triangle',t+0.022,0.002,0.05,0.08);
+                    this._tone(1600,'sine',t+0.046,0.002,0.035,0.05);
+                    break;
+                case 'ultrakill':
+                    this._noise(0.22,0.35);
+                    this._tone(180,'sawtooth',t,0.002,0.32,0.22);
+                    this._tone(120,'sawtooth',t+0.05,0.003,0.26,0.16);
+                    this._tone(80,'sine',t+0.14,0.004,0.20,0.10);
+                    break;
+                case 'runover':
+                    this._noise(0.35,0.28);
+                    this._tone(220,'triangle',t,0.004,0.24,0.10);
+                    this._tone(150,'sine',t+0.09,0.005,0.28,0.08);
+                    this._tone(100,'sawtooth',t+0.22,0.004,0.26,0.07);
+                    break;
+                case 'boardwin':
+                    [392,494,587,698,880,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.06,0.01,0.30,0.12));
+                    this._tone(1760,'sine',t+0.42,0.006,0.38,0.10);
+                    this._tone(2349,'sine',t+0.54,0.005,0.34,0.10);
+                    break;
+                case 'slot_spin':
+                    this._tone(280+Math.random()*180,'triangle',t,0.001,0.022,0.04);
+                    break;
+                case 'slot_stop':
+                    this._tone(740,'sine',t,0.003,0.065,0.12);
+                    this._tone(986,'sine',t+0.045,0.003,0.10,0.10);
+                    this._tone(1245,'triangle',t+0.1,0.002,0.12,0.09);
+                    break;
+                case 'mine_place':
+                    this._tone(760,'triangle',t,0.005,0.07,0.11);
+                    this._tone(540,'sine',t+0.04,0.004,0.09,0.09);
+                    break;
+                case 'mine_mine_fx':
+                    [1047,1319,1568,2093].forEach((f,i) => this._tone(f,'triangle',t+i*0.035,0.007,0.14,0.11));
+                    break;
+                case 'grenade_fx':
+                    this._noise(0.6,0.55);
+                    this._tone(70,'sawtooth',t,0.002,0.5,0.22);
+                    this._tone(110,'sine',t+0.06,0.003,0.38,0.17);
+                    this._tone(55,'sawtooth',t+0.18,0.003,0.30,0.12);
+                    break;
+                case 'totem_fx':
+                    [523,659,784,1047,1319,1568,2093].forEach((f,i) => this._tone(f,'sine',t+i*0.055,0.005,0.20,0.11));
+                    break;
+                case 'scratch_reveal':
+                    this._noise(0.18, 0.22);
+                    this._tone(880,'sine',t+0.05,0.004,0.12,0.10);
+                    this._tone(1108,'sine',t+0.12,0.004,0.16,0.10);
+                    break;
             }
         } catch(e) {}
     }
@@ -546,34 +640,42 @@ class Minesweeper {
 
     /* ══ LOADING SCREEN ══════════════════════════════════════════ */
     _showLoadingScreen() {
-        const screen = document.getElementById('loading-screen');
-        const fillEl = document.getElementById('lc-fill');
-        const pctEl  = document.getElementById('loading-pct');
-        const textEl = document.getElementById('loading-text');
+        const screen  = document.getElementById('loading-screen');
+        const barEl   = document.getElementById('loading-bar-fill');
+        const pctEl   = document.getElementById('loading-pct');
+        const textEl  = document.getElementById('loading-text');
+        const sqEl    = document.getElementById('loading-sq');
+        const iconEl  = document.getElementById('loading-sq-icon');
         if (!screen) { this._afterLoading(); return; }
 
-        const CIRCUMF = 2 * Math.PI * 38; // r=38
-        fillEl.style.strokeDasharray = CIRCUMF;
-        fillEl.style.strokeDashoffset = CIRCUMF;
+        const mineIds = Object.keys(MINE_DEFS);
+        let mineIdx = 0;
+        let sqRotation = 0;
 
-        const duration = 2000 + Math.random() * 1000; // 2-3 seconds
+        const swapIcon = () => {
+            const def = MINE_DEFS[mineIds[mineIdx % mineIds.length]];
+            if (iconEl && def) iconEl.innerHTML = def.icon();
+            mineIdx++;
+        };
+        swapIcon();
+
+        const duration = 2200 + Math.random() * 800;
         const startTime = performance.now();
-        let cycleRotation = -90; // start at top
-        let cycleCount = 0;
-        const ROTATE_PER_CYCLE = 40;
+        let lastCycle = -1;
+        const CYCLE_MS = 550;
 
         const dots = ['', '.', '..', '...'];
         let dotIdx = 0;
         const dotInterval = setInterval(() => {
             dotIdx = (dotIdx + 1) % dots.length;
             if (textEl) textEl.textContent = `Loading${dots[dotIdx]}`;
-        }, 320);
+        }, 340);
 
         const animate = (now) => {
             const elapsed = now - startTime;
             if (elapsed >= duration) {
                 clearInterval(dotInterval);
-                fillEl.style.strokeDashoffset = 0;
+                if (barEl) barEl.style.width = '100%';
                 if (pctEl) pctEl.textContent = '100%';
                 setTimeout(() => {
                     screen.classList.add('fade-out');
@@ -585,20 +687,22 @@ class Minesweeper {
                 return;
             }
 
-            /* Cycle: fill from 0 to 100%, reset, rotate, repeat */
-            const CYCLE_DURATION = 700;
-            const cycleTime = elapsed % CYCLE_DURATION;
-            const cycleProgress = cycleTime / CYCLE_DURATION;
-            const newCycle = Math.floor(elapsed / CYCLE_DURATION);
-            if (newCycle > cycleCount) {
-                cycleCount = newCycle;
-                cycleRotation += ROTATE_PER_CYCLE;
+            /* Non-linear: slow start, fast end (ease-in) */
+            const t = elapsed / duration;
+            const eased = 0.25 * t + 0.75 * t * t;
+            const pct = Math.min(99, Math.round(eased * 100));
+            if (barEl) barEl.style.width = pct + '%';
+            if (pctEl) pctEl.textContent = pct + '%';
+
+            /* Rotate square + swap icon each cycle */
+            const cycle = Math.floor(elapsed / CYCLE_MS);
+            if (cycle > lastCycle) {
+                lastCycle = cycle;
+                sqRotation += 90;
+                if (sqEl) sqEl.style.transform = `rotate(${sqRotation}deg)`;
+                if (iconEl) iconEl.style.transform = `rotate(${-sqRotation}deg)`;
+                swapIcon();
             }
-            fillEl.style.transform = `rotate(${cycleRotation}deg)`;
-            const dashOff = CIRCUMF * (1 - cycleProgress);
-            fillEl.style.strokeDashoffset = dashOff;
-            const pct = Math.round(cycleProgress * 100);
-            if (pctEl) pctEl.textContent = `${pct}%`;
 
             requestAnimationFrame(animate);
         };
@@ -787,7 +891,6 @@ class Minesweeper {
         catch(e) { return null; }
     }
     switchSlot(n) {
-        this._trackSaveSwitch();
         if (n === this.currentSlot) { document.getElementById('saves-modal').classList.remove('show'); return; }
         this.saveCurrentToSlot(this.currentSlot);
         this.currentSlot = n;
@@ -1305,6 +1408,17 @@ class Minesweeper {
         document.getElementById('slot-right').innerHTML  = makeCard(idx + 1);
         document.getElementById('carousel-counter').textContent = `${idx + 1} / ${NUM_BOARDS}`;
 
+        /* Mine Market indicators: highlight when a run is active */
+        const mmIndL = document.getElementById('mm-car-ind-l');
+        const mmIndR = document.getElementById('mm-car-ind-r');
+        const hasRun = !!rs;
+        const isMarketPaused = hasRun && rs.pausedInMarket;
+        [mmIndL, mmIndR].forEach(ind => {
+            if (!ind) return;
+            ind.classList.toggle('unlocked', hasRun);
+            ind.classList.toggle('highlight', isMarketPaused);
+        });
+
         const dots = document.getElementById('carousel-dots');
         dots.innerHTML = Array.from({length: NUM_BOARDS}, (_,i) => {
             const isA = i === idx;
@@ -1389,6 +1503,14 @@ class Minesweeper {
     }
     continueRun() {
         if (!this.runState) return;
+        /* If we paused by going to the menu from Mine Market, reopen Mine Market */
+        if (this.runState.pausedInMarket) {
+            this.runState.pausedInMarket = false;
+            this._saveRunState();
+            this.sfx.play('btn');
+            this.showMineMarket();
+            return;
+        }
         const rs = this.runState; rs.paused = false; this._saveRunState();
         this.currentDifficulty = rs.difficulty;
         this.carouselIndex = rs.currentBoard;
@@ -1423,6 +1545,12 @@ class Minesweeper {
         });
     }
     abortRun() {
+        /* Show confirm modal instead of directly aborting */
+        const modal = document.getElementById('abort-confirm-modal');
+        if (modal) { modal.classList.add('show'); this.sfx.play('modal'); return; }
+        this._doAbortRun();
+    }
+    _doAbortRun() {
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
         this.styleMeter.hide(); this.styleMeter.reset();
         this._flushRunPointsToMain();
@@ -1430,6 +1558,8 @@ class Minesweeper {
         this._resetRunState();
         this.renderDifficultyGrid(); this.renderCarousel(); this.refreshMenuButtons();
         this.sfx.play('btn');
+        document.getElementById('game-screen').classList.add('hidden');
+        this.showMenu();
     }
     pauseRun() {
         if (!this.runState) return;
@@ -1465,7 +1595,15 @@ class Minesweeper {
         let correctFlags = 0;
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++)
             if (this.board[i][j]===-1 && this.flagged[i][j]) correctFlags++;
-        const earned = this.awardPoints(correctFlags);
+        /* Mid-run flag bonus → RPTS; final board flush → PTS via _flushRunPointsToMain */
+        let earned = 0;
+        if (isLast) {
+            earned = this.awardPoints(correctFlags);
+        } else {
+            const flagBonus = correctFlags * 10;
+            if (flagBonus > 0) this.addRunPoints(flagBonus);
+            earned = flagBonus;
+        }
 
         this.feats.boardsCleared++;
         this.feats.currentConsecutive++;
@@ -1536,6 +1674,8 @@ class Minesweeper {
         /* Reset per-market state */
         this.scratchUsed = false;
         this.slotUsed = false;
+        this.scratchBought = false;
+        this.slotBought = false;
 
         /* Replenish all mine charges */
         this.playerMines.forEach(m => { m.charges = m.maxCharges; });
@@ -1550,15 +1690,22 @@ class Minesweeper {
         const rptEl = document.getElementById('mm-run-pts');
         if (rptEl) rptEl.textContent = this.runPoints;
 
-        /* Reset scratch visual */
+        /* Reset scratch card */
         const scratchFront = document.getElementById('scratch-front');
         const scratchResult = document.getElementById('scratch-result');
         if (scratchFront) { scratchFront.classList.remove('hidden'); scratchFront.style.transform = ''; }
         if (scratchResult) { scratchResult.classList.add('hidden'); scratchResult.textContent = ''; scratchResult.className = 'scratch-result hidden'; }
-        const scratchBtn = document.getElementById('scratch-btn');
-        if (scratchBtn) { scratchBtn.textContent = `SCRATCH · ${SCRATCH_COST}`; scratchBtn.classList.remove('spent'); }
-        const slotBtn = document.getElementById('slot-btn');
-        if (slotBtn) { slotBtn.textContent = `SPIN · ${SLOT_MACHINE_COST}`; slotBtn.classList.remove('spent'); }
+
+        /* Reset buy buttons */
+        const scratchBuyBtn = document.getElementById('scratch-buy-btn');
+        const scratchActBtn = document.getElementById('scratch-btn');
+        if (scratchBuyBtn) { scratchBuyBtn.textContent = `BUY · ${SCRATCH_COST} RPTS`; scratchBuyBtn.classList.remove('spent'); }
+        if (scratchActBtn) { scratchActBtn.textContent = 'SCRATCH'; scratchActBtn.classList.remove('used'); scratchActBtn.classList.add('mm-act-disabled'); }
+
+        const slotBuyBtn = document.getElementById('slot-buy-btn');
+        const slotActBtn = document.getElementById('slot-btn');
+        if (slotBuyBtn) { slotBuyBtn.textContent = `BUY · ${SLOT_MACHINE_COST} RPTS`; slotBuyBtn.classList.remove('spent'); }
+        if (slotActBtn) { slotActBtn.textContent = 'SPIN'; slotActBtn.classList.remove('used'); slotActBtn.classList.add('mm-act-disabled'); }
 
         /* Render slot machine mini display */
         this._renderSlotMini();
@@ -1568,6 +1715,34 @@ class Minesweeper {
         document.getElementById('menu-screen').classList.add('hidden');
         el.classList.remove('hidden');
         this.saveCurrentToSlot(this.currentSlot);
+    }
+
+    doScratchBuy() {
+        if (this.scratchBought || this.scratchUsed) return;
+        if (this.runPoints < SCRATCH_COST && !this.infiniteCoins) { this.sfx.play('error'); return; }
+        this.spendRunPoints(SCRATCH_COST);
+        this.scratchBought = true;
+        const buyBtn = document.getElementById('scratch-buy-btn');
+        const actBtn = document.getElementById('scratch-btn');
+        if (buyBtn) { buyBtn.textContent = 'BOUGHT'; buyBtn.classList.add('spent'); }
+        if (actBtn) actBtn.classList.remove('mm-act-disabled');
+        const rptEl = document.getElementById('mm-run-pts');
+        if (rptEl) rptEl.textContent = this.runPoints;
+        this.sfx.play('purchase');
+    }
+
+    doSlotBuy() {
+        if (this.slotBought || this.slotUsed) return;
+        if (this.runPoints < SLOT_MACHINE_COST && !this.infiniteCoins) { this.sfx.play('error'); return; }
+        this.spendRunPoints(SLOT_MACHINE_COST);
+        this.slotBought = true;
+        const buyBtn = document.getElementById('slot-buy-btn');
+        const actBtn = document.getElementById('slot-btn');
+        if (buyBtn) { buyBtn.textContent = 'BOUGHT'; buyBtn.classList.add('spent'); }
+        if (actBtn) actBtn.classList.remove('mm-act-disabled');
+        const rptEl = document.getElementById('mm-run-pts');
+        if (rptEl) rptEl.textContent = this.runPoints;
+        this.sfx.play('purchase');
     }
 
     closeMineMarket() {
@@ -1599,15 +1774,10 @@ class Minesweeper {
 
     /* ── Scratch Card ── */
     doScratch() {
-        if (this.scratchUsed) return;
-        if (this.runPoints < SCRATCH_COST && !this.infiniteCoins) {
-            this.sfx.play('error');
-            return;
-        }
-        this.spendRunPoints(SCRATCH_COST);
+        if (!this.scratchBought || this.scratchUsed) return;
         this.scratchUsed = true;
-        const scratchBtn = document.getElementById('scratch-btn');
-        if (scratchBtn) { scratchBtn.textContent = 'USED'; scratchBtn.classList.add('spent'); }
+        const actBtn = document.getElementById('scratch-btn');
+        if (actBtn) { actBtn.textContent = 'USED'; actBtn.classList.add('used'); }
 
         const win = Math.random() < 0.5;
         const scratchFront = document.getElementById('scratch-front');
@@ -1617,6 +1787,7 @@ class Minesweeper {
             scratchFront.style.transform = 'scale(0) rotate(20deg)';
             scratchFront.style.transition = 'transform .3s cubic-bezier(.3,.7,.3,1.5)';
         }
+        this.sfx.play('scratch_reveal');
         setTimeout(() => {
             if (scratchFront) scratchFront.classList.add('hidden');
             if (scratchResult) {
@@ -1633,38 +1804,46 @@ class Minesweeper {
                     this.sfx.play('error');
                 }
             }
-            /* Update run pts display */
             const rptEl = document.getElementById('mm-run-pts');
             if (rptEl) rptEl.textContent = this.runPoints;
         }, 320);
-        this.sfx.play('scratch_reveal');
     }
 
     /* ── Slot Machine ── */
     openSlotMachine() {
-        if (this.slotUsed) return;
+        if (!this.slotBought || this.slotUsed) return;
         const popup = document.getElementById('slot-popup');
         if (!popup) return;
         /* Initialize reels */
         this._initSlotReels();
+        /* Reset controls */
+        const spinBtn = document.getElementById('slot-spin-btn');
+        const stopBtn = document.getElementById('slot-stop-btn');
+        if (spinBtn) { spinBtn.classList.remove('hidden'); spinBtn.disabled = false; }
+        if (stopBtn) stopBtn.classList.add('hidden');
         /* Reset result area */
         const resultArea = document.getElementById('slot-result-area');
         if (resultArea) resultArea.classList.add('hidden');
-        const hint = document.getElementById('slot-hint');
-        if (hint) hint.classList.remove('hidden');
+        /* Reset stop indicators */
+        for (let i = 0; i < 3; i++) {
+            const ind = document.getElementById(`slot-stop-ind-${i}`);
+            if (ind) ind.classList.add('hidden');
+        }
         popup.classList.add('show');
         this.sfx.play('modal');
-        /* Setup lever */
-        this._setupSlotLever();
+        this._setupSlotSpinStop();
     }
 
     _initSlotReels() {
+        const ITEM_HEIGHT = 80;
+        const MAX_MINES = ALL_MINE_IDS.length;
         /* Build strips with all mine icons repeated */
         for (let i = 0; i < 3; i++) {
             const strip = document.getElementById(`slot-strip-${i}`);
             if (!strip) continue;
             strip.innerHTML = '';
-            /* Repeat mines list 5 times for scroll effect */
+            strip.style.transition = '';
+            /* Repeat mines list 6 times for scroll effect */
             for (let rep = 0; rep < 6; rep++) {
                 ALL_MINE_IDS.forEach(id => {
                     const def = MINE_DEFS[id];
@@ -1674,98 +1853,86 @@ class Minesweeper {
                     strip.appendChild(item);
                 });
             }
+            /* Stagger starting positions so reels show different mines */
+            const startOffset = Math.floor(MAX_MINES / 3) * i * ITEM_HEIGHT;
+            this._slotOffset = this._slotOffset || [0, 0, 0];
+            this._slotOffset[i] = startOffset;
+            strip.style.transform = `translateY(-${startOffset}px)`;
         }
         this._slotSpinning = false;
-        this._slotOffset = [0, 0, 0];
-        this._slotInterval = null;
+        this._slotStopped = [false, false, false];
+        if (this._slotInterval) { clearInterval(this._slotInterval); this._slotInterval = null; }
     }
 
-    _setupSlotLever() {
-        const knob = document.getElementById('slot-lever-knob');
-        if (!knob) return;
-        const track = knob.parentElement;
-        const trackRect = () => track.getBoundingClientRect();
+    _setupSlotSpinStop() {
+        const spinBtn = document.getElementById('slot-spin-btn');
+        const stopBtn = document.getElementById('slot-stop-btn');
+        if (!spinBtn || !stopBtn) return;
+
         const ITEM_HEIGHT = 80;
         const MAX_MINES = ALL_MINE_IDS.length;
+        let stoppedCount = 0;
+        const stoppedMines = [];
 
-        let isDragging = false, startX = 0, currentX = 0;
-        let hasBeenRight = false;
-
-        knob.style.left = '14px';
-        knob.classList.remove('spinning');
-
-        const getKnobRange = () => {
-            const rect = trackRect();
-            return { min: 14, max: rect.width - knob.offsetWidth - 14 };
-        };
+        /* Replace buttons to remove stale listeners */
+        const newSpin = spinBtn.cloneNode(true);
+        spinBtn.parentNode.replaceChild(newSpin, spinBtn);
+        const newStop = stopBtn.cloneNode(true);
+        stopBtn.parentNode.replaceChild(newStop, stopBtn);
 
         const startSpin = () => {
-            if (this._slotSpinning) return;
+            newSpin.classList.add('hidden');
+            newStop.classList.remove('hidden');
             this._slotSpinning = true;
-            knob.classList.add('spinning');
+            this._slotStopped = [false, false, false];
+            stoppedCount = 0; stoppedMines.length = 0;
+            for (let i = 0; i < 3; i++) {
+                const ind = document.getElementById(`slot-stop-ind-${i}`);
+                if (ind) ind.classList.add('hidden');
+            }
             let tick = 0;
             this._slotInterval = setInterval(() => {
                 tick++;
                 for (let i = 0; i < 3; i++) {
-                    this._slotOffset[i] = (this._slotOffset[i] + 8) % (ITEM_HEIGHT * MAX_MINES);
+                    if (this._slotStopped[i]) continue;
+                    const speed = 28 + i * 6; // 28, 34, 40 — each reel slightly different
+                    this._slotOffset[i] = (this._slotOffset[i] + speed) % (ITEM_HEIGHT * MAX_MINES);
                     const strip = document.getElementById(`slot-strip-${i}`);
                     if (strip) strip.style.transform = `translateY(-${this._slotOffset[i]}px)`;
                 }
-                if (tick % 3 === 0) this.sfx.play('slot_spin');
-            }, 60);
+                if (tick % 2 === 0) this.sfx.play('slot_spin');
+            }, 28); // fast: ~35fps
         };
 
-        const stopSpin = () => {
-            if (!this._slotSpinning) return;
-            this._slotSpinning = false;
-            knob.classList.remove('spinning');
-            clearInterval(this._slotInterval);
-            this._slotInterval = null;
-            /* Snap to random mines */
-            const results = [];
-            for (let i = 0; i < 3; i++) {
-                const idx = Math.floor(Math.random() * MAX_MINES);
-                results.push(ALL_MINE_IDS[idx]);
-                const targetOffset = idx * ITEM_HEIGHT;
-                this._slotOffset[i] = targetOffset;
-                const strip = document.getElementById(`slot-strip-${i}`);
-                if (strip) {
-                    strip.style.transition = 'transform .4s cubic-bezier(.3,.7,.3,1.5)';
-                    strip.style.transform = `translateY(-${targetOffset}px)`;
-                    setTimeout(() => { if(strip) strip.style.transition = ''; }, 450);
-                }
+        const stopOne = () => {
+            if (stoppedCount >= 3) return;
+            const i = stoppedCount;
+            this._slotStopped[i] = true;
+            /* Snap to a random mine */
+            const idx = Math.floor(Math.random() * MAX_MINES);
+            stoppedMines.push(ALL_MINE_IDS[idx]);
+            const targetOffset = idx * ITEM_HEIGHT;
+            this._slotOffset[i] = targetOffset;
+            const strip = document.getElementById(`slot-strip-${i}`);
+            if (strip) {
+                strip.style.transition = 'transform .28s cubic-bezier(.2,.8,.2,1)';
+                strip.style.transform = `translateY(-${targetOffset}px)`;
+                setTimeout(() => { if (strip) strip.style.transition = ''; }, 340);
             }
+            const ind = document.getElementById(`slot-stop-ind-${i}`);
+            if (ind) ind.classList.remove('hidden');
             this.sfx.play('slot_stop');
-            setTimeout(() => this._showSlotResults(results), 500);
+            stoppedCount++;
+            if (stoppedCount === 3) {
+                clearInterval(this._slotInterval); this._slotInterval = null;
+                this._slotSpinning = false;
+                newStop.classList.add('hidden');
+                setTimeout(() => this._showSlotResults(stoppedMines), 420);
+            }
         };
 
-        const onDown = (ex) => {
-            isDragging = true; startX = ex; currentX = ex; hasBeenRight = false;
-        };
-        const onMove = (ex) => {
-            if (!isDragging) return;
-            currentX = ex;
-            const { min, max } = getKnobRange();
-            const raw = parseFloat(knob.style.left || '14') + (ex - startX);
-            knob.style.left = Math.max(min, Math.min(max, raw)) + 'px';
-            startX = ex;
-            const pct = (parseFloat(knob.style.left) - min) / (max - min);
-            if (pct > 0.3) { hasBeenRight = true; startSpin(); }
-            else if (hasBeenRight && pct < 0.1) { stopSpin(); hasBeenRight = false; }
-        };
-        const onUp = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            knob.style.left = '14px';
-        };
-
-        /* Clone to remove old listeners */
-        const newKnob = knob.cloneNode(true);
-        knob.parentNode.replaceChild(newKnob, knob);
-        newKnob.addEventListener('pointerdown', e => { e.preventDefault(); newKnob.setPointerCapture(e.pointerId); onDown(e.clientX); });
-        newKnob.addEventListener('pointermove', e => onMove(e.clientX));
-        newKnob.addEventListener('pointerup',   () => onUp());
-        newKnob.addEventListener('pointercancel', () => onUp());
+        newSpin.addEventListener('click', startSpin);
+        newStop.addEventListener('click', stopOne);
     }
 
     _showSlotResults(mineIds) {
@@ -1781,15 +1948,15 @@ class Minesweeper {
             const isBanned = this.bannedMineIds.includes(id);
             const card = document.createElement('div');
             card.className = `slot-result-mine-card${isFull || isBanned ? ' full' : ''}`;
-            card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">${def.cost} rpts</span>`;
+            card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">${def.cost} RPTS</span>`;
             if (!isFull && !isBanned) {
                 card.addEventListener('click', () => {
                     const cost = def.cost;
                     if (!this.spendRunPoints(cost)) { this.sfx.play('error'); return; }
                     this.addMineToLoadout(id);
                     this.slotUsed = true;
-                    const slotBtn = document.getElementById('slot-btn');
-                    if (slotBtn) { slotBtn.textContent = 'USED'; slotBtn.classList.add('spent'); }
+                    const slotActBtn = document.getElementById('slot-btn');
+                    if (slotActBtn) { slotActBtn.textContent = 'USED'; slotActBtn.classList.add('used'); }
                     document.getElementById('slot-popup').classList.remove('show');
                     const rptEl = document.getElementById('mm-run-pts');
                     if (rptEl) rptEl.textContent = this.runPoints;
@@ -2379,37 +2546,50 @@ class Minesweeper {
         /* Carousel Swipe */
         this.bindCarouselSwipe();
 
-        /* TING modal close */
-        document.getElementById('ting-close-btn').addEventListener('click', () => { document.getElementById('ting-modal').classList.remove('show'); this.sfx.play('btn'); });
+        /* Abort confirm modal */
+        const abortConfirmModal = document.getElementById('abort-confirm-modal');
+        if (abortConfirmModal) {
+            document.getElementById('abort-confirm-yes-btn').addEventListener('click', () => {
+                abortConfirmModal.classList.remove('show');
+                this._doAbortRun();
+            });
+            document.getElementById('abort-confirm-no-btn').addEventListener('click', () => {
+                abortConfirmModal.classList.remove('show');
+                this.sfx.play('btn');
+            });
+        }
 
         /* Mine Market events */
+        const mmMenuBtn = document.getElementById('mm-menu-btn');
+        if (mmMenuBtn) mmMenuBtn.addEventListener('click', () => {
+            if (this.runState) { this.runState.pausedInMarket = true; this._saveRunState(); }
+            document.getElementById('mine-market-screen').classList.add('hidden');
+            this.sfx.play('btn');
+            this.showMenu();
+        });
         document.getElementById('mm-continue-btn').addEventListener('click', () => {
             this.sfx.play('btn');
             this.closeMineMarket();
         });
+        const scratchBuyBtn = document.getElementById('scratch-buy-btn');
+        if (scratchBuyBtn) scratchBuyBtn.addEventListener('click', () => { this.doScratchBuy(); });
         document.getElementById('scratch-btn').addEventListener('click', () => {
+            if (!this.scratchBought || this.scratchUsed) { this.sfx.play('error'); return; }
             this.sfx.play('btn'); this.doScratch();
         });
+        const slotBuyBtn = document.getElementById('slot-buy-btn');
+        if (slotBuyBtn) slotBuyBtn.addEventListener('click', () => { this.doSlotBuy(); });
         document.getElementById('slot-btn').addEventListener('click', () => {
-            if (this.slotUsed) return;
+            if (!this.slotBought || this.slotUsed) { this.sfx.play('error'); return; }
             this.sfx.play('btn'); this.openSlotMachine();
         });
 
         /* Slot popup */
         document.getElementById('slot-popup-close').addEventListener('click', () => {
             if (this._slotInterval) { clearInterval(this._slotInterval); this._slotInterval = null; }
+            this._slotSpinning = false;
             document.getElementById('slot-popup').classList.remove('show');
             this.sfx.play('btn');
-        });
-        document.getElementById('slot-skip-btn').addEventListener('click', () => {
-            document.getElementById('slot-popup').classList.remove('show');
-            this.sfx.play('btn');
-        });
-        document.getElementById('slot-popup').addEventListener('click', e => {
-            if (e.target === document.getElementById('slot-popup')) {
-                if (this._slotInterval) { clearInterval(this._slotInterval); this._slotInterval = null; }
-                document.getElementById('slot-popup').classList.remove('show');
-            }
         });
 
         /* ── Feats tab arrow navigation ── */
@@ -2448,7 +2628,7 @@ class Minesweeper {
         this._updateFeatsArrows = _updateFeatsArrows;
 
         /* ── Store tab arrow navigation ── */
-        const _storeTabs = ['themes','cs1','cs2'];
+        const _storeTabs = ['themes','uncommon'];
         const _storePrev = document.getElementById('store-tab-prev');
         const _storeNext = document.getElementById('store-tab-next');
         const _updateStoreArrows = () => {
@@ -2457,7 +2637,6 @@ class Minesweeper {
             if (_storeNext) _storeNext.classList.toggle('disabled', idx >= _storeTabs.length - 1);
         };
         const _setStoreTab = (tab) => {
-            if (tab === 'cs1' || tab === 'cs2') { document.getElementById('coming-soon-modal').classList.add('show'); return; }
             this.storeTab = tab;
             document.querySelectorAll('#store-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.storeTab === tab));
             document.querySelectorAll('#store-modal .tab-panel').forEach(p => p.classList.remove('active'));
@@ -3070,25 +3249,7 @@ class Minesweeper {
         setTimeout(() => document.body.classList.remove('ultrakill-flash', 'ultrakill-shake'), 1200);
         this.sfx.play('ultrakill'); this._unlockSecret('ultrakill');
     }
-    _trackSaveSwitch() {
-        const now = Date.now();
-        this._saveSwitchTimes = this._saveSwitchTimes.filter(t => now-t < 30000);
-        this._saveSwitchTimes.push(now);
-        if (this._saveSwitchTimes.length >= 4 && !this._tingTriggered) { this._tingTriggered = true; this._triggerTING(); }
-    }
-    _triggerTING() {
-        document.body.classList.add('ting-glitch');
-        setTimeout(() => document.body.classList.remove('ting-glitch'), 900);
-        this._unlockSecret('ting');
-        const delay = 10000 + Math.random() * 8000;
-        setTimeout(() => {
-            if (!this._tingAnomalySet) {
-                document.getElementById('ting-modal').classList.add('show');
-                document.body.classList.add('ting-anomaly');
-                this._tingAnomalySet = true;
-            }
-        }, delay);
-    }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => new Minesweeper());

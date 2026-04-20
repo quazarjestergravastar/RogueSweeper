@@ -13,13 +13,15 @@
     <!-- ── LOADING SCREEN ── -->
     <div class="loading-screen" id="loading-screen">
         <h1 class="loading-title">RogueSweeper</h1>
-        <div class="loading-circle-wrap">
-            <svg class="loading-circle-svg" id="loading-circle-svg" viewBox="0 0 100 100">
-                <circle class="lc-bg" cx="50" cy="50" r="38"/>
-                <circle class="lc-fill" id="lc-fill" cx="50" cy="50" r="38"/>
-            </svg>
-            <div class="loading-pct" id="loading-pct">0%</div>
+        <div class="loading-sq-wrap">
+            <div class="loading-sq" id="loading-sq">
+                <div class="loading-sq-icon" id="loading-sq-icon"></div>
+            </div>
+            <div class="loading-bar-track">
+                <div class="loading-bar-fill" id="loading-bar-fill"></div>
+            </div>
         </div>
+        <div class="loading-pct" id="loading-pct">0%</div>
         <div class="loading-text" id="loading-text">Loading</div>
     </div>
 
@@ -88,7 +90,9 @@
                 </div>
                 <div class="carousel-wrapper" id="carousel-wrapper">
                     <div class="carousel-slot slot-side slot-left"  id="slot-left"></div>
+                    <div class="mm-car-ind" id="mm-car-ind-l"></div>
                     <div class="carousel-slot slot-center"          id="slot-center"></div>
+                    <div class="mm-car-ind" id="mm-car-ind-r"></div>
                     <div class="carousel-slot slot-side slot-right" id="slot-right"></div>
                 </div>
                 <div class="carousel-dots" id="carousel-dots"></div>
@@ -195,7 +199,7 @@
         <!-- ── MINE MARKET ── -->
         <div class="mine-market-screen hidden" id="mine-market-screen">
             <div class="mm-header">
-                <div class="mm-title">MineMarket</div>
+                <div class="mm-title">Mine Market</div>
                 <div class="mm-board-badge" id="mm-board-badge">Board 1 of 8</div>
             </div>
             <div class="mm-run-pts-display juicy-card">
@@ -203,7 +207,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
                 </div>
                 <div class="mm-rp-info">
-                    <span class="mm-rp-label">RUN POINTS</span>
+                    <span class="mm-rp-label">RPTS</span>
                     <span class="mm-rp-value num-font" id="mm-run-pts">0</span>
                 </div>
             </div>
@@ -211,35 +215,52 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                 All mine charges restored!
             </div>
-            <div class="mm-items-scroll">
-                <div class="mm-items-grid">
-                    <!-- Scratch Card -->
-                    <div class="mm-item-card juicy-card" id="mm-scratch-item">
-                        <div class="mm-item-title">Scratch Card</div>
-                        <div class="mm-scratch-visual" id="mm-scratch-visual">
-                            <div class="scratch-front" id="scratch-front">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                <span>50 pts</span>
-                            </div>
-                            <div class="scratch-result hidden" id="scratch-result"></div>
+
+            <!-- Scratch Card Row -->
+            <div class="mm-feature-row juicy-card" id="mm-scratch-row">
+                <div class="mm-feat-visual">
+                    <div class="mm-scratch-visual" id="mm-scratch-visual">
+                        <div class="scratch-front" id="scratch-front">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                         </div>
-                        <div class="mm-item-desc">Double your pts or nothing</div>
-                        <button class="mm-item-btn juicy-btn" id="scratch-btn">SCRATCH · 50</button>
-                    </div>
-                    <!-- Slot Machine -->
-                    <div class="mm-item-card juicy-card" id="mm-slot-item">
-                        <div class="mm-item-title">Slot Machine</div>
-                        <div class="mm-slot-mini" id="mm-slot-mini">
-                            <div class="slot-mini-reel" id="smr-0"></div>
-                            <div class="slot-mini-reel" id="smr-1"></div>
-                            <div class="slot-mini-reel" id="smr-2"></div>
-                        </div>
-                        <div class="mm-item-desc">Win a mine for your loadout</div>
-                        <button class="mm-item-btn juicy-btn" id="slot-btn">SPIN · 100</button>
+                        <div class="scratch-result hidden" id="scratch-result"></div>
                     </div>
                 </div>
+                <div class="mm-feat-info">
+                    <div class="mm-feat-title">Scratch Card</div>
+                    <div class="mm-feat-desc">Double your RPTS or nothing</div>
+                    <div class="mm-feat-cost" id="scratch-cost-label">50 RPTS</div>
+                </div>
+                <div class="mm-feat-actions">
+                    <button class="mm-feat-buy-btn juicy-btn" id="scratch-buy-btn">BUY</button>
+                    <button class="mm-feat-act-btn juicy-btn mm-act-disabled" id="scratch-btn">SCRATCH</button>
+                </div>
             </div>
-            <button class="mm-continue-btn juicy-btn" id="mm-continue-btn">CONTINUE</button>
+
+            <!-- Slot Machine Row -->
+            <div class="mm-feature-row juicy-card" id="mm-slot-row">
+                <div class="mm-feat-visual">
+                    <div class="mm-slot-mini" id="mm-slot-mini">
+                        <div class="slot-mini-reel" id="smr-0"></div>
+                        <div class="slot-mini-reel" id="smr-1"></div>
+                        <div class="slot-mini-reel" id="smr-2"></div>
+                    </div>
+                </div>
+                <div class="mm-feat-info">
+                    <div class="mm-feat-title">Slot Machine</div>
+                    <div class="mm-feat-desc">Win a mine for your loadout</div>
+                    <div class="mm-feat-cost" id="slot-cost-label">100 RPTS</div>
+                </div>
+                <div class="mm-feat-actions">
+                    <button class="mm-feat-buy-btn juicy-btn" id="slot-buy-btn">BUY</button>
+                    <button class="mm-feat-act-btn juicy-btn mm-act-disabled" id="slot-btn">SPIN</button>
+                </div>
+            </div>
+
+            <div class="mm-footer-btns">
+                <button class="mm-menu-btn juicy-btn" id="mm-menu-btn">MENU</button>
+                <button class="mm-continue-btn juicy-btn" id="mm-continue-btn">CONTINUE</button>
+            </div>
         </div>
     </div>
 
@@ -350,14 +371,14 @@
                 <button class="tab-nav-arrow tab-nav-prev juicy-btn" id="store-tab-prev" aria-label="Previous tab">&#8249;</button>
                 <div class="modal-tab-bar" id="store-tab-bar">
                     <button class="tab-btn active" data-store-tab="themes">Common</button>
-                    <button class="tab-btn" data-store-tab="cs1">???</button>
-                    <button class="tab-btn" data-store-tab="cs2">???</button>
+                    <button class="tab-btn" data-store-tab="uncommon">Uncommon</button>
                 </div>
                 <button class="tab-nav-arrow tab-nav-next juicy-btn" id="store-tab-next" aria-label="Next tab">&#8250;</button>
             </div>
             <div class="tab-panel active" id="store-panel-themes"></div>
-            <div class="tab-panel" id="store-panel-cs1"></div>
-            <div class="tab-panel" id="store-panel-cs2"></div>
+            <div class="tab-panel" id="store-panel-uncommon">
+                <div style="text-align:center;padding:28px 0;color:var(--text-muted);font-size:.82rem;font-weight:700">Coming soon.</div>
+            </div>
             <button class="close-settings-btn juicy-btn" id="store-close-btn" data-text="close">Close</button>
         </div>
     </div>
@@ -427,25 +448,31 @@
     <div class="modal-overlay" id="slot-popup">
         <div class="modal-content juicy-card slot-popup-content">
             <h2>Slot Machine</h2>
-            <p class="slot-cost-label">Cost: <strong id="slot-cost-display">100</strong> run pts</p>
             <div class="slot-reels-wrap">
                 <div class="slot-reels" id="slot-reels">
-                    <div class="slot-reel-col"><div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-0"></div></div></div>
-                    <div class="slot-reel-col"><div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-1"></div></div></div>
-                    <div class="slot-reel-col"><div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-2"></div></div></div>
-                </div>
-                <div class="slot-lever-track">
-                    <div class="slot-lever-bar-bg"></div>
-                    <div class="slot-lever-knob" id="slot-lever-knob"></div>
+                    <div class="slot-reel-col">
+                        <div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-0"></div></div>
+                        <div class="slot-reel-stopped hidden" id="slot-stop-ind-0"></div>
+                    </div>
+                    <div class="slot-reel-col">
+                        <div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-1"></div></div>
+                        <div class="slot-reel-stopped hidden" id="slot-stop-ind-1"></div>
+                    </div>
+                    <div class="slot-reel-col">
+                        <div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-2"></div></div>
+                        <div class="slot-reel-stopped hidden" id="slot-stop-ind-2"></div>
+                    </div>
                 </div>
             </div>
-            <div class="slot-hint" id="slot-hint">Drag the lever right to spin, back to stop</div>
+            <div class="slot-controls" id="slot-controls">
+                <button class="slot-spin-btn juicy-btn" id="slot-spin-btn">SPIN</button>
+                <button class="slot-stop-btn juicy-btn hidden" id="slot-stop-btn">STOP</button>
+            </div>
             <div class="slot-result-area hidden" id="slot-result-area">
                 <p class="slot-result-label">Pick one mine to add to your loadout:</p>
                 <div class="slot-result-mines" id="slot-result-mines"></div>
-                <button class="menu-link-btn juicy-btn" id="slot-skip-btn" style="width:100%;margin-top:10px">Skip All</button>
             </div>
-            <button class="menu-link-btn juicy-btn" id="slot-popup-close" style="width:100%;margin-top:8px">Close</button>
+            <button class="menu-link-btn juicy-btn" id="slot-popup-close" style="width:100%;margin-top:8px">BACK</button>
         </div>
     </div>
 
@@ -470,12 +497,15 @@
         </div>
     </div>
 
-    <!-- ── TING MODAL (delayed, meta Easter egg) ── -->
-    <div class="modal-overlay" id="ting-modal">
+    <!-- ── ABORT CONFIRM MODAL ── -->
+    <div class="modal-overlay" id="abort-confirm-modal">
         <div class="modal-content juicy-card">
-            <h2 id="ting-title" data-text="tingTitle">There Is No Game</h2>
-            <p id="ting-body" style="color:var(--text2);margin:8px 0 18px;font-size:.88rem" data-text="tingBody">There is no game, really?</p>
-            <button class="confirm-btn juicy-btn" id="ting-close-btn" data-text="iSee">I see.</button>
+            <h2>Abort Run?</h2>
+            <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem">All RPTS earned this run will be lost. Are you sure?</p>
+            <div class="modal-buttons">
+                <button class="abort-btn juicy-btn" id="abort-confirm-yes-btn">ABORT</button>
+                <button class="menu-link-btn juicy-btn" id="abort-confirm-no-btn">CANCEL</button>
+            </div>
         </div>
     </div>
 
