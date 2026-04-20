@@ -4,7 +4,9 @@ const RANK_LABELS = ['D', 'C', 'B', 'A', 'S', 'Z'];
 const RANK_COLORS = { D:'#4CAF50', C:'#2196F3', B:'#FFC107', A:'#FF9800', S:'#F44336', Z:'#9C27B0' };
 const RANK_DECAY  = { D:0.045, C:0.075, B:0.115, A:0.165, S:0.260, Z:0.380 };
 const RANK_MULT   = { D:1, C:1.5, B:2, A:3, S:5, Z:8 };
-const SM_CIRCUMF  = 2 * Math.PI * 20; // ≈ 125.66
+const SLOT_MACHINE_COST = 100;
+const SCRATCH_COST = 50;
+const SELL_REFUND_RATIO = 0.5;
 
 /* ── SVG ICONS ───────────────────────────────────────────────── */
 const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.2 C12.85 4.2 13.6 4.65 14.05 5.38 L20.15 15.55 C21.1 17.15 19.95 19.18 18.1 19.18 H5.9 C4.05 19.18 2.9 17.15 3.85 15.55 L9.95 5.38 C10.4 4.65 11.15 4.2 12 4.2 Z"/></svg>`;
@@ -12,17 +14,63 @@ const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" 
 
 /* ── FLOATING BACKGROUND SVGs ────────────────────────────────── */
 const FLOAT_SVGS = {
-    circle:  (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="${c}" stroke-width="6"/></svg>`,
-    blob:    (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 C72,10 90,28 90,50 C90,72 70,92 48,90 C26,88 8,70 10,48 C12,26 28,10 50,10" fill="${c}"/></svg>`,
-    shard:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,12 88,50 50,88 12,50" fill="${c}"/></svg>`,
-    ring:    (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="60 40"/></svg>`,
-    roundsq: (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="12" y="12" width="76" height="76" rx="20" fill="${c}"/></svg>`,
-    cross:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="10" fill="${c}"/><rect x="10" y="38" width="80" height="24" rx="10" fill="${c}"/></svg>`,
-    tri:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,15 L88,82 Q88,88 82,88 L18,88 Q12,88 12,82 Z" fill="${c}"/></svg>`,
-    dot:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="28" fill="${c}"/></svg>`,
+    circle:    (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="${c}" stroke-width="6"/></svg>`,
+    blob:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 C72,10 90,28 90,50 C90,72 70,92 48,90 C26,88 8,70 10,48 C12,26 28,10 50,10" fill="${c}"/></svg>`,
+    shard:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,12 88,50 50,88 12,50" fill="${c}"/></svg>`,
+    ring:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="60 40"/></svg>`,
+    roundsq:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="12" y="12" width="76" height="76" rx="20" fill="${c}"/></svg>`,
+    cross:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="10" fill="${c}"/><rect x="10" y="38" width="80" height="24" rx="10" fill="${c}"/></svg>`,
+    tri:       (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,15 L88,82 Q88,88 82,88 L18,88 Q12,88 12,82 Z" fill="${c}"/></svg>`,
+    dot:       (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="28" fill="${c}"/></svg>`,
+    star:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,8 61,35 90,35 67,55 76,82 50,65 24,82 33,55 10,35 39,35" fill="${c}"/></svg>`,
+    hexagon:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,8 88,29 88,71 50,92 12,71 12,29" fill="${c}"/></svg>`,
+    arc:       (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,80 A40,40 0 0,1 80,80" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round"/></svg>`,
+    pill:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="35" width="60" height="30" rx="15" fill="${c}"/></svg>`,
+    arrow:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,50 L65,50 M50,30 L70,50 L50,70" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 };
 
 const MINE_DOT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 10 10" style="display:inline-block;vertical-align:middle" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>`;
+
+/* ── MINE DEFINITIONS ────────────────────────────────────────── */
+const MINE_DEFS = {
+    mine_mine: {
+        id: 'mine_mine', name: 'Mine Mine', cost: 50,
+        color: '#f44336', maxCharges: 2, placesPerBoard: 1,
+        requirement: 'None',
+        effect: 'Flags all adjacent mines if any are present. If none, plays a disappearing animation.',
+        trigger: 'Instantly on placement',
+        limit: '1 time per board',
+        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#f44336"/><circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.35)"/><line x1="20" y1="10" x2="20" y2="13" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/><line x1="20" y1="27" x2="20" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/><line x1="10" y1="20" x2="13" y2="20" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/><line x1="27" y1="20" x2="30" y2="20" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/></svg>`
+    },
+    trench_mine: {
+        id: 'trench_mine', name: 'Trench Mine', cost: 100,
+        color: '#795548', maxCharges: 2, placesPerBoard: 2,
+        requirement: 'Must be placed on a zero tile adjacent to number tiles',
+        effect: 'Gives style points equal to the total of all adjacent number tiles whenever the style rank goes up.',
+        trigger: 'Passive — activates on each style rank-up',
+        limit: '2 times per board',
+        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#795548"/><rect x="9" y="17" width="22" height="6" rx="3" fill="rgba(255,255,255,0.35)"/><rect x="9" y="24" width="22" height="4" rx="2" fill="rgba(255,255,255,0.2)"/><rect x="9" y="12" width="22" height="4" rx="2" fill="rgba(255,255,255,0.2)"/></svg>`
+    },
+    grenade_mine: {
+        id: 'grenade_mine', name: 'Grenade Mine', cost: 200,
+        color: '#4CAF50', maxCharges: 2, placesPerBoard: 1,
+        requirement: 'Style rank C or above',
+        effect: 'Opens a large area if placed on a mine tile. Ends the run if placed on a non-mine tile.',
+        trigger: 'Instantly on placement',
+        limit: '1 time per board',
+        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#4CAF50"/><circle cx="20" cy="21" r="9" fill="rgba(255,255,255,0.3)"/><rect x="18" y="9" width="4" height="6" rx="2" fill="rgba(255,255,255,0.6)"/><circle cx="20" cy="21" r="4" fill="rgba(255,255,255,0.5)"/><line x1="14" y1="15" x2="17" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="15" x2="23" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/></svg>`
+    },
+    totem_mine: {
+        id: 'totem_mine', name: 'Totem Mine', cost: 250,
+        color: '#FFC107', maxCharges: 2, placesPerBoard: 1,
+        requirement: 'None',
+        effect: 'Prevents the run from ending once when the player would dig up a mine. Becomes permanently unusable afterwards.',
+        trigger: 'Passive — triggers automatically when a mine would end the run',
+        limit: '1 time per board; permanently consumed once triggered',
+        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#FFC107"/><path d="M20 10 L20 30" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" stroke-linecap="round"/><path d="M13 14 C13 14 20 11 27 14" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"/><path d="M13 20 C13 20 20 17 27 20" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"/><path d="M13 26 C13 26 20 23 27 26" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="10" r="3" fill="rgba(255,255,255,0.7)"/></svg>`
+    }
+};
+const ALL_MINE_IDS = Object.keys(MINE_DEFS);
 
 /* ── FEAT ICONS ──────────────────────────────────────────────── */
 const FEAT_ICONS_SVG = {
@@ -62,7 +110,7 @@ const BOARD_CONFIGS = {
     ],
 };
 
-/* ── THEMES (with per-difficulty color theory) ───────────────── */
+/* ── THEMES ─────────────────────────────────────────────────── */
 const THEMES = {
     green:  { name:'Green Theme',  accent:'#4CAF50', cost:0,   diff:{ easy:'#8BC34A', normal:'#4CAF50', hard:'#00695C' } },
     red:    { name:'Red Theme',    accent:'#F44336', cost:150, diff:{ easy:'#FFEB3B', normal:'#FF9800', hard:'#F44336' } },
@@ -74,7 +122,6 @@ const THEMES = {
 
 /* ── FEAT DEFINITIONS ────────────────────────────────────────── */
 const FEAT_DEFS = [
-    /* Board */
     { id:'boards_5',       cat:'board',     name:'Board Clearer I',    desc:'Clear 5 boards total',                    iconKey:'board' },
     { id:'boards_10',      cat:'board',     name:'Board Clearer II',   desc:'Clear 10 boards total',                   iconKey:'board' },
     { id:'boards_20',      cat:'board',     name:'Board Clearer III',  desc:'Clear 20 boards total',                   iconKey:'board' },
@@ -82,34 +129,29 @@ const FEAT_DEFS = [
     { id:'consec_10',      cat:'board',     name:'Streak I',           desc:'Clear 10 consecutive boards',             iconKey:'streak' },
     { id:'consec_20',      cat:'board',     name:'Streak II',          desc:'Clear 20 consecutive boards',             iconKey:'streak' },
     { id:'consec_25',      cat:'board',     name:'Streak III',         desc:'Clear 25 consecutive boards',             iconKey:'streak' },
-    /* Score – run milestones */
     { id:'srun_100',       cat:'score', sub:'run', name:'Style 100',   desc:'Reach 100 style score in a run',          iconKey:'score' },
     { id:'srun_200',       cat:'score', sub:'run', name:'Style 200',   desc:'Reach 200 style score in a run',          iconKey:'score' },
     { id:'srun_350',       cat:'score', sub:'run', name:'Style 350',   desc:'Reach 350 style score in a run',          iconKey:'score' },
     { id:'srun_550',       cat:'score', sub:'run', name:'Style 550',   desc:'Reach 550 style score in a run',          iconKey:'score_hi' },
     { id:'srun_800',       cat:'score', sub:'run', name:'Style 800',   desc:'Reach 800 style score in a run',          iconKey:'score_hi' },
     { id:'srun_1150',      cat:'score', sub:'run', name:'Style 1150',  desc:'Reach 1150 style score in a run',         iconKey:'score_hi' },
-    /* Score – board milestones */
     { id:'sboard_25',      cat:'score', sub:'board', name:'Board Style 25',  desc:'Score 25 style in one board',       iconKey:'score' },
     { id:'sboard_50',      cat:'score', sub:'board', name:'Board Style 50',  desc:'Score 50 style in one board',       iconKey:'score' },
     { id:'sboard_100',     cat:'score', sub:'board', name:'Board Style 100', desc:'Score 100 style in one board',      iconKey:'score_hi' },
     { id:'sboard_200',     cat:'score', sub:'board', name:'Board Style 200', desc:'Score 200 style in one board',      iconKey:'score_hi' },
     { id:'sboard_350',     cat:'score', sub:'board', name:'Board Style 350', desc:'Score 350 style in one board',      iconKey:'score_hi' },
     { id:'sboard_500',     cat:'score', sub:'board', name:'Board Style 500', desc:'Score 500 style in one board',      iconKey:'score_hi' },
-    /* Level */
     { id:'level_10',       cat:'level',     name:'Level 10',           desc:'Reach level 10',                          iconKey:'level' },
     { id:'level_15',       cat:'level',     name:'Level 15',           desc:'Reach level 15',                          iconKey:'level' },
     { id:'level_20',       cat:'level',     name:'Level 20',           desc:'Reach level 20',                          iconKey:'level' },
     { id:'level_100',      cat:'level',     name:'Level 100',          desc:'Reach level 100',                         iconKey:'level_hi' },
     { id:'level_250',      cat:'level',     name:'Level 250',          desc:'Reach level 250',                         iconKey:'level_hi' },
     { id:'level_500',      cat:'level',     name:'Level 500',          desc:'Reach level 500',                         iconKey:'level_hi' },
-    /* Collection */
     { id:'all_themes',     cat:'collector', name:'Color Collector',    desc:'Purchase all available themes',           iconKey:'collector' },
     { id:'fun_code',       cat:'collector', name:'Cheat Enabled',      desc:'Enter a Fun Code',                        iconKey:'fun' },
     { id:'all_boards_done',cat:'collector', name:'Board Completionist',desc:'Complete all board feats',                iconKey:'meta' },
     { id:'all_score_done', cat:'collector', name:'Score Completionist',desc:'Complete all score feats',                iconKey:'meta' },
     { id:'all_level_done', cat:'collector', name:'Level Completionist',desc:'Complete all level feats',                iconKey:'meta' },
-    /* Original / Secret (hidden until unlocked) */
     { id:'circle_board',   cat:'original',  name:'Geometric Shift',   desc:'Transform the board into a circle',       iconKey:'circle',  secret:true },
     { id:'score_69',       cat:'original',  name:'Nice.',             desc:'Score exactly 69 style in one action',    iconKey:'score_hi',secret:true },
     { id:'ultrakill',      cat:'original',  name:"AIN'T SEEN NOTHIN'",desc:'Discover the hidden ULTRAKILL Easter egg', iconKey:'secret',  secret:true },
@@ -157,24 +199,31 @@ class SoundEngine {
             const ctx = this._ctx(); if (!ctx) return;
             const t = ctx.currentTime;
             switch(sound) {
-                case 'dig':      this._tone(820,'sine',t,0.003,0.042,0.09); this._tone(1160,'triangle',t+0.016,0.002,0.038,0.04); break;
-                case 'reveal':   this._tone(440,'sine',t,0.002,0.025,0.055); this._tone(660,'sine',t+0.012,0.001,0.022,0.03); break;
-                case 'flag':     this._tone(600,'triangle',t,0.004,0.068,0.08); this._tone(1020,'sine',t+0.032,0.003,0.058,0.06); this._tone(800,'square',t+0.066,0.002,0.04,0.028); this._tone(1400,'sine',t+0.09,0.001,0.03,0.018); break;
-                case 'unflag':   this._tone(400,'sine',t,0.004,0.065,0.07); this._tone(280,'triangle',t+0.03,0.003,0.06,0.04); break;
-                case 'mine':     this._noise(0.42,0.36); this._tone(110,'sawtooth',t,0.003,0.36,0.14); this._tone(180,'sawtooth',t+0.04,0.003,0.28,0.10); break;
-                case 'btn':      this._tone(480,'sine',t,0.003,0.040,0.06); break;
-                case 'complete': [392,523,659,784,1047].forEach((f,i) => this._tone(f,'triangle',t+i*0.07,0.012,0.22,0.1)); this._tone(1568,'sine',t+0.33,0.006,0.28,0.08); this._tone(1047,'sine',t+0.38,0.004,0.22,0.07); break;
-                case 'lvlup':    [523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.19,0.11)); break;
-                case 'purchase': this._tone(880,'triangle',t,0.004,0.095,0.09); this._tone(1100,'sine',t+0.048,0.004,0.13,0.09); this._tone(1650,'sine',t+0.11,0.003,0.19,0.08); this._tone(1047,'triangle',t+0.18,0.003,0.14,0.07); break;
-                case 'error':    this._tone(160,'sawtooth',t,0.005,0.15,0.09); this._tone(120,'sawtooth',t+0.07,0.004,0.14,0.07); break;
-                case 'redeem':   this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.08,0.004,0.12,0.09); this._tone(1320,'sine',t+0.16,0.004,0.18,0.1); break;
-                case 'modal':    this._tone(540,'sine',t,0.004,0.075,0.07); this._tone(680,'sine',t+0.035,0.003,0.065,0.05); break;
-                case 'tab':      this._tone(620,'sine',t,0.003,0.048,0.058); this._tone(780,'sine',t+0.02,0.002,0.038,0.04); break;
-                case 'rankup':   this._tone(880,'sine',t,0.005,0.085,0.13); this._tone(1100,'sine',t+0.075,0.004,0.13,0.11); this._tone(1320,'triangle',t+0.15,0.003,0.16,0.09); break;
-                case 'quickdig': this._tone(1260,'sine',t,0.003,0.038,0.092); this._tone(1000,'triangle',t+0.028,0.003,0.065,0.075); this._tone(1500,'sine',t+0.052,0.002,0.04,0.04); break;
-                case 'ultrakill':this._noise(0.18,0.28); this._tone(200,'sawtooth',t,0.002,0.28,0.20); this._tone(140,'sawtooth',t+0.06,0.003,0.22,0.14); break;
-                case 'runover':  this._noise(0.28,0.22); this._tone(240,'triangle',t,0.005,0.20,0.09); this._tone(160,'sine',t+0.10,0.006,0.26,0.07); this._tone(110,'sawtooth',t+0.22,0.004,0.22,0.06); break;
-                case 'boardwin': [392,523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.28,0.11)); this._tone(1568,'sine',t+0.38,0.006,0.35,0.09); this._tone(2093,'sine',t+0.48,0.005,0.30,0.09); break;
+                case 'dig':       this._tone(820,'sine',t,0.003,0.042,0.09); this._tone(1160,'triangle',t+0.016,0.002,0.038,0.04); break;
+                case 'reveal':    this._tone(440,'sine',t,0.002,0.025,0.055); this._tone(660,'sine',t+0.012,0.001,0.022,0.03); break;
+                case 'flag':      this._tone(600,'triangle',t,0.004,0.068,0.08); this._tone(1020,'sine',t+0.032,0.003,0.058,0.06); this._tone(800,'square',t+0.066,0.002,0.04,0.028); this._tone(1400,'sine',t+0.09,0.001,0.03,0.018); break;
+                case 'unflag':    this._tone(400,'sine',t,0.004,0.065,0.07); this._tone(280,'triangle',t+0.03,0.003,0.06,0.04); break;
+                case 'mine':      this._noise(0.42,0.36); this._tone(110,'sawtooth',t,0.003,0.36,0.14); this._tone(180,'sawtooth',t+0.04,0.003,0.28,0.10); break;
+                case 'btn':       this._tone(480,'sine',t,0.003,0.040,0.06); break;
+                case 'complete':  [392,523,659,784,1047].forEach((f,i) => this._tone(f,'triangle',t+i*0.07,0.012,0.22,0.1)); this._tone(1568,'sine',t+0.33,0.006,0.28,0.08); this._tone(1047,'sine',t+0.38,0.004,0.22,0.07); break;
+                case 'lvlup':     [523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.19,0.11)); break;
+                case 'purchase':  this._tone(880,'triangle',t,0.004,0.095,0.09); this._tone(1100,'sine',t+0.048,0.004,0.13,0.09); this._tone(1650,'sine',t+0.11,0.003,0.19,0.08); this._tone(1047,'triangle',t+0.18,0.003,0.14,0.07); break;
+                case 'error':     this._tone(160,'sawtooth',t,0.005,0.15,0.09); this._tone(120,'sawtooth',t+0.07,0.004,0.14,0.07); break;
+                case 'redeem':    this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.08,0.004,0.12,0.09); this._tone(1320,'sine',t+0.16,0.004,0.18,0.1); break;
+                case 'modal':     this._tone(540,'sine',t,0.004,0.075,0.07); this._tone(680,'sine',t+0.035,0.003,0.065,0.05); break;
+                case 'tab':       this._tone(620,'sine',t,0.003,0.048,0.058); this._tone(780,'sine',t+0.02,0.002,0.038,0.04); break;
+                case 'rankup':    this._tone(880,'sine',t,0.005,0.085,0.13); this._tone(1100,'sine',t+0.075,0.004,0.13,0.11); this._tone(1320,'triangle',t+0.15,0.003,0.16,0.09); break;
+                case 'quickdig':  this._tone(1260,'sine',t,0.003,0.038,0.092); this._tone(1000,'triangle',t+0.028,0.003,0.065,0.075); this._tone(1500,'sine',t+0.052,0.002,0.04,0.04); break;
+                case 'ultrakill': this._noise(0.18,0.28); this._tone(200,'sawtooth',t,0.002,0.28,0.20); this._tone(140,'sawtooth',t+0.06,0.003,0.22,0.14); break;
+                case 'runover':   this._noise(0.28,0.22); this._tone(240,'triangle',t,0.005,0.20,0.09); this._tone(160,'sine',t+0.10,0.006,0.26,0.07); this._tone(110,'sawtooth',t+0.22,0.004,0.22,0.06); break;
+                case 'boardwin':  [392,523,659,784,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.065,0.012,0.28,0.11)); this._tone(1568,'sine',t+0.38,0.006,0.35,0.09); this._tone(2093,'sine',t+0.48,0.005,0.30,0.09); break;
+                case 'slot_spin': this._tone(300 + Math.random()*200,'triangle',t,0.002,0.04,0.06); break;
+                case 'slot_stop': this._tone(660,'sine',t,0.004,0.08,0.1); this._tone(880,'sine',t+0.06,0.003,0.1,0.08); break;
+                case 'mine_place':this._tone(700,'triangle',t,0.006,0.08,0.1); this._tone(500,'sine',t+0.05,0.004,0.1,0.08); break;
+                case 'mine_mine_fx': [1047,1319,1568].forEach((f,i) => this._tone(f,'triangle',t+i*0.04,0.008,0.12,0.1)); break;
+                case 'grenade_fx':   this._noise(0.5,0.5); this._tone(80,'sawtooth',t,0.002,0.45,0.2); this._tone(120,'sine',t+0.05,0.003,0.35,0.15); break;
+                case 'totem_fx':     [523,659,784,1047,1319,1568].forEach((f,i) => this._tone(f,'sine',t+i*0.06,0.006,0.18,0.1)); break;
+                case 'scratch_reveal': this._tone(880,'sine',t,0.005,0.1,0.09); this._tone(1100,'sine',t+0.07,0.004,0.12,0.09); break;
             }
         } catch(e) {}
     }
@@ -182,26 +231,38 @@ class SoundEngine {
 
 /* ── FLOATING BACKGROUND ────────────────────────────────────── */
 class FloatingBackground {
-    constructor() {
+    constructor(particleAmount) {
         this.container = document.getElementById('floating-bg');
-        this.shapes = []; this.maxShapes = 14; this.init();
+        this.shapes = [];
+        this.particleAmount = particleAmount !== undefined ? particleAmount : 1.0;
+        this.maxShapes = Math.max(2, Math.round(14 * this.particleAmount));
+        this.spawnInterval = null;
+        this.init();
     }
     _getThemeColor() {
         return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4CAF50';
     }
     _hexToRgb(hex) {
-        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, '#$1$1$2$2$3$3'));
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,'#$1$1$2$2$3$3'));
         return r ? { r:parseInt(r[1],16), g:parseInt(r[2],16), b:parseInt(r[3],16) } : { r:100,g:160,b:200 };
     }
     _makeColor(opacity) {
-        const { r, g, b } = this._hexToRgb(this._getThemeColor());
+        const { r,g,b } = this._hexToRgb(this._getThemeColor());
         return `rgba(${r},${g},${b},${opacity})`;
     }
+    setParticleAmount(amt) {
+        this.particleAmount = amt;
+        this.maxShapes = Math.max(2, Math.round(14 * amt));
+        if (this.spawnInterval) { clearInterval(this.spawnInterval); this.spawnInterval = null; }
+        if (amt > 0) this.spawnInterval = setInterval(() => this.spawnShape(), Math.max(1200, 2400 / amt));
+    }
     init() {
-        for (let i = 0; i < 6; i++) setTimeout(() => this.spawnShape(), i * 400);
-        setInterval(() => this.spawnShape(), 2400);
+        const count = Math.max(0, Math.round(6 * this.particleAmount));
+        for (let i = 0; i < count; i++) setTimeout(() => this.spawnShape(), i * 400);
+        this.spawnInterval = setInterval(() => this.spawnShape(), Math.max(1200, 2400));
     }
     spawnShape() {
+        if (this.particleAmount <= 0) return;
         if (this.shapes.length >= this.maxShapes) {
             const old = this.shapes.shift();
             if (old && old.parentNode) old.parentNode.removeChild(old);
@@ -213,8 +274,8 @@ class FloatingBackground {
         const size = 28 + Math.random() * 60;
         shape.style.width = `${size}px`; shape.style.height = `${size}px`;
         shape.style.left  = `${Math.random() * 100}%`;
-        shape.style.animationDuration = `${16 + Math.random() * 16}s`;
-        const opacity = 0.04 + Math.random() * 0.06;
+        shape.style.animationDuration = `${14 + Math.random() * 18}s`;
+        const opacity = 0.04 + Math.random() * 0.07;
         shape.innerHTML = FLOAT_SVGS[type](this._makeColor(opacity));
         this.container.appendChild(shape);
         this.shapes.push(shape);
@@ -222,7 +283,7 @@ class FloatingBackground {
             const idx = this.shapes.indexOf(shape);
             if (idx > -1) this.shapes.splice(idx, 1);
             if (shape.parentNode) shape.parentNode.removeChild(shape);
-        }, 38000);
+        }, 40000);
     }
 }
 
@@ -236,7 +297,7 @@ class StyleMeter {
         this.active   = false;
         this.decayFrame = null;
         this.lastDecayTick = 0;
-        this._69Pending = false;
+        this.onRankUp = null;
 
         this.el         = document.getElementById('style-meter');
         this.ringFill   = document.getElementById('sm-ring-fill');
@@ -265,7 +326,6 @@ class StyleMeter {
         this._update();
     }
 
-    /* Returns { scoreGain, checkFor69 } */
     onAction(type) {
         if (!this.active) return 0;
         const now = Date.now();
@@ -278,8 +338,8 @@ class StyleMeter {
         if      (type === 'dig')      { fillBoost = 0.08; scoreGain = 1 * mult; }
         else if (type === 'quickdig') { fillBoost = 0.18; scoreGain = 3 * mult; }
         else if (type === 'cascade')  { fillBoost = 0.015; scoreGain = 0.4 * mult; }
+        else if (type === 'trench')   { fillBoost = 0; scoreGain = 0; } // handled externally
 
-        /* Speed bonus */
         if (dt < 1.5) fillBoost += 0.035;
         else if (dt < 3) fillBoost += 0.015;
 
@@ -287,13 +347,16 @@ class StyleMeter {
         const prevFloor = Math.floor(this.score);
         this.score += scoreGain;
         const newFloor  = Math.floor(this.score);
-
-        /* Check for 69 crossing */
         const hit69 = prevFloor < 69 && newFloor >= 69;
 
         if (this.fill >= 1) this._rankUp();
         this._update();
         return { scoreGain, hit69 };
+    }
+
+    addScore(pts) {
+        this.score += pts;
+        this._update();
     }
 
     _rankUp() {
@@ -305,8 +368,9 @@ class StyleMeter {
             void this.rankWrap.offsetWidth;
             this.rankWrap.classList.add('rank-bump');
             this.rankWrap.classList.toggle('z-smolder', this.rank === 'Z');
-            setTimeout(() => this.rankWrap && this.rankWrap.classList.remove('rank-bump'), 600);
+            setTimeout(() => this.rankWrap && this.rankWrap.classList.remove('rank-bump'), 700);
         }
+        if (this.onRankUp) this.onRankUp(this.rank);
     }
     _rankDown() {
         if (this.rankIdx <= 0) { this.fill = 0; return; }
@@ -394,13 +458,12 @@ class Minesweeper {
         this.styleMeter = new StyleMeter();
         this.notifyQ    = new FeatNotifyQueue();
 
-        /* board state */
         this.rows = 10; this.cols = 8; this.mines = 10;
         this.board = []; this.revealed = []; this.flagged = [];
         this.gameOver = false; this.firstClick = true;
         this.timer = 0; this.timerInterval = null;
         this.mode = 'dig'; this.circleMode = false;
-        this.zoomLevel = 1; this.minZoom = 0.5; this.maxZoom = 2.5;
+        this.zoomLevel = 1; this.minZoom = 0.35; this.maxZoom = 2.5;
         this.scrollX = 0; this.scrollY = 0;
         this.velocityX = 0; this.velocityY = 0;
         this.isDragging = false; this.hasDragged = false;
@@ -408,34 +471,46 @@ class Minesweeper {
         this.lastX = 0; this.lastY = 0;
         this.dragThreshold = 8; this.animationId = null;
 
-        /* style score tracking */
         this.boardStyleScore = 0;
         this.runStyleScore   = 0;
 
-        /* save slot */
+        /* Run points (separate from main points) */
+        this.runPoints = 0;
+
+        /* Particle amount */
+        this.particleAmount = parseFloat(localStorage.getItem('ms_particle_amount') ?? '1.0');
+
         this.currentSlot = parseInt(localStorage.getItem('ms_save_slot') || '0');
 
-        /* meta */
         this.points       = parseInt(localStorage.getItem('ms_points') || '0');
         this.level        = parseInt(localStorage.getItem('ms_level')  || '0');
         this.hardUnlocked = localStorage.getItem('ms_hard_unlocked') === 'true';
         this.infiniteCoins = localStorage.getItem('ms_infinite_coins') === 'true';
 
-        /* themes */
         this.ownedThemes  = JSON.parse(localStorage.getItem('ms_owned_themes') || '["green"]');
         this.activeTheme  = localStorage.getItem('ms_active_theme') || 'green';
         this._previewTheme = null;
 
-        /* feats */
         this.feats = this._loadFeats();
         this.unviewedFeatIds = JSON.parse(localStorage.getItem('ms_unviewed_feats') || '[]');
         this.newFeatItemIds = JSON.parse(localStorage.getItem('ms_new_feat_items') || localStorage.getItem('ms_unviewed_feats') || '[]');
 
-        /* run state */
+        /* Player mines loadout (max 6) */
+        this.playerMines = [];
+        /* Totem mine triggered flag for this run */
+        this.totemTriggered = false;
+        /* Banned mine IDs from slot machine for this run */
+        this.bannedMineIds = [];
+        /* Trench mines placed on board this board (cleared each board) */
+        this.trenchMines = []; // [{r, c}]
+        /* Scratch card used this market visit */
+        this.scratchUsed = false;
+        /* Slot machine used this market visit */
+        this.slotUsed = false;
+
         this.runState = this._loadRunState();
         this._loadActiveSlotSnapshot();
 
-        /* menu UI */
         this.currentDifficulty = this.runState ? this.runState.difficulty : null;
         this.carouselIndex     = this.runState ? this.runState.currentBoard : 0;
         this.storeTab = 'themes';
@@ -443,11 +518,12 @@ class Minesweeper {
         this.texts = {};
         this._lastTextJson = '';
 
-        /* Easter egg trackers */
         this._redThemeClicks  = [];
         this._saveSwitchTimes = [];
         this._tingTriggered   = false;
         this._tingAnomalySet  = false;
+
+        this.floatingBg = null;
 
         this.applyTheme(this.activeTheme);
         if (this.infiniteCoins) document.body.classList.add('dev-mode');
@@ -460,7 +536,77 @@ class Minesweeper {
         this.refreshMenuButtons();
         this._updateNotifDot();
         this._updateTabDots();
-        new FloatingBackground();
+
+        /* Wire style meter rank-up callback for trench mine */
+        this.styleMeter.onRankUp = (rank) => this._onStyleRankUp(rank);
+
+        /* Show loading screen */
+        this._showLoadingScreen();
+    }
+
+    /* ══ LOADING SCREEN ══════════════════════════════════════════ */
+    _showLoadingScreen() {
+        const screen = document.getElementById('loading-screen');
+        const fillEl = document.getElementById('lc-fill');
+        const pctEl  = document.getElementById('loading-pct');
+        const textEl = document.getElementById('loading-text');
+        if (!screen) { this._afterLoading(); return; }
+
+        const CIRCUMF = 2 * Math.PI * 38; // r=38
+        fillEl.style.strokeDasharray = CIRCUMF;
+        fillEl.style.strokeDashoffset = CIRCUMF;
+
+        const duration = 2000 + Math.random() * 1000; // 2-3 seconds
+        const startTime = performance.now();
+        let cycleRotation = -90; // start at top
+        let cycleCount = 0;
+        const ROTATE_PER_CYCLE = 40;
+
+        const dots = ['', '.', '..', '...'];
+        let dotIdx = 0;
+        const dotInterval = setInterval(() => {
+            dotIdx = (dotIdx + 1) % dots.length;
+            if (textEl) textEl.textContent = `Loading${dots[dotIdx]}`;
+        }, 320);
+
+        const animate = (now) => {
+            const elapsed = now - startTime;
+            if (elapsed >= duration) {
+                clearInterval(dotInterval);
+                fillEl.style.strokeDashoffset = 0;
+                if (pctEl) pctEl.textContent = '100%';
+                setTimeout(() => {
+                    screen.classList.add('fade-out');
+                    setTimeout(() => {
+                        screen.style.display = 'none';
+                        this._afterLoading();
+                    }, 500);
+                }, 200);
+                return;
+            }
+
+            /* Cycle: fill from 0 to 100%, reset, rotate, repeat */
+            const CYCLE_DURATION = 700;
+            const cycleTime = elapsed % CYCLE_DURATION;
+            const cycleProgress = cycleTime / CYCLE_DURATION;
+            const newCycle = Math.floor(elapsed / CYCLE_DURATION);
+            if (newCycle > cycleCount) {
+                cycleCount = newCycle;
+                cycleRotation += ROTATE_PER_CYCLE;
+            }
+            fillEl.style.transform = `rotate(${cycleRotation}deg)`;
+            const dashOff = CIRCUMF * (1 - cycleProgress);
+            fillEl.style.strokeDashoffset = dashOff;
+            const pct = Math.round(cycleProgress * 100);
+            if (pctEl) pctEl.textContent = `${pct}%`;
+
+            requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    }
+
+    _afterLoading() {
+        this.floatingBg = new FloatingBackground(this.particleAmount);
     }
 
     /* ══ RUN STATE ═════════════════════════════════════════════ */
@@ -476,18 +622,13 @@ class Minesweeper {
 
     /* ══ FEATS ═════════════════════════════════════════════════ */
     _loadFeats() {
-        const d = {
-            boardsCleared:0, currentConsecutive:0, bestConsecutive:0,
-            totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0,
-            funCodeUsed:false, completed:{}
-        };
+        const d = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
         try {
             const s = localStorage.getItem('ms_feats');
             return s ? { ...d, ...JSON.parse(s) } : d;
         } catch(e) { return d; }
     }
     _saveFeats() { localStorage.setItem('ms_feats', JSON.stringify(this.feats)); }
-
     _defaultFeats() {
         return { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
     }
@@ -509,6 +650,11 @@ class Minesweeper {
             document.body.classList.toggle('dark-mode', d.darkMode);
             localStorage.setItem('darkMode', d.darkMode);
         }
+        /* Restore run-specific data */
+        if (d.runPoints !== undefined) this.runPoints = d.runPoints;
+        if (d.playerMines !== undefined) this.playerMines = d.playerMines;
+        if (d.totemTriggered !== undefined) this.totemTriggered = d.totemTriggered;
+        if (d.bannedMineIds !== undefined) this.bannedMineIds = d.bannedMineIds;
     }
 
     _isFeatDone(id) {
@@ -548,7 +694,6 @@ class Minesweeper {
             case 'level_100':  return this.level >= 100;
             case 'level_250':  return this.level >= 250;
             case 'level_500':  return this.level >= 500;
-            /* secrets only set directly */
             case 'circle_board': case 'score_69': case 'ultrakill': case 'ting': case 'edgelord_phase':
                 return c[id] === true;
         }
@@ -559,19 +704,13 @@ class Minesweeper {
         let anyNew = false;
         for (const def of FEAT_DEFS) {
             if (!this.feats.completed[def.id] && this._isFeatDone(def.id)) {
-                this.feats.completed[def.id] = true;
-                anyNew = true;
+                this.feats.completed[def.id] = true; anyNew = true;
                 if (!this.unviewedFeatIds.includes(def.id)) this.unviewedFeatIds.push(def.id);
                 if (!this.newFeatItemIds.includes(def.id)) this.newFeatItemIds.push(def.id);
                 this.notifyQ.push(def);
             }
         }
-        if (anyNew) {
-            this._saveFeats();
-            this._saveFeatIndicators();
-            this._updateNotifDot();
-            this._updateTabDots();
-        }
+        if (anyNew) { this._saveFeats(); this._saveFeatIndicators(); this._updateNotifDot(); this._updateTabDots(); }
     }
 
     _unlockSecret(id) {
@@ -583,10 +722,7 @@ class Minesweeper {
             if (!this.newFeatItemIds.includes(id)) this.newFeatItemIds.push(id);
             this.notifyQ.push(def);
         }
-        this._saveFeats();
-        this._saveFeatIndicators();
-        this._updateNotifDot();
-        this._updateTabDots();
+        this._saveFeats(); this._saveFeatIndicators(); this._updateNotifDot(); this._updateTabDots();
     }
 
     _updateNotifDot() {
@@ -638,6 +774,10 @@ class Minesweeper {
             unviewedFeatIds: this.unviewedFeatIds,
             newFeatItemIds: this.newFeatItemIds,
             darkMode: document.body.classList.contains('dark-mode'),
+            runPoints: this.runPoints,
+            playerMines: this.playerMines,
+            totemTriggered: this.totemTriggered,
+            bannedMineIds: this.bannedMineIds,
             timestamp: Date.now()
         };
     }
@@ -657,12 +797,16 @@ class Minesweeper {
             this.points = d.points || 0; this.level = d.level || 0;
             this.hardUnlocked = d.hardUnlocked || false;
             this.runState = d.runState || null;
-            this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{}, ...(d.feats||{}) };
+            this.feats = { ...this._defaultFeats(), ...(d.feats||{}) };
             this.unviewedFeatIds = d.unviewedFeatIds || [];
             this.newFeatItemIds = d.newFeatItemIds || this.unviewedFeatIds.slice();
             this.ownedThemes = d.ownedThemes || ['green'];
             this.activeTheme = d.activeTheme || 'green';
             this.infiniteCoins = d.infiniteCoins === true;
+            this.runPoints = d.runPoints || 0;
+            this.playerMines = d.playerMines || [];
+            this.totemTriggered = d.totemTriggered || false;
+            this.bannedMineIds = d.bannedMineIds || [];
             if (d.darkMode !== undefined) {
                 document.body.classList.toggle('dark-mode', d.darkMode);
                 const tog = document.getElementById('dark-mode-toggle');
@@ -672,10 +816,10 @@ class Minesweeper {
         } else {
             this.points = 0; this.level = 0; this.hardUnlocked = false;
             this.runState = null;
-            this.feats = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
-            this.unviewedFeatIds = [];
-            this.newFeatItemIds = [];
+            this.feats = this._defaultFeats();
+            this.unviewedFeatIds = []; this.newFeatItemIds = [];
             this.ownedThemes = ['green']; this.activeTheme = 'green'; this.infiniteCoins = false;
+            this.runPoints = 0; this.playerMines = []; this.totemTriggered = false; this.bannedMineIds = [];
         }
         localStorage.setItem('ms_points', this.points);
         localStorage.setItem('ms_level', this.level);
@@ -683,8 +827,7 @@ class Minesweeper {
         localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
         localStorage.setItem('ms_active_theme', this.activeTheme);
         localStorage.setItem('ms_infinite_coins', this.infiniteCoins);
-        this._saveFeats();
-        this._saveFeatIndicators();
+        this._saveFeats(); this._saveFeatIndicators();
         document.body.classList.toggle('dev-mode', this.infiniteCoins);
         this.applyTheme(this.activeTheme);
         this.currentDifficulty = this.runState ? this.runState.difficulty : null;
@@ -712,7 +855,6 @@ class Minesweeper {
             if (isEmpty) {
                 div.innerHTML = `<div class="save-slot-header"><span class="save-slot-name">Slot ${i+1}</span><span class="save-slot-badge" style="background:var(--border);color:var(--text-muted)">Empty</span></div><span class="save-slot-info">No data yet</span>`;
             } else {
-                /* For active slot use live values; for others use stored */
                 const lvl  = isActive ? this.level : (d && d.level || 0);
                 const pts  = isActive ? this.points : (d && d.points || 0);
                 const inf  = isActive ? this.infiniteCoins : (d && d.infiniteCoins === true);
@@ -740,6 +882,7 @@ class Minesweeper {
             this.feats = this._defaultFeats();
             this.unviewedFeatIds = []; this.newFeatItemIds = [];
             this.ownedThemes = ['green']; this.activeTheme = 'green'; this.infiniteCoins = false;
+            this.runPoints = 0; this.playerMines = []; this.totemTriggered = false; this.bannedMineIds = [];
             this.currentDifficulty = null; this.carouselIndex = 0;
             localStorage.setItem('ms_points', this.points);
             localStorage.setItem('ms_level', this.level);
@@ -764,6 +907,47 @@ class Minesweeper {
         return `${Math.floor(s/86400)}d ago`;
     }
 
+    /* ══ RUN POINTS ═══════════════════════════════════════════ */
+    addRunPoints(n) {
+        this.runPoints += n;
+        this._updateRunPtsHud();
+        this.saveCurrentToSlot(this.currentSlot);
+    }
+    spendRunPoints(n) {
+        if (this.runPoints < n && !this.infiniteCoins) return false;
+        if (!this.infiniteCoins) this.runPoints -= n;
+        this._updateRunPtsHud();
+        this.saveCurrentToSlot(this.currentSlot);
+        return true;
+    }
+    _updateRunPtsHud() {
+        const el = document.getElementById('run-pts-hud-val');
+        if (!el) return;
+        const prev = parseInt(el.textContent) || 0;
+        el.textContent = this.runPoints;
+        if (this.runPoints !== prev) {
+            el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+            setTimeout(() => el.classList.remove('bump'), 250);
+        }
+    }
+    _flushRunPointsToMain() {
+        if (this.runPoints > 0) {
+            this.points += this.runPoints;
+            localStorage.setItem('ms_points', this.points);
+            this.runPoints = 0;
+            this.renderLevelBar();
+        }
+    }
+    _resetRunState() {
+        this.runPoints = 0;
+        this.playerMines = [];
+        this.totemTriggered = false;
+        this.bannedMineIds = [];
+        this.trenchMines = [];
+        this._updateRunPtsHud();
+        this.renderMineHud();
+    }
+
     /* ══ THEMES ════════════════════════════════════════════════ */
     applyTheme(key) {
         const t = THEMES[key]; if (!t) return;
@@ -783,7 +967,6 @@ class Minesweeper {
     revertPreview() { this._previewTheme = null; this.applyTheme(this.activeTheme); }
     selectTheme(key) {
         if (!this.ownedThemes.includes(key)) return;
-        /* ULTRAKILL: red theme clicked 5x in 1 second */
         if (key === 'red') this._trackRedTheme();
         this.activeTheme = key;
         localStorage.setItem('ms_active_theme', key);
@@ -843,7 +1026,6 @@ class Minesweeper {
                 <div class="theme-swatches"><div class="swatch" style="background:${adj(s1)}"></div><div class="swatch" style="background:${adj(s2)}"></div><div class="swatch" style="background:${adj(s3)}"></div><div class="swatch" style="background:${t.accent}"></div></div>
                 <span class="theme-card-name">${t.name}</span>${pill}</div>`;
         }).join('')}</div>`;
-
         panel.querySelectorAll('.theme-card').forEach(card => {
             const key = card.dataset.themeKey;
             let pressTimer = null, isPreviewing = false;
@@ -864,19 +1046,13 @@ class Minesweeper {
         if (!list) return;
         const isDev = this.infiniteCoins;
         this._markFeatTabSeen(tab);
-
         if (tab === 'original') {
             const secretDefs = FEAT_DEFS.filter(d => d.cat === 'original');
             const unlockedSecrets = secretDefs.filter(d => this.feats.completed && this.feats.completed[d.id]);
-            if (unlockedSecrets.length === 0) {
-                list.innerHTML = `<div class="feats-empty-msg">Nothing here yet...</div>`;
-                return;
-            }
+            if (unlockedSecrets.length === 0) { list.innerHTML = `<div class="feats-empty-msg">Nothing here yet...</div>`; return; }
             list.innerHTML = unlockedSecrets.map(d => this._renderFeatItem(d, true, isDev)).join('');
-            this._bindFeatItemMarkers(list);
-            return;
+            this._bindFeatItemMarkers(list); return;
         }
-
         if (tab === 'score') {
             const runDefs   = FEAT_DEFS.filter(d => d.cat === 'score' && d.sub === 'run');
             const boardDefs = FEAT_DEFS.filter(d => d.cat === 'score' && d.sub === 'board');
@@ -885,10 +1061,8 @@ class Minesweeper {
                 runDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('') +
                 `<div class="feats-section-header" style="margin-top:8px">Board Score</div>` +
                 boardDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
-            this._bindFeatItemMarkers(list);
-            return;
+            this._bindFeatItemMarkers(list); return;
         }
-
         if (tab === 'board') {
             const streakDefs = FEAT_DEFS.filter(d => d.cat === 'board' && d.id.startsWith('consec_'));
             const clearDefs = FEAT_DEFS.filter(d => d.cat === 'board' && d.id.startsWith('boards_'));
@@ -897,15 +1071,10 @@ class Minesweeper {
                 streakDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('') +
                 `<div class="feats-section-header" style="margin-top:8px">Board Clears</div>` +
                 clearDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
-            this._bindFeatItemMarkers(list);
-            return;
+            this._bindFeatItemMarkers(list); return;
         }
-
         const defs = FEAT_DEFS.filter(d => d.cat === tab && !d.sub);
-        if (defs.length === 0) {
-            list.innerHTML = `<div class="feats-empty-msg">Nothing here yet.</div>`;
-            return;
-        }
+        if (defs.length === 0) { list.innerHTML = `<div class="feats-empty-msg">Nothing here yet.</div>`; return; }
         list.innerHTML = defs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
         this._bindFeatItemMarkers(list);
     }
@@ -929,16 +1098,13 @@ class Minesweeper {
             return def && def.cat !== tab;
         });
         if (before !== this.unviewedFeatIds.length) this._saveFeatIndicators();
-        this._updateNotifDot();
-        this._updateTabDots();
+        this._updateNotifDot(); this._updateTabDots();
     }
-
     _bindFeatItemMarkers(list) {
         list.querySelectorAll('.feat-item[data-feat-id]').forEach(item => {
             item.addEventListener('click', () => this._markFeatItemSeen(item.dataset.featId));
         });
     }
-
     _markFeatItemSeen(id) {
         const before = this.newFeatItemIds.length + this.unviewedFeatIds.length;
         this.newFeatItemIds = this.newFeatItemIds.filter(x => x !== id);
@@ -946,10 +1112,8 @@ class Minesweeper {
         const marker = document.querySelector(`.feat-item[data-feat-id="${id}"] .feat-new-marker`);
         if (marker) marker.remove();
         if (before !== this.newFeatItemIds.length + this.unviewedFeatIds.length) this._saveFeatIndicators();
-        this._updateNotifDot();
-        this._updateTabDots();
+        this._updateNotifDot(); this._updateTabDots();
     }
-
     _updateTabDots() {
         document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
             const tab = btn.dataset.featsTab;
@@ -961,6 +1125,39 @@ class Minesweeper {
             });
             dot.classList.toggle('hidden', !hasDot);
         });
+    }
+
+    /* ══ COLLECTION MODAL ════════════════════════════════════ */
+    renderCollectionMines() {
+        const panel = document.getElementById('coll-panel-mines');
+        if (!panel) return;
+        panel.innerHTML = `<div class="mines-collection-grid">${ALL_MINE_IDS.map(id => {
+            const def = MINE_DEFS[id];
+            return `<div class="mine-coll-card" data-mine-id="${id}">
+                <div class="mine-coll-icon" style="background:${def.color}22;border:2px solid ${def.color}44">${def.icon()}</div>
+                <span class="mine-coll-name">${def.name}</span>
+            </div>`;
+        }).join('')}</div>`;
+        panel.querySelectorAll('.mine-coll-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.sfx.play('btn');
+                this.showMineInfo(card.dataset.mineId);
+            });
+        });
+    }
+
+    showMineInfo(mineId) {
+        const def = MINE_DEFS[mineId]; if (!def) return;
+        document.getElementById('mine-info-icon-wrap').innerHTML = def.icon();
+        document.getElementById('mine-info-icon-wrap').style.background = def.color + '22';
+        document.getElementById('mine-info-icon-wrap').style.border = `2px solid ${def.color}66`;
+        document.getElementById('mine-info-name').textContent = def.name;
+        document.getElementById('mine-info-req').textContent = def.requirement;
+        document.getElementById('mine-info-effect').textContent = def.effect;
+        document.getElementById('mine-info-trigger').textContent = def.trigger;
+        document.getElementById('mine-info-limit').textContent = def.limit;
+        document.getElementById('mine-info-modal').classList.add('show');
+        this.sfx.play('modal');
     }
 
     /* ══ LEVEL / POINTS ════════════════════════════════════════ */
@@ -997,6 +1194,13 @@ class Minesweeper {
         const display = document.getElementById('sfx-vol-display');
         if (slider)  slider.value = Math.round(vol * 100);
         if (display) display.textContent = `${Math.round(vol*100)}%`;
+
+        const pAmt = parseFloat(localStorage.getItem('ms_particle_amount') ?? '1.0');
+        this.particleAmount = pAmt;
+        const pSlider  = document.getElementById('particle-amount-slider');
+        const pDisplay = document.getElementById('particle-amount-display');
+        if (pSlider)  pSlider.value = Math.round(pAmt * 100);
+        if (pDisplay) pDisplay.textContent = `${Math.round(pAmt * 100)}%`;
     }
 
     /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
@@ -1177,8 +1381,11 @@ class Minesweeper {
         this._saveRunState();
         this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
         this.runStyleScore = 0; this.boardStyleScore = 0;
+        this._resetRunState();
         this.sfx.play('btn');
-        this.transitionToGame(() => { this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator(); });
+        this.transitionToGame(() => {
+            this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
+        });
     }
     continueRun() {
         if (!this.runState) return;
@@ -1206,16 +1413,21 @@ class Minesweeper {
                 this.renderBoard(); this.renderSavedState(); this.updateDisplay();
                 this.bindGameEvents(); this.setupScrolling();
                 if (!this.firstClick) { if (this.timerInterval) clearInterval(this.timerInterval); this.startTimer(); }
+                this._autoFitBoard();
             } else {
                 this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling();
             }
             this.updateBoardIndicator();
+            this._updateRunPtsHud();
+            this.renderMineHud();
         });
     }
     abortRun() {
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
         this.styleMeter.hide(); this.styleMeter.reset();
+        this._flushRunPointsToMain();
         this._clearRunState(); this.runState = null; this.carouselIndex = 0;
+        this._resetRunState();
         this.renderDifficultyGrid(); this.renderCarousel(); this.refreshMenuButtons();
         this.sfx.play('btn');
     }
@@ -1229,6 +1441,7 @@ class Minesweeper {
         };
         this.runState.paused = true; this.runState.boardState = state; this._saveRunState();
     }
+
     boardComplete() {
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
         this.gameOver = true;
@@ -1236,7 +1449,6 @@ class Minesweeper {
         const boardNum = rs ? rs.currentBoard + 1 : 1;
         const isLast = rs && rs.currentBoard === NUM_BOARDS - 1;
 
-        /* Style score */
         const finalRank  = this.styleMeter ? this.styleMeter.getFinalRank() : 'D';
         const boardScore = this.styleMeter ? this.styleMeter.getScore() : 0;
         this.boardStyleScore = boardScore;
@@ -1244,11 +1456,12 @@ class Minesweeper {
         if (rs && !rs.boardRanks) rs.boardRanks = [];
         if (rs)  rs.boardRanks[rs.currentBoard] = finalRank;
 
-        /* Update best scores */
         this.feats.bestBoardStyleScore = Math.max(this.feats.bestBoardStyleScore || 0, boardScore);
         this.feats.bestRunStyleScore   = Math.max(this.feats.bestRunStyleScore   || 0, this.runStyleScore);
 
-        /* Flags XP */
+        /* Award run points from board style score */
+        this.addRunPoints(boardScore);
+
         let correctFlags = 0;
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++)
             if (this.board[i][j]===-1 && this.flagged[i][j]) correctFlags++;
@@ -1282,18 +1495,19 @@ class Minesweeper {
             document.getElementById('bf-title').textContent   = this.t('runComplete','Run Complete!');
             document.getElementById('bf-message').textContent = this.t('allBoardsCleared','All 8 boards cleared!');
             document.getElementById('bf-points').textContent  = earned > 0 ? `+${earned} pts` : '';
-            document.getElementById('bf-continue-btn').classList.add('hidden');
-            document.getElementById('bf-menu-btn').textContent = this.t('backToMenu','Back to Menu');
+            document.getElementById('bf-continue-btn').textContent = this.t('backToMenu','Back to Menu');
+            /* Flush run points to main */
+            this._flushRunPointsToMain();
         } else {
             if (rs) { rs.currentBoard++; rs.unlockedUpTo = Math.max(rs.unlockedUpTo, rs.currentBoard); rs.boardState = null; rs.paused = true; this.carouselIndex = rs.currentBoard; this._saveRunState(); }
             document.getElementById('bf-title').textContent   = `${this.t('board','Board')} ${boardNum} ${this.t('completeWord','Complete')}!`;
             document.getElementById('bf-message').textContent = `${this.t('board','Board')} ${boardNum} ${this.t('of','of')} 8 ${this.t('cleared','cleared')}!`;
             document.getElementById('bf-points').textContent  = earned > 0 ? `+${earned} pts` : '';
-            document.getElementById('bf-continue-btn').classList.remove('hidden');
-            document.getElementById('bf-menu-btn').textContent = this.t('menu','Menu');
+            document.getElementById('bf-continue-btn').textContent = 'Continue';
         }
         el.classList.add('show');
     }
+
     getOverallRunRank(fallbackRank = 'D') {
         const ranks = this.runState && Array.isArray(this.runState.boardRanks)
             ? this.runState.boardRanks.filter(rank => RANK_LABELS.includes(rank))
@@ -1302,25 +1516,643 @@ class Minesweeper {
         const avg = ranks.reduce((sum, rank) => sum + RANK_LABELS.indexOf(rank), 0) / ranks.length;
         return RANK_LABELS[Math.max(0, Math.min(RANK_LABELS.length - 1, Math.round(avg)))];
     }
-    checkWin() {
-        return this.isBoardSolved();
-    }
+
     startNextBoard() {
         document.getElementById('board-finished-modal').classList.remove('show');
         if (!this.runState) { this.showMenu(); return; }
+        /* Show MineMarket between boards */
+        this.showMineMarket();
+    }
+
+    updateBoardIndicator() {
+        const el = document.getElementById('board-indicator');
+        if (!el) return;
+        const n = this.runState ? this.runState.currentBoard + 1 : 1;
+        el.textContent = `${n}/8`;
+    }
+
+    /* ══ MINE MARKET ═══════════════════════════════════════════ */
+    showMineMarket() {
+        /* Reset per-market state */
+        this.scratchUsed = false;
+        this.slotUsed = false;
+
+        /* Replenish all mine charges */
+        this.playerMines.forEach(m => { m.charges = m.maxCharges; });
+        this.renderMineHud();
+
+        /* Update UI */
+        const el = document.getElementById('mine-market-screen');
+        const boardBadge = document.getElementById('mm-board-badge');
+        if (boardBadge && this.runState) {
+            boardBadge.textContent = `Board ${this.runState.currentBoard} of ${NUM_BOARDS} cleared`;
+        }
+        const rptEl = document.getElementById('mm-run-pts');
+        if (rptEl) rptEl.textContent = this.runPoints;
+
+        /* Reset scratch visual */
+        const scratchFront = document.getElementById('scratch-front');
+        const scratchResult = document.getElementById('scratch-result');
+        if (scratchFront) { scratchFront.classList.remove('hidden'); scratchFront.style.transform = ''; }
+        if (scratchResult) { scratchResult.classList.add('hidden'); scratchResult.textContent = ''; scratchResult.className = 'scratch-result hidden'; }
+        const scratchBtn = document.getElementById('scratch-btn');
+        if (scratchBtn) { scratchBtn.textContent = `SCRATCH · ${SCRATCH_COST}`; scratchBtn.classList.remove('spent'); }
+        const slotBtn = document.getElementById('slot-btn');
+        if (slotBtn) { slotBtn.textContent = `SPIN · ${SLOT_MACHINE_COST}`; slotBtn.classList.remove('spent'); }
+
+        /* Render slot machine mini display */
+        this._renderSlotMini();
+
+        /* Transition to market */
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('menu-screen').classList.add('hidden');
+        el.classList.remove('hidden');
+        this.saveCurrentToSlot(this.currentSlot);
+    }
+
+    closeMineMarket() {
+        document.getElementById('mine-market-screen').classList.add('hidden');
+        if (!this.runState) { this.showMenu(); return; }
+        /* Proceed to next board */
         this.runState.paused = false;
         this.currentDifficulty = this.runState.difficulty;
         this._saveRunState();
         const cfg = this.getBoardConfig(this.runState.currentBoard);
         this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
         this.boardStyleScore = 0;
+        this.trenchMines = [];
+        /* Reset per-board placement counts */
+        this.playerMines.forEach(m => { m.boardPlacedCount = 0; });
+        document.getElementById('game-screen').classList.remove('hidden');
         this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
     }
-    updateBoardIndicator() {
-        const el = document.getElementById('board-indicator');
-        if (!el) return;
-        const n = this.runState ? this.runState.currentBoard + 1 : 1;
-        el.textContent = `${n}/8`;
+
+    _renderSlotMini() {
+        const mineIds = ALL_MINE_IDS;
+        ['smr-0','smr-1','smr-2'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const def = MINE_DEFS[mineIds[i % mineIds.length]];
+            el.innerHTML = def ? def.icon() : '?';
+        });
+    }
+
+    /* ── Scratch Card ── */
+    doScratch() {
+        if (this.scratchUsed) return;
+        if (this.runPoints < SCRATCH_COST && !this.infiniteCoins) {
+            this.sfx.play('error');
+            return;
+        }
+        this.spendRunPoints(SCRATCH_COST);
+        this.scratchUsed = true;
+        const scratchBtn = document.getElementById('scratch-btn');
+        if (scratchBtn) { scratchBtn.textContent = 'USED'; scratchBtn.classList.add('spent'); }
+
+        const win = Math.random() < 0.5;
+        const scratchFront = document.getElementById('scratch-front');
+        const scratchResult = document.getElementById('scratch-result');
+
+        if (scratchFront) {
+            scratchFront.style.transform = 'scale(0) rotate(20deg)';
+            scratchFront.style.transition = 'transform .3s cubic-bezier(.3,.7,.3,1.5)';
+        }
+        setTimeout(() => {
+            if (scratchFront) scratchFront.classList.add('hidden');
+            if (scratchResult) {
+                scratchResult.classList.remove('hidden');
+                if (win) {
+                    const prize = SCRATCH_COST * 2;
+                    scratchResult.classList.add('win');
+                    scratchResult.textContent = `+${prize}`;
+                    this.addRunPoints(prize);
+                    this.sfx.play('purchase');
+                } else {
+                    scratchResult.classList.add('lose');
+                    scratchResult.textContent = '✗';
+                    this.sfx.play('error');
+                }
+            }
+            /* Update run pts display */
+            const rptEl = document.getElementById('mm-run-pts');
+            if (rptEl) rptEl.textContent = this.runPoints;
+        }, 320);
+        this.sfx.play('scratch_reveal');
+    }
+
+    /* ── Slot Machine ── */
+    openSlotMachine() {
+        if (this.slotUsed) return;
+        const popup = document.getElementById('slot-popup');
+        if (!popup) return;
+        /* Initialize reels */
+        this._initSlotReels();
+        /* Reset result area */
+        const resultArea = document.getElementById('slot-result-area');
+        if (resultArea) resultArea.classList.add('hidden');
+        const hint = document.getElementById('slot-hint');
+        if (hint) hint.classList.remove('hidden');
+        popup.classList.add('show');
+        this.sfx.play('modal');
+        /* Setup lever */
+        this._setupSlotLever();
+    }
+
+    _initSlotReels() {
+        /* Build strips with all mine icons repeated */
+        for (let i = 0; i < 3; i++) {
+            const strip = document.getElementById(`slot-strip-${i}`);
+            if (!strip) continue;
+            strip.innerHTML = '';
+            /* Repeat mines list 5 times for scroll effect */
+            for (let rep = 0; rep < 6; rep++) {
+                ALL_MINE_IDS.forEach(id => {
+                    const def = MINE_DEFS[id];
+                    const item = document.createElement('div');
+                    item.className = 'slot-reel-item';
+                    item.innerHTML = `${def.icon()}<span class="slot-reel-item-name">${def.name}</span>`;
+                    strip.appendChild(item);
+                });
+            }
+        }
+        this._slotSpinning = false;
+        this._slotOffset = [0, 0, 0];
+        this._slotInterval = null;
+    }
+
+    _setupSlotLever() {
+        const knob = document.getElementById('slot-lever-knob');
+        if (!knob) return;
+        const track = knob.parentElement;
+        const trackRect = () => track.getBoundingClientRect();
+        const ITEM_HEIGHT = 80;
+        const MAX_MINES = ALL_MINE_IDS.length;
+
+        let isDragging = false, startX = 0, currentX = 0;
+        let hasBeenRight = false;
+
+        knob.style.left = '14px';
+        knob.classList.remove('spinning');
+
+        const getKnobRange = () => {
+            const rect = trackRect();
+            return { min: 14, max: rect.width - knob.offsetWidth - 14 };
+        };
+
+        const startSpin = () => {
+            if (this._slotSpinning) return;
+            this._slotSpinning = true;
+            knob.classList.add('spinning');
+            let tick = 0;
+            this._slotInterval = setInterval(() => {
+                tick++;
+                for (let i = 0; i < 3; i++) {
+                    this._slotOffset[i] = (this._slotOffset[i] + 8) % (ITEM_HEIGHT * MAX_MINES);
+                    const strip = document.getElementById(`slot-strip-${i}`);
+                    if (strip) strip.style.transform = `translateY(-${this._slotOffset[i]}px)`;
+                }
+                if (tick % 3 === 0) this.sfx.play('slot_spin');
+            }, 60);
+        };
+
+        const stopSpin = () => {
+            if (!this._slotSpinning) return;
+            this._slotSpinning = false;
+            knob.classList.remove('spinning');
+            clearInterval(this._slotInterval);
+            this._slotInterval = null;
+            /* Snap to random mines */
+            const results = [];
+            for (let i = 0; i < 3; i++) {
+                const idx = Math.floor(Math.random() * MAX_MINES);
+                results.push(ALL_MINE_IDS[idx]);
+                const targetOffset = idx * ITEM_HEIGHT;
+                this._slotOffset[i] = targetOffset;
+                const strip = document.getElementById(`slot-strip-${i}`);
+                if (strip) {
+                    strip.style.transition = 'transform .4s cubic-bezier(.3,.7,.3,1.5)';
+                    strip.style.transform = `translateY(-${targetOffset}px)`;
+                    setTimeout(() => { if(strip) strip.style.transition = ''; }, 450);
+                }
+            }
+            this.sfx.play('slot_stop');
+            setTimeout(() => this._showSlotResults(results), 500);
+        };
+
+        const onDown = (ex) => {
+            isDragging = true; startX = ex; currentX = ex; hasBeenRight = false;
+        };
+        const onMove = (ex) => {
+            if (!isDragging) return;
+            currentX = ex;
+            const { min, max } = getKnobRange();
+            const raw = parseFloat(knob.style.left || '14') + (ex - startX);
+            knob.style.left = Math.max(min, Math.min(max, raw)) + 'px';
+            startX = ex;
+            const pct = (parseFloat(knob.style.left) - min) / (max - min);
+            if (pct > 0.3) { hasBeenRight = true; startSpin(); }
+            else if (hasBeenRight && pct < 0.1) { stopSpin(); hasBeenRight = false; }
+        };
+        const onUp = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            knob.style.left = '14px';
+        };
+
+        /* Clone to remove old listeners */
+        const newKnob = knob.cloneNode(true);
+        knob.parentNode.replaceChild(newKnob, knob);
+        newKnob.addEventListener('pointerdown', e => { e.preventDefault(); newKnob.setPointerCapture(e.pointerId); onDown(e.clientX); });
+        newKnob.addEventListener('pointermove', e => onMove(e.clientX));
+        newKnob.addEventListener('pointerup',   () => onUp());
+        newKnob.addEventListener('pointercancel', () => onUp());
+    }
+
+    _showSlotResults(mineIds) {
+        const resultArea = document.getElementById('slot-result-area');
+        const minesEl = document.getElementById('slot-result-mines');
+        const hint = document.getElementById('slot-hint');
+        if (!resultArea || !minesEl) return;
+        if (hint) hint.classList.add('hidden');
+        minesEl.innerHTML = '';
+        mineIds.forEach(id => {
+            const def = MINE_DEFS[id];
+            const isFull = this.playerMines.length >= 6;
+            const isBanned = this.bannedMineIds.includes(id);
+            const card = document.createElement('div');
+            card.className = `slot-result-mine-card${isFull || isBanned ? ' full' : ''}`;
+            card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">${def.cost} rpts</span>`;
+            if (!isFull && !isBanned) {
+                card.addEventListener('click', () => {
+                    const cost = def.cost;
+                    if (!this.spendRunPoints(cost)) { this.sfx.play('error'); return; }
+                    this.addMineToLoadout(id);
+                    this.slotUsed = true;
+                    const slotBtn = document.getElementById('slot-btn');
+                    if (slotBtn) { slotBtn.textContent = 'USED'; slotBtn.classList.add('spent'); }
+                    document.getElementById('slot-popup').classList.remove('show');
+                    const rptEl = document.getElementById('mm-run-pts');
+                    if (rptEl) rptEl.textContent = this.runPoints;
+                    this.sfx.play('purchase');
+                    card.classList.add('selected');
+                });
+            }
+            minesEl.appendChild(card);
+        });
+        resultArea.classList.remove('hidden');
+    }
+
+    /* ══ MINE LOADOUT ══════════════════════════════════════════ */
+    addMineToLoadout(mineId) {
+        if (this.playerMines.length >= 6) return false;
+        const def = MINE_DEFS[mineId];
+        if (!def) return false;
+        this.playerMines.push({
+            id: mineId, charges: def.maxCharges, maxCharges: def.maxCharges,
+            boardPlacedCount: 0
+        });
+        this.renderMineHud();
+        this.saveCurrentToSlot(this.currentSlot);
+        return true;
+    }
+
+    sellMine(slotIndex) {
+        const mine = this.playerMines[slotIndex];
+        if (!mine) return;
+        const def = MINE_DEFS[mine.id];
+        const refund = Math.floor(def.cost * SELL_REFUND_RATIO);
+        this.playerMines.splice(slotIndex, 1);
+        this.addRunPoints(refund);
+        this.renderMineHud();
+        this.saveCurrentToSlot(this.currentSlot);
+        this.sfx.play('btn');
+    }
+
+    renderMineHud() {
+        const slotsEl = document.getElementById('mine-hud-slots');
+        if (!slotsEl) return;
+        slotsEl.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const mine = this.playerMines[i];
+            const slot = document.createElement('div');
+            if (mine) {
+                const def = MINE_DEFS[mine.id];
+                const depleted = mine.charges <= 0;
+                const boardUsed = mine.boardPlacedCount >= (this._getMineMaxPerBoard(mine.id));
+                slot.className = `mine-slot${depleted ? ' depleted' : ''}${boardUsed && !depleted ? ' active-board-used' : ''}`;
+                slot.dataset.slotIndex = i;
+                slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span></div><span class="mine-slot-name">${def.name}</span>`;
+                /* Long press to sell */
+                let sellTimer = null;
+                slot.addEventListener('pointerdown', () => { sellTimer = setTimeout(() => { this._showSellConfirm(i); }, 600); });
+                slot.addEventListener('pointerup', () => clearTimeout(sellTimer));
+                slot.addEventListener('pointerleave', () => clearTimeout(sellTimer));
+                /* Click to show info */
+                slot.addEventListener('click', () => { this.showMineInfo(mine.id); });
+                /* Drag to place on board or reorder */
+                this._bindMineDrag(slot, i);
+            } else {
+                slot.className = 'mine-slot empty-slot';
+                slot.innerHTML = `<div class="mine-slot-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="mine-slot-name" style="opacity:.3">Empty</span>`;
+            }
+            slotsEl.appendChild(slot);
+        }
+    }
+
+    _getMineMaxPerBoard(mineId) {
+        const limits = { mine_mine: 1, trench_mine: 2, grenade_mine: 1, totem_mine: 1 };
+        return limits[mineId] || 1;
+    }
+
+    _showSellConfirm(slotIndex) {
+        const mine = this.playerMines[slotIndex]; if (!mine) return;
+        const def = MINE_DEFS[mine.id];
+        const refund = Math.floor(def.cost * SELL_REFUND_RATIO);
+        this.showDiffModal(`Sell ${def.name}?`, `You'll get back <strong>${refund} run pts</strong>.`, [
+            { label: 'Sell', cls: 'abort-btn', action: () => this.sellMine(slotIndex) },
+            { label: 'Cancel', cls: 'menu-link-btn', action: () => {} }
+        ]);
+    }
+
+    _bindMineDrag(slot, slotIndex) {
+        const ghost = document.getElementById('mine-drag-ghost');
+        if (!ghost) return;
+        let isDragging = false, startX = 0, startY = 0;
+        const DRAG_THRESH = 10;
+
+        const startDrag = (x, y) => {
+            const mine = this.playerMines[slotIndex];
+            if (!mine) return;
+            const def = MINE_DEFS[mine.id];
+            if (mine.charges <= 0) return;
+            isDragging = true; startX = x; startY = y;
+            ghost.innerHTML = def.icon();
+            ghost.style.background = def.color + '33';
+            ghost.style.border = `2px solid ${def.color}`;
+            ghost.style.left = x + 'px'; ghost.style.top = y + 'px';
+            ghost.classList.remove('hidden');
+        };
+        const moveDrag = (x, y) => {
+            if (!isDragging) return;
+            ghost.style.left = x + 'px'; ghost.style.top = y + 'px';
+            /* Highlight board cell below */
+            ghost.style.display = 'none';
+            const el = document.elementFromPoint(x, y);
+            ghost.style.display = '';
+            document.querySelectorAll('.cell.mine-drop-target').forEach(c => c.classList.remove('mine-drop-target'));
+            if (el && el.classList.contains('cell')) el.classList.add('mine-drop-target');
+        };
+        const endDrag = (x, y) => {
+            if (!isDragging) return;
+            isDragging = false;
+            ghost.classList.add('hidden');
+            document.querySelectorAll('.cell.mine-drop-target').forEach(c => c.classList.remove('mine-drop-target'));
+            ghost.style.display = 'none';
+            const el = document.elementFromPoint(x, y);
+            ghost.style.display = '';
+            if (el) {
+                if (el.classList.contains('cell')) {
+                    const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
+                    if (!isNaN(r) && !isNaN(c)) this.placeMineOnBoard(slotIndex, r, c);
+                } else {
+                    /* Check if dropped on another mine slot (reorder) */
+                    const targetSlot = el.closest('.mine-slot');
+                    if (targetSlot && targetSlot !== slot) {
+                        const targetIdx = parseInt(targetSlot.dataset.slotIndex);
+                        if (!isNaN(targetIdx)) this._reorderMine(slotIndex, targetIdx);
+                    }
+                }
+            }
+        };
+
+        slot.addEventListener('pointerdown', e => {
+            /* Don't start drag immediately, wait for movement */
+            const ox = e.clientX, oy = e.clientY;
+            const onMove = (ev) => {
+                if (Math.abs(ev.clientX - ox) > DRAG_THRESH || Math.abs(ev.clientY - oy) > DRAG_THRESH) {
+                    document.removeEventListener('pointermove', onMove);
+                    document.removeEventListener('pointerup', onUp);
+                    startDrag(ev.clientX, ev.clientY);
+                    document.addEventListener('pointermove', dragMove);
+                    document.addEventListener('pointerup', dragEnd);
+                }
+            };
+            const onUp = () => {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+            };
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+        });
+        const dragMove = (e) => moveDrag(e.clientX, e.clientY);
+        const dragEnd = (e) => {
+            endDrag(e.clientX, e.clientY);
+            document.removeEventListener('pointermove', dragMove);
+            document.removeEventListener('pointerup', dragEnd);
+        };
+    }
+
+    _reorderMine(fromIdx, toIdx) {
+        if (fromIdx === toIdx) return;
+        const mines = [...this.playerMines];
+        const [moved] = mines.splice(fromIdx, 1);
+        mines.splice(toIdx, 0, moved);
+        this.playerMines = mines;
+        this.renderMineHud();
+        this.sfx.play('btn');
+    }
+
+    placeMineOnBoard(slotIndex, r, c) {
+        const mine = this.playerMines[slotIndex]; if (!mine) return;
+        const def = MINE_DEFS[mine.id];
+        if (mine.charges <= 0) { this.sfx.play('error'); return; }
+        const maxPerBoard = this._getMineMaxPerBoard(mine.id);
+        if (mine.boardPlacedCount >= maxPerBoard) { this.sfx.play('error'); return; }
+        if (this.revealed[r] && this.revealed[r][c]) { this.sfx.play('error'); return; }
+
+        /* Additional requirements */
+        if (mine.id === 'grenade_mine') {
+            const currentRankIdx = this.styleMeter.rankIdx;
+            if (currentRankIdx < 1) { /* Need C or above (idx >= 1) */
+                this.sfx.play('error');
+                this.showDiffModal('Rank Required', 'The Grenade Mine requires C rank or above to place.', [{label:'OK', cls:'restart-btn', action:()=>{}}]);
+                return;
+            }
+        }
+        if (mine.id === 'trench_mine') {
+            /* Must be on zero tile adjacent to number tiles */
+            if (this.firstClick || !this.board[r] || this.board[r][c] !== 0) { this.sfx.play('error'); return; }
+            const adj = this._getAdj(r, c);
+            const hasAdjacentNumbers = adj.some(([ar, ac]) => this.board[ar][ac] > 0);
+            if (!hasAdjacentNumbers) { this.sfx.play('error'); return; }
+        }
+
+        /* Deduct charges and increment board count */
+        mine.charges--;
+        mine.boardPlacedCount++;
+        this.renderMineHud();
+
+        /* Play place sound */
+        this.sfx.play('mine_place');
+
+        /* Show a brief mine icon on the cell */
+        const cell = this.getCell(r, c);
+        if (cell) {
+            const overlay = document.createElement('div');
+            overlay.className = 'mine-cell-placed';
+            overlay.innerHTML = def.icon();
+            overlay.style.background = def.color + '33';
+            overlay.style.borderRadius = '9px';
+            cell.appendChild(overlay);
+        }
+
+        /* Execute mine effect */
+        setTimeout(() => {
+            if (cell) { const o = cell.querySelector('.mine-cell-placed'); if (o) o.remove(); }
+            this._executeMineEffect(mine.id, r, c, slotIndex);
+        }, 300);
+        this.saveCurrentToSlot(this.currentSlot);
+    }
+
+    _executeMineEffect(mineId, r, c, slotIndex) {
+        const cell = this.getCell(r, c);
+        const cellRect = cell ? cell.getBoundingClientRect() : null;
+        const cx = cellRect ? cellRect.left + cellRect.width/2 : 0;
+        const cy = cellRect ? cellRect.top + cellRect.height/2 : 0;
+
+        switch(mineId) {
+            case 'mine_mine': {
+                const adj = this._getAdj(r, c);
+                const adjMines = adj.filter(([ar, ac]) => this.board[ar] && this.board[ar][ac] === -1 && !this.flagged[ar][ac]);
+                if (adjMines.length > 0) {
+                    adjMines.forEach(([ar, ac], i) => {
+                        setTimeout(() => {
+                            this.flagged[ar][ac] = true;
+                            const ac2 = this.getCell(ar, ac);
+                            if (ac2) { ac2.classList.add('flagged'); ac2.innerHTML = ''; ac2.insertAdjacentHTML('beforeend', FLAG_SVG); this.playCellFx(ac2, 'flag-pop'); }
+                        }, i * 80);
+                    });
+                    this.sfx.play('mine_mine_fx');
+                    this.spawnExplosion(cx, cy, '#f44336', 12);
+                    this.updateDisplay();
+                } else {
+                    /* Disappearing animation */
+                    if (cell) {
+                        cell.style.transition = 'transform .4s cubic-bezier(.3,.7,.3,1.5), opacity .4s';
+                        cell.style.transform = 'scale(0) rotate(180deg)';
+                        cell.style.opacity = '0';
+                        setTimeout(() => {
+                            cell.style.transform = ''; cell.style.opacity = ''; cell.style.transition = '';
+                        }, 500);
+                    }
+                    this.sfx.play('btn');
+                }
+                break;
+            }
+            case 'trench_mine': {
+                /* Register trench mine position */
+                this.trenchMines.push({r, c});
+                /* Flash effect */
+                if (cell) { cell.style.boxShadow = `0 0 0 4px #795548`; setTimeout(() => { cell.style.boxShadow = ''; }, 600); }
+                this.sfx.play('mine_place');
+                break;
+            }
+            case 'grenade_mine': {
+                const isMine = this.board[r] && this.board[r][c] === -1;
+                this.spawnExplosion(cx, cy, '#4CAF50', 20);
+                /* Grenade shockwave on cell */
+                if (cell) {
+                    const sw = document.createElement('div');
+                    sw.className = 'grenade-shockwave';
+                    cell.appendChild(sw);
+                    setTimeout(() => sw.remove(), 600);
+                }
+                document.body.classList.add('runover-pulse');
+                setTimeout(() => document.body.classList.remove('runover-pulse'), 500);
+                this.sfx.play('grenade_fx');
+                if (isMine) {
+                    /* Open large area around placement */
+                    const RADIUS = 3;
+                    for (let di = -RADIUS; di <= RADIUS; di++) {
+                        for (let dj = -RADIUS; dj <= RADIUS; dj++) {
+                            const nr = r + di, nc = c + dj;
+                            if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) continue;
+                            if (this.board[nr][nc] !== -1 && !this.revealed[nr][nc] && !this.flagged[nr][nc]) {
+                                setTimeout(() => { this.reveal(nr, nc); }, (Math.abs(di) + Math.abs(dj)) * 40);
+                            }
+                        }
+                    }
+                } else {
+                    /* End the run */
+                    setTimeout(() => { this.gameOver = true; this.endGame(); }, 600);
+                }
+                break;
+            }
+            case 'totem_mine': {
+                /* Totem is now active as a passive protection */
+                /* Visual indicator on cell */
+                if (cell) {
+                    cell.style.boxShadow = `0 0 0 4px #FFC107, 0 0 12px #FFC10766`;
+                    /* Keep glow until triggered or board cleared */
+                }
+                this.sfx.play('mine_place');
+                break;
+            }
+        }
+    }
+
+    _onStyleRankUp(rank) {
+        /* Trench mine: give style points = sum of adjacent numbers for each placed trench mine */
+        this.trenchMines.forEach(({r, c}) => {
+            const adj = this._getAdj(r, c);
+            const total = adj.reduce((sum, [ar, ac]) => {
+                const v = this.board[ar] && this.board[ar][ac] > 0 ? this.board[ar][ac] : 0;
+                return sum + v;
+            }, 0);
+            if (total > 0) {
+                this.styleMeter.addScore(total);
+                this.boardStyleScore = this.styleMeter.getScore();
+            }
+        });
+    }
+
+    /* ══ EXPLOSION PARTICLES ═══════════════════════════════════ */
+    spawnExplosion(x, y, color, count) {
+        if (this.particleAmount <= 0) return;
+        const container = document.getElementById('explosion-container');
+        if (!container) return;
+        const actualCount = Math.max(1, Math.round(count * this.particleAmount));
+
+        /* Ring effect */
+        const ring = document.createElement('div');
+        ring.className = 'explosion-ring';
+        ring.style.cssText = `left:${x-20}px;top:${y-20}px;width:40px;height:40px;color:${color};animation:ringExpand .5s ease-out both`;
+        container.appendChild(ring);
+        setTimeout(() => ring.remove(), 600);
+
+        /* Particles */
+        for (let i = 0; i < actualCount; i++) {
+            const angle = (i / actualCount) * Math.PI * 2 + Math.random() * 0.5;
+            const dist = 30 + Math.random() * 50;
+            const px = Math.cos(angle) * dist;
+            const py = Math.sin(angle) * dist;
+            const size = 4 + Math.random() * 8;
+            const dur = 0.4 + Math.random() * 0.4;
+            const p = document.createElement('div');
+            p.className = 'explosion-particle';
+            const shapes = ['50%', '0%', '30%'];
+            p.style.cssText = `
+                left:${x - size/2}px; top:${y - size/2}px;
+                width:${size}px; height:${size}px;
+                background:${color};
+                border-radius:${shapes[Math.floor(Math.random()*shapes.length)]};
+                --px:${px}px; --py:${py}px;
+                animation: particleOut ${dur}s cubic-bezier(.2,.8,.2,1) both;
+                animation-delay:${Math.random() * 0.1}s;
+            `;
+            container.appendChild(p);
+            setTimeout(() => p.remove(), (dur + 0.2) * 1000);
+        }
     }
 
     /* ══ TRANSITIONS ═══════════════════════════════════════════ */
@@ -1331,6 +2163,7 @@ class Minesweeper {
             overlay.classList.add('slide-down');
             setTimeout(() => {
                 document.getElementById('menu-screen').classList.add('hidden');
+                document.getElementById('mine-market-screen').classList.add('hidden');
                 document.getElementById('game-screen').classList.remove('hidden');
                 callback();
                 overlay.classList.remove('slide-down'); overlay.classList.add('slide-up');
@@ -1343,6 +2176,7 @@ class Minesweeper {
         if (this.animationId)   { cancelAnimationFrame(this.animationId); this.animationId = null; }
         this.styleMeter.hide();
         document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('mine-market-screen').classList.add('hidden');
         document.getElementById('menu-screen').classList.remove('hidden');
         if (this.runState) this.carouselIndex = this.runState.currentBoard;
         if (this.runState && this.currentDifficulty) {
@@ -1353,20 +2187,44 @@ class Minesweeper {
         this.renderDifficultyGrid(); this.renderCarousel(); this.renderLevelBar(); this.refreshMenuButtons();
     }
 
+    /* ══ AUTO FIT BOARD ════════════════════════════════════════ */
+    _autoFitBoard() {
+        requestAnimationFrame(() => {
+            const container = document.getElementById('zoom-container');
+            const board = document.getElementById('game-board');
+            if (!container || !board) return;
+            const cw = container.clientWidth, ch = container.clientHeight;
+            const bw = board.offsetWidth, bh = board.offsetHeight;
+            if (!bw || !bh || !cw || !ch) return;
+            const scaleX = (cw - 24) / bw;
+            const scaleY = (ch - 24) / bh;
+            const scale = Math.min(scaleX, scaleY, this.maxZoom);
+            const clamped = Math.max(this.minZoom, scale);
+            this.zoomLevel = clamped;
+            this._zoomTarget = clamped;
+            board.style.transform = `scale(${clamped})`;
+            document.getElementById('zoom-level').textContent = Math.round(clamped * 100) + '%';
+            this.updateCellFontSize();
+            /* Center */
+            const scaledW = bw * clamped, scaledH = bh * clamped;
+            this.scrollX = Math.max(0, (cw - scaledW) / 2);
+            this.scrollY = Math.max(0, (ch - scaledH) / 2);
+            this.updateBoardPosition();
+        });
+    }
+
     /* ══ MENU EVENTS ═══════════════════════════════════════════ */
     bindMenuEvents() {
-        /* Difficulty */
         ['easy','normal','hard','cs1','cs2','cs3'].forEach(k => {
             const el = document.getElementById(`diff-${k}`);
             if (el) el.addEventListener('click', () => this.onDifficultyClick(['cs1','cs2','cs3'].includes(k) ? 'soon' : k));
         });
 
-        /* Play / Continue / Abort */
         document.getElementById('play-btn').addEventListener('click',     () => { if (!document.getElementById('play-btn').classList.contains('greyed')) this.startRun(); });
         document.getElementById('continue-btn').addEventListener('click', () => this.continueRun());
         document.getElementById('abort-btn').addEventListener('click',    () => this.abortRun());
 
-        /* Store */
+        /* Store / Themes */
         document.getElementById('store-btn').addEventListener('click', () => {
             this.sfx.play('modal'); this.storeTab='themes';
             document.querySelectorAll('#store-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.storeTab==='themes'));
@@ -1398,27 +2256,49 @@ class Minesweeper {
         document.getElementById('feats-close-btn').addEventListener('click', () => { document.getElementById('feats-modal').classList.remove('show'); this.sfx.play('btn'); });
         document.getElementById('feats-modal').addEventListener('click', e => { if (e.target===document.getElementById('feats-modal')) document.getElementById('feats-modal').classList.remove('show'); });
 
-        /* Board Finished Modal */
-        document.getElementById('bf-continue-btn').addEventListener('click', () => this.startNextBoard());
-        document.getElementById('bf-menu-btn').addEventListener('click', () => { document.getElementById('board-finished-modal').classList.remove('show'); this.showMenu(); });
+        /* Collection */
+        document.getElementById('collection-btn').addEventListener('click', () => {
+            this.sfx.play('modal');
+            this.renderCollectionMines();
+            document.getElementById('collection-modal').classList.add('show');
+        });
+        document.getElementById('collection-close-btn').addEventListener('click', () => { document.getElementById('collection-modal').classList.remove('show'); this.sfx.play('btn'); });
+        document.getElementById('collection-modal').addEventListener('click', e => { if (e.target===document.getElementById('collection-modal')) document.getElementById('collection-modal').classList.remove('show'); });
+
+        /* Mine Info Close */
+        document.getElementById('mine-info-close-btn').addEventListener('click', () => { document.getElementById('mine-info-modal').classList.remove('show'); this.sfx.play('btn'); });
+        document.getElementById('mine-info-modal').addEventListener('click', e => { if (e.target===document.getElementById('mine-info-modal')) document.getElementById('mine-info-modal').classList.remove('show'); });
+
+        /* Board Finished Modal — continue goes to MineMarket */
+        document.getElementById('bf-continue-btn').addEventListener('click', () => {
+            if (this.runState) {
+                this.startNextBoard();
+            } else {
+                /* Run complete — go to menu */
+                document.getElementById('board-finished-modal').classList.remove('show');
+                this.showMenu();
+            }
+        });
         this.bindHoldToHide('bf-hold-hide-btn', 'board-finished-modal');
 
         /* Game Over Modal */
         document.getElementById('menu-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.remove('show');
-            this._clearRunState(); this.runState = null; this.showMenu();
+            this._flushRunPointsToMain();
+            this._clearRunState(); this.runState = null;
+            this._resetRunState();
+            this.showMenu();
         });
         document.getElementById('restart-btn').addEventListener('click', () => {
             const prevDiff = this.currentDifficulty || 'normal';
             document.getElementById('game-over-modal').classList.remove('show');
+            this._flushRunPointsToMain();
             this._clearRunState(); this.runState = null;
             this.currentDifficulty = prevDiff;
             this.carouselIndex = 0;
             this.runStyleScore = 0; this.boardStyleScore = 0;
-            this.runState = {
-                active: true, difficulty: prevDiff, currentBoard: 0,
-                unlockedUpTo: 0, paused: false, boardState: null, boardRanks: []
-            };
+            this._resetRunState();
+            this.runState = { active:true, difficulty:prevDiff, currentBoard:0, unlockedUpTo:0, paused:false, boardState:null, boardRanks:[] };
             this._saveRunState();
             const cfg = this.getBoardConfig(0);
             this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
@@ -1459,6 +2339,17 @@ class Minesweeper {
             if (volDisplay) volDisplay.textContent = `${Math.round(v*100)}%`;
         });
 
+        /* Particle Amount */
+        const pSlider = document.getElementById('particle-amount-slider');
+        const pDisplay = document.getElementById('particle-amount-display');
+        if (pSlider) pSlider.addEventListener('input', () => {
+            const v = parseInt(pSlider.value)/100;
+            this.particleAmount = v;
+            localStorage.setItem('ms_particle_amount', v);
+            if (pDisplay) pDisplay.textContent = `${Math.round(v*100)}%`;
+            if (this.floatingBg) this.floatingBg.setParticleAmount(v);
+        });
+
         /* Save Files */
         document.getElementById('save-file-open-btn').addEventListener('click', () => { this.saveCurrentToSlot(this.currentSlot); this.renderSavesModal(); document.getElementById('saves-modal').classList.add('show'); this.sfx.play('modal'); });
         document.getElementById('saves-close-btn').addEventListener('click',    () => { document.getElementById('saves-modal').classList.remove('show'); this.sfx.play('btn'); });
@@ -1491,6 +2382,36 @@ class Minesweeper {
         /* TING modal close */
         document.getElementById('ting-close-btn').addEventListener('click', () => { document.getElementById('ting-modal').classList.remove('show'); this.sfx.play('btn'); });
 
+        /* Mine Market events */
+        document.getElementById('mm-continue-btn').addEventListener('click', () => {
+            this.sfx.play('btn');
+            this.closeMineMarket();
+        });
+        document.getElementById('scratch-btn').addEventListener('click', () => {
+            this.sfx.play('btn'); this.doScratch();
+        });
+        document.getElementById('slot-btn').addEventListener('click', () => {
+            if (this.slotUsed) return;
+            this.sfx.play('btn'); this.openSlotMachine();
+        });
+
+        /* Slot popup */
+        document.getElementById('slot-popup-close').addEventListener('click', () => {
+            if (this._slotInterval) { clearInterval(this._slotInterval); this._slotInterval = null; }
+            document.getElementById('slot-popup').classList.remove('show');
+            this.sfx.play('btn');
+        });
+        document.getElementById('slot-skip-btn').addEventListener('click', () => {
+            document.getElementById('slot-popup').classList.remove('show');
+            this.sfx.play('btn');
+        });
+        document.getElementById('slot-popup').addEventListener('click', e => {
+            if (e.target === document.getElementById('slot-popup')) {
+                if (this._slotInterval) { clearInterval(this._slotInterval); this._slotInterval = null; }
+                document.getElementById('slot-popup').classList.remove('show');
+            }
+        });
+
         /* ── Feats tab arrow navigation ── */
         const _featsTabs = ['board','score','level','collector','original'];
         const _featsPrev = document.getElementById('feats-tab-prev');
@@ -1503,6 +2424,9 @@ class Minesweeper {
         const _setFeatsTab = (tab) => {
             this.featsTab = tab;
             document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab === tab));
+            /* Scroll active tab into view */
+            const activeBtn = document.querySelector(`#feats-tab-bar .tab-btn[data-feats-tab="${tab}"]`);
+            if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             this.renderFeatsPanel(tab);
             this.updateFeatsTabProgress(tab);
             this._markFeatTabSeen(tab);
@@ -1517,7 +2441,6 @@ class Minesweeper {
             const idx = _featsTabs.indexOf(this.featsTab);
             if (idx < _featsTabs.length - 1) _setFeatsTab(_featsTabs[idx + 1]);
         });
-        /* Also wire tab button clicks through the same helper so arrows stay in sync */
         document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
             btn.addEventListener('click', () => _setFeatsTab(btn.dataset.featsTab));
         });
@@ -1573,8 +2496,7 @@ class Minesweeper {
             this.feats.funCodeUsed = true; this._saveFeats();
             this.renderLevelBar(); this.checkFeats();
             msg.textContent = '✓ Infinite coins activated!';
-            msg.classList.add('success');
-            input.value = '';
+            msg.classList.add('success'); input.value = '';
             this.sfx.play('redeem');
         } else if (codeLower === 'edgelord') {
             if (!this.ownedThemes.includes('black')) this.ownedThemes.push('black');
@@ -1582,22 +2504,17 @@ class Minesweeper {
             this.feats.funCodeUsed = true;
             localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
             localStorage.setItem('ms_active_theme', this.activeTheme);
-            this._saveFeats();
-            this.applyTheme('black');
-            this.renderStoreThemes();
-            this.renderDifficultyGrid();
-            this._unlockSecret('edgelord_phase');
-            this.checkFeats();
+            this._saveFeats(); this.applyTheme('black');
+            this.renderStoreThemes(); this.renderDifficultyGrid();
+            this._unlockSecret('edgelord_phase'); this.checkFeats();
             msg.textContent = this.t('edgelordSuccess','✓ Black theme unlocked.');
-            msg.classList.add('success');
-            input.value = '';
+            msg.classList.add('success'); input.value = '';
             this.sfx.play('redeem');
         } else if (code === '') {
             msg.classList.add('hidden');
         } else {
             msg.textContent = '✗ Invalid code.';
-            msg.classList.add('error');
-            this.sfx.play('error');
+            msg.classList.add('error'); this.sfx.play('error');
         }
     }
 
@@ -1637,7 +2554,6 @@ class Minesweeper {
         if (el) { el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 140); }
         if (!this._zoomAnimating) this._animateZoom();
     }
-
     _animateZoom() {
         this._zoomAnimating = true;
         const step = () => {
@@ -1720,8 +2636,18 @@ class Minesweeper {
         const cw=container.clientWidth, ch=container.clientHeight;
         const bw=board.offsetWidth*this.zoomLevel, bh=board.offsetHeight*this.zoomLevel;
         const pad=40;
-        this.scrollX = Math.max(-(Math.max(0,bw-cw)+pad), Math.min(pad, this.scrollX));
-        this.scrollY = Math.max(-(Math.max(0,bh-ch)+pad), Math.min(pad, this.scrollY));
+        if (bw < cw) {
+            const center = (cw - bw) / 2;
+            this.scrollX = Math.max(center - pad, Math.min(center + pad, this.scrollX));
+        } else {
+            this.scrollX = Math.max(-(bw-cw+pad), Math.min(pad, this.scrollX));
+        }
+        if (bh < ch) {
+            const center = (ch - bh) / 2;
+            this.scrollY = Math.max(center - pad, Math.min(center + pad, this.scrollY));
+        } else {
+            this.scrollY = Math.max(-(bh-ch+pad), Math.min(pad, this.scrollY));
+        }
     }
     updateBoardPosition() {
         const w = document.getElementById('board-wrapper');
@@ -1748,7 +2674,11 @@ class Minesweeper {
         document.getElementById('dig-btn').classList.add('active');
         document.getElementById('flag-btn').classList.remove('active');
         this.renderBoard(); this.updateDisplay();
-        requestAnimationFrame(() => this.clampScroll());
+        this.renderMineHud();
+        this._updateRunPtsHud();
+
+        /* Auto fit board */
+        this._autoFitBoard();
 
         /* Show style meter */
         this.styleMeter.reset(); this.styleMeter.show();
@@ -1773,7 +2703,6 @@ class Minesweeper {
         const dig = document.getElementById('dig-btn'), flag = document.getElementById('flag-btn');
         if (this.mode==='dig') { dig.classList.add('active'); flag.classList.remove('active'); }
         else { flag.classList.add('active'); dig.classList.remove('active'); }
-        /* Restore style meter */
         this.styleMeter.reset(); this.styleMeter.show();
     }
 
@@ -1822,13 +2751,10 @@ class Minesweeper {
         document.getElementById('dig-btn').onclick = () => { this.mode='dig'; document.getElementById('dig-btn').classList.add('active'); document.getElementById('flag-btn').classList.remove('active'); this.sfx.play('btn'); };
         document.getElementById('flag-btn').onclick= () => { this.mode='flag'; document.getElementById('flag-btn').classList.add('active'); document.getElementById('dig-btn').classList.remove('active'); this.sfx.play('btn'); };
 
-        /* Long-press on BOARD indicator → secret circle mode */
         const boardInd = document.getElementById('board-indicator');
         if (boardInd) {
             let circlePressTimer = null;
-            boardInd.addEventListener('pointerdown', () => {
-                circlePressTimer = setTimeout(() => { this._toggleCircleMode(); }, 900);
-            });
+            boardInd.addEventListener('pointerdown', () => { circlePressTimer = setTimeout(() => { this._toggleCircleMode(); }, 900); });
             boardInd.addEventListener('pointerup',    () => clearTimeout(circlePressTimer));
             boardInd.addEventListener('pointerleave', () => clearTimeout(circlePressTimer));
         }
@@ -1843,8 +2769,6 @@ class Minesweeper {
 
     handleCellTap(r, c) {
         if (this.gameOver) return;
-
-        /* Tap on revealed numbered cell → quick dig or quick flag */
         if (this.revealed[r][c]) {
             if (this.board[r][c] > 0) {
                 if (this._tryQuickDig(r, c)) return;
@@ -1852,17 +2776,13 @@ class Minesweeper {
             }
             return;
         }
-
         if (this.mode==='dig') {
             if (this.flagged[r][c]) this.toggleFlag(r, c);
-            else {
-                this.digCell(r, c);
-            }
+            else this.digCell(r, c);
         } else { this.toggleFlag(r, c); }
         this.updateDisplay(); this.saveCurrentBoardToRun();
     }
 
-    /* ── Quick Dig (chord) ── */
     _tryQuickDig(r, c) {
         const adj = this._getAdj(r, c);
         const flags = adj.filter(([ar,ac]) => this.flagged[ar][ac]).length;
@@ -1875,19 +2795,15 @@ class Minesweeper {
             }
         }
         if (revealed > 0) {
-            /* Style meter boost */
             const res = this.styleMeter.onAction('quickdig');
             if (res && res.hit69) this._unlockSecret('score_69');
             this.boardStyleScore = this.styleMeter.getScore();
             this.sfx.play('quickdig');
         }
-        this.updateDisplay();
-        this.evaluateFlagCompletion();
-        this.saveCurrentBoardToRun();
+        this.updateDisplay(); this.evaluateFlagCompletion(); this.saveCurrentBoardToRun();
         return true;
     }
 
-    /* ── Quick Flag ── */
     _tryQuickFlag(r, c) {
         const adj = this._getAdj(r, c);
         const flagCount = adj.filter(([ar,ac]) => this.flagged[ar][ac]).length;
@@ -1958,30 +2874,19 @@ class Minesweeper {
         }
         return true;
     }
-
     allRequiredFlagsCorrect() {
         let flags = 0;
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++) {
-            if (this.flagged[i][j]) {
-                flags++;
-                if (this.board[i][j] !== -1) return false;
-            }
+            if (this.flagged[i][j]) { flags++; if (this.board[i][j] !== -1) return false; }
         }
         return flags === this.mines;
     }
-
-    isBoardSolved() {
-        return this.allSafeTilesRevealed() && this.allRequiredFlagsCorrect();
-    }
+    isBoardSolved() { return this.allSafeTilesRevealed() && this.allRequiredFlagsCorrect(); }
 
     evaluateFlagCompletion() {
         if (this.gameOver || this.firstClick) return;
         const flags = this.flagged.flat().filter(Boolean).length;
-        if (flags === this.mines && !this.allRequiredFlagsCorrect()) {
-            this.gameOver = true;
-            this.endGame();
-            return;
-        }
+        if (flags === this.mines && !this.allRequiredFlagsCorrect()) { this.gameOver = true; this.endGame(); return; }
         if (this.isBoardSolved()) this.boardComplete();
     }
 
@@ -2011,7 +2916,11 @@ class Minesweeper {
         this.revealed[r][c]=true;
         const cell = this.getCell(r, c);
         if (cell) { cell.classList.add('revealed'); this.playCellFx(cell, 'reveal-pop'); }
-        if (this.board[r][c]===-1) { this.gameOver=true; this.endGame(); return; }
+        if (this.board[r][c]===-1) {
+            /* Check totem mine protection */
+            if (this._checkTotemProtection(r, c)) return;
+            this.gameOver=true; this.endGame(); return;
+        }
         if (this.board[r][c] > 0) {
             if (cell) { cell.textContent=this.board[r][c]; cell.classList.add('n'+this.board[r][c]); }
         } else {
@@ -2023,12 +2932,47 @@ class Minesweeper {
         this.sfx.play('reveal');
         this.evaluateFlagCompletion();
     }
+
+    _checkTotemProtection(r, c) {
+        /* Find an active totem mine in the loadout */
+        const totemIdx = this.playerMines.findIndex(m => m.id === 'totem_mine' && m.charges > 0 && !this.bannedMineIds.includes('totem_mine'));
+        if (totemIdx === -1) return false;
+
+        /* Trigger totem: absorb the mine hit */
+        const totemMine = this.playerMines[totemIdx];
+        totemMine.charges = 0;
+        this.bannedMineIds.push('totem_mine');
+        this.totemTriggered = true;
+
+        /* Visual effect */
+        const cell = this.getCell(r, c);
+        const cellRect = cell ? cell.getBoundingClientRect() : null;
+        const cx = cellRect ? cellRect.left + cellRect.width/2 : window.innerWidth/2;
+        const cy = cellRect ? cellRect.top + cellRect.height/2 : window.innerHeight/2;
+        this.spawnExplosion(cx, cy, '#FFC107', 18);
+        if (cell) {
+            const shield = document.createElement('div');
+            shield.className = 'totem-shield-fx';
+            cell.appendChild(shield);
+            setTimeout(() => shield.remove(), 800);
+        }
+        document.body.classList.add('runover-pulse');
+        setTimeout(() => document.body.classList.remove('runover-pulse'), 600);
+        this.sfx.play('totem_fx');
+
+        /* Undo the reveal */
+        this.revealed[r][c] = false;
+        if (cell) { cell.classList.remove('revealed'); }
+
+        this.renderMineHud();
+        this.saveCurrentToSlot(this.currentSlot);
+        return true;
+    }
+
     getCell(r, c) { return document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`); }
     playCellFx(cell, cls) {
         if (!cell) return;
-        cell.classList.remove(cls);
-        void cell.offsetWidth;
-        cell.classList.add(cls);
+        cell.classList.remove(cls); void cell.offsetWidth; cell.classList.add(cls);
         setTimeout(() => cell.classList.remove(cls), 320);
     }
     startTimer() {
@@ -2056,7 +3000,17 @@ class Minesweeper {
             if (mine&&flag) { correctFlags++; }
             else if (mine&&!flag) {
                 const d=delay;
-                setTimeout(() => { const c=this.getCell(i,j); if(c){c.classList.add('mine');c.classList.remove('flagged');const ex=c.querySelector('.cell-svg-icon');if(ex)ex.remove();c.insertAdjacentHTML('beforeend',MINE_SVG);} }, d);
+                setTimeout(() => {
+                    const c=this.getCell(i,j);
+                    if (c) {
+                        c.classList.add('mine'); c.classList.remove('flagged');
+                        const ex=c.querySelector('.cell-svg-icon'); if(ex) ex.remove();
+                        c.insertAdjacentHTML('beforeend',MINE_SVG);
+                        /* Spawn small explosion per mine */
+                        const rect = c.getBoundingClientRect();
+                        this.spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#f44336', 5);
+                    }
+                }, d);
                 delay+=35;
             } else if (!mine&&flag) {
                 const d=delay;
@@ -2065,7 +3019,9 @@ class Minesweeper {
             }
         }
         this.carouselIndex = 0;
+        this._flushRunPointsToMain();
         this._clearRunState(); this.runState=null;
+        this._resetRunState();
         const earned = this.awardPoints(correctFlags);
         const stylePts = this.styleMeter ? this.styleMeter.getScore() : 0;
         const styleRank = this.styleMeter ? this.styleMeter.getFinalRank() : 'D';
@@ -2089,12 +3045,8 @@ class Minesweeper {
     /* ══ CIRCLE MODE (secret) ══════════════════════════════════ */
     _toggleCircleMode() {
         this.circleMode = !this.circleMode;
-        if (this.circleMode) {
-            this._unlockSecret('circle_board');
-            this._applyCircleMode();
-        } else {
-            document.querySelectorAll('.cell.circle-void').forEach(c => c.classList.remove('circle-void'));
-        }
+        if (this.circleMode) { this._unlockSecret('circle_board'); this._applyCircleMode(); }
+        else { document.querySelectorAll('.cell.circle-void').forEach(c => c.classList.remove('circle-void')); }
     }
     _applyCircleMode() {
         const cr = (this.rows-1)/2, cc = (this.cols-1)/2;
@@ -2111,39 +3063,27 @@ class Minesweeper {
         const now = Date.now();
         this._redThemeClicks = this._redThemeClicks.filter(t => now-t < 1000);
         this._redThemeClicks.push(now);
-        if (this._redThemeClicks.length >= 5) {
-            this._redThemeClicks = [];
-            this._triggerUltrakill();
-        }
+        if (this._redThemeClicks.length >= 5) { this._redThemeClicks = []; this._triggerUltrakill(); }
     }
     _triggerUltrakill() {
         document.body.classList.add('ultrakill-flash', 'ultrakill-shake');
         setTimeout(() => document.body.classList.remove('ultrakill-flash', 'ultrakill-shake'), 1200);
-        this.sfx.play('ultrakill');
-        this._unlockSecret('ultrakill');
+        this.sfx.play('ultrakill'); this._unlockSecret('ultrakill');
     }
-
     _trackSaveSwitch() {
         const now = Date.now();
         this._saveSwitchTimes = this._saveSwitchTimes.filter(t => now-t < 30000);
         this._saveSwitchTimes.push(now);
-        if (this._saveSwitchTimes.length >= 4 && !this._tingTriggered) {
-            this._tingTriggered = true;
-            this._triggerTING();
-        }
+        if (this._saveSwitchTimes.length >= 4 && !this._tingTriggered) { this._tingTriggered = true; this._triggerTING(); }
     }
     _triggerTING() {
-        /* Glitch effect */
         document.body.classList.add('ting-glitch');
         setTimeout(() => document.body.classList.remove('ting-glitch'), 900);
-        /* Unlock achievement */
         this._unlockSecret('ting');
-        /* Delayed popup (10–18 seconds later) */
         const delay = 10000 + Math.random() * 8000;
         setTimeout(() => {
             if (!this._tingAnomalySet) {
                 document.getElementById('ting-modal').classList.add('show');
-                /* Subtle persistent anomaly (disappears on reload) */
                 document.body.classList.add('ting-anomaly');
                 this._tingAnomalySet = true;
             }

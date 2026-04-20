@@ -10,9 +10,25 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- ── LOADING SCREEN ── -->
+    <div class="loading-screen" id="loading-screen">
+        <h1 class="loading-title">RogueSweeper</h1>
+        <div class="loading-circle-wrap">
+            <svg class="loading-circle-svg" id="loading-circle-svg" viewBox="0 0 100 100">
+                <circle class="lc-bg" cx="50" cy="50" r="38"/>
+                <circle class="lc-fill" id="lc-fill" cx="50" cy="50" r="38"/>
+            </svg>
+            <div class="loading-pct" id="loading-pct">0%</div>
+        </div>
+        <div class="loading-text" id="loading-text">Loading</div>
+    </div>
+
     <div class="floating-bg" id="floating-bg"></div>
     <div class="screen-transition" id="screen-transition"></div>
     <div class="feat-notify-container" id="feat-notify-container"></div>
+
+    <!-- ── EXPLOSION PARTICLES CONTAINER ── -->
+    <div id="explosion-container" style="position:fixed;inset:0;pointer-events:none;z-index:500;overflow:hidden"></div>
 
     <div class="container">
         <!-- ── MENU ── -->
@@ -102,8 +118,11 @@
             </div>
 
             <div class="extras-row">
-                <button class="extra-btn juicy-btn" id="store-btn" data-text="store">STORE</button>
+                <button class="extra-btn juicy-btn" id="store-btn">THEMES</button>
                 <button class="feats-btn juicy-btn" id="feats-btn"><span data-text="feats">FEATS</span> <span class="notif-dot hidden" id="feats-notif-dot"></span></button>
+            </div>
+            <div class="extras-row">
+                <button class="collection-btn juicy-btn" id="collection-btn">COLLECTION</button>
             </div>
 
         </div>
@@ -124,6 +143,11 @@
                         <span class="stat-label" data-text="time">TIME</span>
                         <span class="stat-value num-font" id="time">000</span>
                     </div>
+                </div>
+                <div class="run-pts-hud juicy-card" id="run-pts-hud">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>
+                    <span class="run-pts-hud-val num-font" id="run-pts-hud-val">0</span>
+                    <span class="run-pts-hud-label">RUN</span>
                 </div>
             </div>
             <div class="zoom-container" id="zoom-container">
@@ -152,6 +176,12 @@
                 <button class="mode-btn juicy-btn active" id="dig-btn" data-text="dig">DIG</button>
                 <button class="mode-btn juicy-btn" id="flag-btn" data-text="flagShort">FLG</button>
             </div>
+
+            <!-- Mine HUD bar -->
+            <div class="mine-hud" id="mine-hud">
+                <div class="mine-hud-slots" id="mine-hud-slots"></div>
+            </div>
+
             <div class="game-controls">
                 <button class="back-btn juicy-btn" id="back-btn" data-text="menu">MENU</button>
                 <div class="zoom-controls juicy-card">
@@ -160,6 +190,56 @@
                     <button class="zoom-btn juicy-btn" id="zoom-in">+</button>
                 </div>
             </div>
+        </div>
+
+        <!-- ── MINE MARKET ── -->
+        <div class="mine-market-screen hidden" id="mine-market-screen">
+            <div class="mm-header">
+                <div class="mm-title">MineMarket</div>
+                <div class="mm-board-badge" id="mm-board-badge">Board 1 of 8</div>
+            </div>
+            <div class="mm-run-pts-display juicy-card">
+                <div class="mm-rp-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                </div>
+                <div class="mm-rp-info">
+                    <span class="mm-rp-label">RUN POINTS</span>
+                    <span class="mm-rp-value num-font" id="mm-run-pts">0</span>
+                </div>
+            </div>
+            <div class="mm-replenish-banner" id="mm-replenish-banner">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                All mine charges restored!
+            </div>
+            <div class="mm-items-scroll">
+                <div class="mm-items-grid">
+                    <!-- Scratch Card -->
+                    <div class="mm-item-card juicy-card" id="mm-scratch-item">
+                        <div class="mm-item-title">Scratch Card</div>
+                        <div class="mm-scratch-visual" id="mm-scratch-visual">
+                            <div class="scratch-front" id="scratch-front">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <span>50 pts</span>
+                            </div>
+                            <div class="scratch-result hidden" id="scratch-result"></div>
+                        </div>
+                        <div class="mm-item-desc">Double your pts or nothing</div>
+                        <button class="mm-item-btn juicy-btn" id="scratch-btn">SCRATCH · 50</button>
+                    </div>
+                    <!-- Slot Machine -->
+                    <div class="mm-item-card juicy-card" id="mm-slot-item">
+                        <div class="mm-item-title">Slot Machine</div>
+                        <div class="mm-slot-mini" id="mm-slot-mini">
+                            <div class="slot-mini-reel" id="smr-0"></div>
+                            <div class="slot-mini-reel" id="smr-1"></div>
+                            <div class="slot-mini-reel" id="smr-2"></div>
+                        </div>
+                        <div class="mm-item-desc">Win a mine for your loadout</div>
+                        <button class="mm-item-btn juicy-btn" id="slot-btn">SPIN · 100</button>
+                    </div>
+                </div>
+            </div>
+            <button class="mm-continue-btn juicy-btn" id="mm-continue-btn">CONTINUE</button>
         </div>
     </div>
 
@@ -199,8 +279,7 @@
                 <p class="bf-rank-line" id="bf-rank-line"></p>
             </div>
             <div class="modal-buttons">
-                <button class="confirm-btn juicy-btn" id="bf-continue-btn" data-text="continue">Continue</button>
-                <button class="menu-link-btn juicy-btn" id="bf-menu-btn" data-text="menu">Menu</button>
+                <button class="confirm-btn juicy-btn" id="bf-continue-btn" style="flex:1;min-width:100%" data-text="continue">Continue</button>
             </div>
         </div>
     </div>
@@ -237,6 +316,11 @@
                 <input type="range" class="sfx-slider" id="sfx-volume-slider" min="0" max="100" value="80" step="1">
                 <span class="sfx-vol-value" id="sfx-vol-display">80%</span>
             </div>
+            <div class="sfx-slider-row">
+                <span class="sfx-slider-label">Particles</span>
+                <input type="range" class="sfx-slider" id="particle-amount-slider" min="0" max="100" value="100" step="5">
+                <span class="sfx-vol-value" id="particle-amount-display">100%</span>
+            </div>
             <button class="save-file-open-btn juicy-btn" id="save-file-open-btn" data-text="saveFiles">Save Files</button>
             <div class="redeem-section">
                 <div class="redeem-field-wrap">
@@ -258,14 +342,14 @@
         </div>
     </div>
 
-    <!-- ── STORE MODAL ── -->
+    <!-- ── STORE (THEMES) MODAL ── -->
     <div class="modal-overlay" id="store-modal">
         <div class="modal-content juicy-card store-modal-content">
-            <h2 data-text="store">Store</h2>
+            <h2>Themes</h2>
             <div class="tab-nav-container" id="store-tab-nav">
                 <button class="tab-nav-arrow tab-nav-prev juicy-btn" id="store-tab-prev" aria-label="Previous tab">&#8249;</button>
                 <div class="modal-tab-bar" id="store-tab-bar">
-                    <button class="tab-btn active" data-store-tab="themes" data-text="themes">Themes</button>
+                    <button class="tab-btn active" data-store-tab="themes">Common</button>
                     <button class="tab-btn" data-store-tab="cs1">???</button>
                     <button class="tab-btn" data-store-tab="cs2">???</button>
                 </div>
@@ -298,6 +382,73 @@
         </div>
     </div>
 
+    <!-- ── COLLECTION MODAL ── -->
+    <div class="modal-overlay" id="collection-modal">
+        <div class="modal-content juicy-card collection-modal-content">
+            <h2>Collection</h2>
+            <div class="tab-nav-container" id="coll-tab-nav">
+                <div class="modal-tab-bar" id="coll-tab-bar" style="flex:1">
+                    <button class="tab-btn active" data-coll-tab="mines">Mines</button>
+                </div>
+            </div>
+            <div class="coll-panel active" id="coll-panel-mines"></div>
+            <button class="close-settings-btn juicy-btn" id="collection-close-btn" data-text="close">Close</button>
+        </div>
+    </div>
+
+    <!-- ── MINE INFO MODAL ── -->
+    <div class="modal-overlay" id="mine-info-modal">
+        <div class="modal-content juicy-card mine-info-modal-content">
+            <div class="mine-info-icon-wrap" id="mine-info-icon-wrap"></div>
+            <h2 id="mine-info-name"></h2>
+            <div class="mine-info-grid">
+                <div class="mine-info-row">
+                    <span class="mine-info-label">Requirement</span>
+                    <span class="mine-info-val" id="mine-info-req"></span>
+                </div>
+                <div class="mine-info-row">
+                    <span class="mine-info-label">Effect</span>
+                    <span class="mine-info-val" id="mine-info-effect"></span>
+                </div>
+                <div class="mine-info-row">
+                    <span class="mine-info-label">Trigger</span>
+                    <span class="mine-info-val" id="mine-info-trigger"></span>
+                </div>
+                <div class="mine-info-row">
+                    <span class="mine-info-label">Limit</span>
+                    <span class="mine-info-val" id="mine-info-limit"></span>
+                </div>
+            </div>
+            <button class="close-settings-btn juicy-btn" id="mine-info-close-btn" data-text="close">Close</button>
+        </div>
+    </div>
+
+    <!-- ── SLOT MACHINE POPUP ── -->
+    <div class="modal-overlay" id="slot-popup">
+        <div class="modal-content juicy-card slot-popup-content">
+            <h2>Slot Machine</h2>
+            <p class="slot-cost-label">Cost: <strong id="slot-cost-display">100</strong> run pts</p>
+            <div class="slot-reels-wrap">
+                <div class="slot-reels" id="slot-reels">
+                    <div class="slot-reel-col"><div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-0"></div></div></div>
+                    <div class="slot-reel-col"><div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-1"></div></div></div>
+                    <div class="slot-reel-col"><div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-2"></div></div></div>
+                </div>
+                <div class="slot-lever-track">
+                    <div class="slot-lever-bar-bg"></div>
+                    <div class="slot-lever-knob" id="slot-lever-knob"></div>
+                </div>
+            </div>
+            <div class="slot-hint" id="slot-hint">Drag the lever right to spin, back to stop</div>
+            <div class="slot-result-area hidden" id="slot-result-area">
+                <p class="slot-result-label">Pick one mine to add to your loadout:</p>
+                <div class="slot-result-mines" id="slot-result-mines"></div>
+                <button class="menu-link-btn juicy-btn" id="slot-skip-btn" style="width:100%;margin-top:10px">Skip All</button>
+            </div>
+            <button class="menu-link-btn juicy-btn" id="slot-popup-close" style="width:100%;margin-top:8px">Close</button>
+        </div>
+    </div>
+
     <!-- ── PURCHASE CONFIRM MODAL ── -->
     <div class="modal-overlay" id="purchase-modal">
         <div class="modal-content juicy-card">
@@ -327,6 +478,9 @@
             <button class="confirm-btn juicy-btn" id="ting-close-btn" data-text="iSee">I see.</button>
         </div>
     </div>
+
+    <!-- ── MINE DRAG GHOST ── -->
+    <div class="mine-drag-ghost hidden" id="mine-drag-ghost"></div>
 
     <script src="/static/game.js"></script>
 </body>
