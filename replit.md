@@ -132,6 +132,15 @@ python main.py
 
 ## Recent Changes
 
+- April 22, 2026: Hotfix batch:
+  - **Dynamic carousel mine market indicators**: Each indicator now represents a specific market between two boards. Grayed out when not yet reached; green when unlocked; pulsing highlight when the run is currently paused in that market. Hidden when out of range (e.g., before board 1 or after board 8)
+  - **Continue from Mine Market**: showMineMarket now reads pausedInMarket BEFORE clearing it, so re-entering via Continue restores the prior shop state (purchases, used flags, reroll cost, shop slots) instead of resetting
+  - **Mines on any tile**: placeMineOnBoard no longer blocks placement on revealed/number/empty tiles. Flagged tiles are still blocked. Grenade Mine on a revealed safe tile now whiffs instead of ending the run
+  - **Loadout interactions**: Replaced long-press-to-sell with single-tap = mine info, double-tap = sell confirm. Hold-and-drag still places mines via _bindMineDrag
+  - **Slot machine prize is FREE**: After paying for the slot machine, the picked mine costs 0 RPTS (was charging full cost again). Limit one pick (slotUsed)
+  - **Mine Shop in market**: New "Mine Shop" section with 2 random mine slots picked using rarity weights (cheaper mines more common). REROLL button starts at 50 RPTS and increases by 25 RPTS per reroll within a market visit. Buying a mine deducts RPTS, marks slot SOLD, and adds the mine to loadout
+  - **Mine rarity weights**: cost ≤50 → weight 5; ≤100 → 3; ≤200 → 1.5; >200 → 1
+
 - April 20, 2026: Major game update:
   - **RPTS/PTS split**: Run Points (RPTS) are now strictly separate from main Points (PTS). Flag bonuses on mid-run boards go to RPTS; only flush on win/loss/abort
   - **Loading screen**: Replaced spinning circle with rotating square card that cycles through mine icons + horizontal progress bar (ease-in fill)

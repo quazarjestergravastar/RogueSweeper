@@ -1408,16 +1408,28 @@ class Minesweeper {
         document.getElementById('slot-right').innerHTML  = makeCard(idx + 1);
         document.getElementById('carousel-counter').textContent = `${idx + 1} / ${NUM_BOARDS}`;
 
-        /* Mine Market indicators: highlight when a run is active */
+        /* Mine Market indicators: one per market between two boards.
+         * Left ind = market between board (idx-1) and board idx → marketIdx = idx-1
+         * Right ind = market between board idx and board (idx+1) → marketIdx = idx
+         * A market is "reached" when the player has unlocked the next board through it.
+         * The currently-paused market is highlighted. */
         const mmIndL = document.getElementById('mm-car-ind-l');
         const mmIndR = document.getElementById('mm-car-ind-r');
         const hasRun = !!rs;
-        const isMarketPaused = hasRun && rs.pausedInMarket;
-        [mmIndL, mmIndR].forEach(ind => {
+        const currentMarketIdx = (hasRun && rs.pausedInMarket) ? (rs.currentBoard - 1) : -1;
+        const setupInd = (ind, marketIdx) => {
             if (!ind) return;
-            ind.classList.toggle('unlocked', hasRun);
-            ind.classList.toggle('highlight', isMarketPaused);
-        });
+            ind.classList.remove('reached','highlight','hidden-ind');
+            if (marketIdx < 0 || marketIdx > NUM_BOARDS - 2) {
+                ind.classList.add('hidden-ind');
+                return;
+            }
+            const reached = hasRun && rs.unlockedUpTo > marketIdx;
+            if (reached) ind.classList.add('reached');
+            if (marketIdx === currentMarketIdx) ind.classList.add('highlight');
+        };
+        setupInd(mmIndL, idx - 1);
+        setupInd(mmIndR, idx);
 
         const dots = document.getElementById('carousel-dots');
         dots.innerHTML = Array.from({length: NUM_BOARDS}, (_,i) => {
@@ -1671,11 +1683,21 @@ class Minesweeper {
 
     /* ══ MINE MARKET ═══════════════════════════════════════════ */
     showMineMarket() {
-        /* Reset per-market state */
-        this.scratchUsed = false;
-        this.slotUsed = false;
-        this.scratchBought = false;
-        this.slotBought = false;
+        /* If we were paused in this market, restore prior shop state instead of resetting. */
+        const resumingMarket = this.runState && this.runState.pausedInMarket;
+        if (this.runState) this.runState.pausedInMarket = false;
+
+        if (!resumingMarket) {
+            /* Reset per-market state on fresh entry */
+            this.scratchUsed = false;
+            this.slotUsed = false;
+            this.scratchBought = false;
+            this.slotBought = false;
+            /* Fresh collection shop with reroll cost reset */
+            this.marketShopRerollCost = 50;
+            this._rerollMarketShop();
+        }
+        if (!this.marketShop) { this.marketShopRerollCost = 50; this._rerollMarketShop(); }
 
         /* Replenish all mine charges */
         this.playerMines.forEach(m => { m.charges = m.maxCharges; });
@@ -1709,6 +1731,9 @@ class Minesweeper {
 
         /* Render slot machine mini display */
         this._renderSlotMini();
+
+        /* Render collection shop */
+        this.renderMarketShop();
 
         /* Transition to market */
         document.getElementById('game-screen').classList.add('hidden');
@@ -1942,21 +1967,21 @@ class Minesweeper {
         if (!resultArea || !minesEl) return;
         if (hint) hint.classList.add('hidden');
         minesEl.innerHTML = '';
+        /* Slot machine prize: FREE since the player already paid for the slot machine.
+         * Limit one mine pick — picking adds and closes the popup. */
         mineIds.forEach(id => {
             const def = MINE_DEFS[id];
             const isFull = this.playerMines.length >= 6;
-            const isBanned = this.bannedMineIds.includes(id);
             const card = document.createElement('div');
-            card.className = `slot-result-mine-card${isFull || isBanned ? ' full' : ''}`;
-            card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">${def.cost} RPTS</span>`;
-            if (!isFull && !isBanned) {
+            card.className = `slot-result-mine-card${isFull ? ' full' : ''}`;
+            card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">FREE</span>`;
+            if (!isFull) {
                 card.addEventListener('click', () => {
-                    const cost = def.cost;
-                    if (!this.spendRunPoints(cost)) { this.sfx.play('error'); return; }
+                    if (this.slotUsed) return;
                     this.addMineToLoadout(id);
                     this.slotUsed = true;
                     const slotActBtn = document.getElementById('slot-btn');
-                    if (slotActBtn) { slotActBtn.textContent = 'USED'; slotActBtn.classList.add('used'); }
+                    if (slotActBtn) { slotActBtn.textContent = 'USED'; slotActBtn.classList.add('used'); slotActBtn.classList.add('mm-act-disabled'); }
                     document.getElementById('slot-popup').classList.remove('show');
                     const rptEl = document.getElementById('mm-run-pts');
                     if (rptEl) rptEl.textContent = this.runPoints;
@@ -1967,6 +1992,89 @@ class Minesweeper {
             minesEl.appendChild(card);
         });
         resultArea.classList.remove('hidden');
+    }
+
+    /* ── Collection Shop (random rarity-weighted mines) ── */
+    _mineRarityWeight(id) {
+        const def = MINE_DEFS[id];
+        if (!def) return 1;
+        /* Cheaper mines are common; expensive mines are rare */
+        if (def.cost <= 50)  return 5;
+        if (def.cost <= 100) return 3;
+        if (def.cost <= 200) return 1.5;
+        return 1;
+    }
+    _pickRandomMine() {
+        const ids = ALL_MINE_IDS;
+        const weights = ids.map(id => this._mineRarityWeight(id));
+        const total = weights.reduce((s,w) => s+w, 0);
+        let r = Math.random() * total;
+        for (let i = 0; i < ids.length; i++) {
+            r -= weights[i];
+            if (r <= 0) return ids[i];
+        }
+        return ids[0];
+    }
+    _rerollMarketShop() {
+        this.marketShop = [this._pickRandomMine(), this._pickRandomMine()];
+        this.marketShopSold = [false, false];
+    }
+    renderMarketShop() {
+        for (let i = 0; i < 2; i++) {
+            const slot = document.getElementById(`mm-shop-slot-${i}`);
+            if (!slot) continue;
+            const mineId = this.marketShop && this.marketShop[i];
+            if (!mineId) { slot.className = 'mm-shop-slot empty'; slot.innerHTML = '<span class="mm-shop-slot-name" style="opacity:.5">—</span>'; continue; }
+            const def = MINE_DEFS[mineId];
+            const sold = this.marketShopSold && this.marketShopSold[i];
+            const canAfford = this.infiniteCoins || this.runPoints >= def.cost;
+            const isFull = this.playerMines.length >= 6;
+            slot.className = `mm-shop-slot${sold ? ' sold' : ''}`;
+            slot.innerHTML = `
+                <div class="mm-shop-slot-icon" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}</div>
+                <div class="mm-shop-slot-name">${def.name}</div>
+                <div class="mm-shop-slot-cost">${def.cost} RPTS</div>
+                <button class="mm-shop-slot-buy juicy-btn ${(!canAfford || isFull || sold) ? 'disabled' : ''}" data-shop-idx="${i}">${sold ? 'SOLD' : 'BUY'}</button>
+            `;
+            const btn = slot.querySelector('.mm-shop-slot-buy');
+            if (btn && !sold) {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); this._buyMarketShopMine(i); });
+            }
+            /* Tap card → show mine info */
+            slot.addEventListener('click', () => { this.showMineInfo(mineId); });
+        }
+        /* Update reroll button cost & affordability */
+        const rcEl = document.getElementById('mm-shop-reroll-cost');
+        if (rcEl) rcEl.textContent = this.marketShopRerollCost;
+        const rbtn = document.getElementById('mm-shop-reroll-btn');
+        if (rbtn) {
+            const canReroll = this.infiniteCoins || this.runPoints >= this.marketShopRerollCost;
+            rbtn.classList.toggle('disabled', !canReroll);
+        }
+    }
+    _buyMarketShopMine(slotIdx) {
+        const mineId = this.marketShop && this.marketShop[slotIdx];
+        if (!mineId || this.marketShopSold[slotIdx]) { this.sfx.play('error'); return; }
+        const def = MINE_DEFS[mineId];
+        if (this.playerMines.length >= 6) { this.sfx.play('error'); return; }
+        if (!this.spendRunPoints(def.cost)) { this.sfx.play('error'); return; }
+        this.addMineToLoadout(mineId);
+        this.marketShopSold[slotIdx] = true;
+        const rptEl = document.getElementById('mm-run-pts');
+        if (rptEl) rptEl.textContent = this.runPoints;
+        this.sfx.play('purchase');
+        this.renderMarketShop();
+    }
+    _doMarketShopReroll() {
+        const cost = this.marketShopRerollCost;
+        if (!this.infiniteCoins && this.runPoints < cost) { this.sfx.play('error'); return; }
+        if (!this.infiniteCoins) this.spendRunPoints(cost);
+        this.marketShopRerollCost = cost + 25;
+        this._rerollMarketShop();
+        const rptEl = document.getElementById('mm-run-pts');
+        if (rptEl) rptEl.textContent = this.runPoints;
+        this.sfx.play('btn');
+        this.renderMarketShop();
     }
 
     /* ══ MINE LOADOUT ══════════════════════════════════════════ */
@@ -2009,14 +2117,9 @@ class Minesweeper {
                 slot.className = `mine-slot${depleted ? ' depleted' : ''}${boardUsed && !depleted ? ' active-board-used' : ''}`;
                 slot.dataset.slotIndex = i;
                 slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span></div><span class="mine-slot-name">${def.name}</span>`;
-                /* Long press to sell */
-                let sellTimer = null;
-                slot.addEventListener('pointerdown', () => { sellTimer = setTimeout(() => { this._showSellConfirm(i); }, 600); });
-                slot.addEventListener('pointerup', () => clearTimeout(sellTimer));
-                slot.addEventListener('pointerleave', () => clearTimeout(sellTimer));
-                /* Click to show info */
-                slot.addEventListener('click', () => { this.showMineInfo(mine.id); });
-                /* Drag to place on board or reorder */
+                /* Tap = info, double-tap = sell, hold-and-drag = place. Drag binding handles
+                 * the press-then-move flow; the tap-vs-double-tap dispatch lives in _bindMineTaps. */
+                this._bindMineTaps(slot, i);
                 this._bindMineDrag(slot, i);
             } else {
                 slot.className = 'mine-slot empty-slot';
@@ -2029,6 +2132,42 @@ class Minesweeper {
     _getMineMaxPerBoard(mineId) {
         const limits = { mine_mine: 1, trench_mine: 2, grenade_mine: 1, totem_mine: 1 };
         return limits[mineId] || 1;
+    }
+
+    _bindMineTaps(slot, slotIndex) {
+        const DOUBLE_TAP_MS = 300;
+        const TAP_MOVE_THRESH = 8;
+        let lastTapTime = 0;
+        let downX = 0, downY = 0, didMove = false;
+        slot.addEventListener('pointerdown', (e) => {
+            downX = e.clientX; downY = e.clientY; didMove = false;
+        });
+        slot.addEventListener('pointermove', (e) => {
+            if (Math.abs(e.clientX - downX) > TAP_MOVE_THRESH || Math.abs(e.clientY - downY) > TAP_MOVE_THRESH) {
+                didMove = true;
+            }
+        });
+        slot.addEventListener('pointerup', (e) => {
+            if (didMove) { lastTapTime = 0; return; }
+            const now = Date.now();
+            const mine = this.playerMines[slotIndex];
+            if (!mine) return;
+            if (now - lastTapTime < DOUBLE_TAP_MS) {
+                /* Double tap — sell confirm */
+                lastTapTime = 0;
+                this._showSellConfirm(slotIndex);
+            } else {
+                lastTapTime = now;
+                /* Single tap (after delay): show info */
+                setTimeout(() => {
+                    if (lastTapTime === now) {
+                        lastTapTime = 0;
+                        const m = this.playerMines[slotIndex];
+                        if (m) this.showMineInfo(m.id);
+                    }
+                }, DOUBLE_TAP_MS);
+            }
+        });
     }
 
     _showSellConfirm(slotIndex) {
@@ -2135,7 +2274,9 @@ class Minesweeper {
         if (mine.charges <= 0) { this.sfx.play('error'); return; }
         const maxPerBoard = this._getMineMaxPerBoard(mine.id);
         if (mine.boardPlacedCount >= maxPerBoard) { this.sfx.play('error'); return; }
-        if (this.revealed[r] && this.revealed[r][c]) { this.sfx.play('error'); return; }
+        /* Mines may be placed on any tile (unopened, opened, number, empty).
+         * Per-mine effects still respect their own rules below. */
+        if (this.flagged[r] && this.flagged[r][c]) { this.sfx.play('error'); return; }
 
         /* Additional requirements */
         if (mine.id === 'grenade_mine') {
@@ -2152,6 +2293,13 @@ class Minesweeper {
             const adj = this._getAdj(r, c);
             const hasAdjacentNumbers = adj.some(([ar, ac]) => this.board[ar][ac] > 0);
             if (!hasAdjacentNumbers) { this.sfx.play('error'); return; }
+        }
+        if (mine.id === 'grenade_mine') {
+            /* Grenade ends the run only when placed on an UNREVEALED non-mine tile.
+             * On a revealed tile (number/empty), it has no effect (whiff). */
+            if (this.revealed[r] && this.revealed[r][c] && this.board[r][c] !== -1) {
+                /* Allow placement but it whiffs — handled in _executeMineEffect */
+            }
         }
 
         /* Deduct charges and increment board count */
@@ -2226,6 +2374,7 @@ class Minesweeper {
             }
             case 'grenade_mine': {
                 const isMine = this.board[r] && this.board[r][c] === -1;
+                const wasRevealed = this.revealed[r] && this.revealed[r][c];
                 this.spawnExplosion(cx, cy, '#4CAF50', 20);
                 /* Grenade shockwave on cell */
                 if (cell) {
@@ -2249,10 +2398,11 @@ class Minesweeper {
                             }
                         }
                     }
-                } else {
-                    /* End the run */
+                } else if (!wasRevealed) {
+                    /* End the run only if placed on a hidden non-mine tile */
                     setTimeout(() => { this.gameOver = true; this.endGame(); }, 600);
                 }
+                /* If wasRevealed and not a mine: whiffs (just visual) */
                 break;
             }
             case 'totem_mine': {
@@ -2583,6 +2733,10 @@ class Minesweeper {
             if (!this.slotBought || this.slotUsed) { this.sfx.play('error'); return; }
             this.sfx.play('btn'); this.openSlotMachine();
         });
+
+        /* Mine Market collection shop reroll */
+        const rerollBtn = document.getElementById('mm-shop-reroll-btn');
+        if (rerollBtn) rerollBtn.addEventListener('click', () => { this._doMarketShopReroll(); });
 
         /* Slot popup */
         document.getElementById('slot-popup-close').addEventListener('click', () => {

@@ -356,23 +356,76 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 
 /* ── CAROUSEL MINE MARKET INDICATORS ────────────────────── */
 .mm-car-ind {
-    width: 12px; height: 36px; border-radius: 6px; flex-shrink: 0;
-    background: var(--border); opacity: .25;
-    transition: background .25s, opacity .25s, box-shadow .25s;
+    width: 10px; height: 44px; border-radius: 5px; flex-shrink: 0;
+    background: #c4c4c4; opacity: .35;
+    transition: background .25s, opacity .25s, box-shadow .25s, transform .25s;
     display: flex; align-items: center; justify-content: center;
 }
-.mm-car-ind.unlocked {
-    background: var(--accent); opacity: .55;
+body.dark-mode .mm-car-ind { background: #555; }
+.mm-car-ind.hidden-ind { visibility: hidden; }
+.mm-car-ind.reached {
+    background: var(--accent); opacity: .85;
 }
 .mm-car-ind.highlight {
     background: var(--accent); opacity: 1;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+    transform: scaleY(1.15);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
     animation: mmIndPulse 1.2s ease-in-out infinite;
 }
 @keyframes mmIndPulse {
     0%,100% { opacity: 1; }
-    50% { opacity: .6; }
+    50% { opacity: .55; }
 }
+
+/* ── MINE MARKET COLLECTION SHOP ─────────────────────────── */
+.mm-shop-section {
+    padding: 12px; display: flex; flex-direction: column; gap: 10px;
+}
+.mm-shop-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.mm-shop-title {
+    font-size: .8rem; font-weight: 900; letter-spacing: .08em;
+    color: var(--text); text-transform: uppercase;
+}
+.mm-shop-reroll-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px; font-size: .68rem; font-weight: 800; letter-spacing: .04em;
+    border-radius: 10px; background: var(--btn-dark); color: #fff; border: none;
+    cursor: pointer;
+}
+.mm-shop-reroll-btn.disabled,
+.mm-shop-reroll-btn[disabled] { opacity: .45; pointer-events: none; }
+.mm-shop-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mm-shop-slot {
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: 14px; padding: 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    min-height: 124px;
+    box-shadow: inset 0 -4px 10px rgba(0,0,0,.04);
+}
+.mm-shop-slot.sold { opacity: .4; pointer-events: none; }
+.mm-shop-slot-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+}
+.mm-shop-slot-icon svg { width: 38px; height: 38px; }
+.mm-shop-slot-name {
+    font-size: .7rem; font-weight: 800; text-align: center; color: var(--text);
+}
+.mm-shop-slot-cost {
+    font-size: .65rem; font-weight: 700; color: var(--text-muted);
+    letter-spacing: .04em;
+}
+.mm-shop-slot-buy {
+    margin-top: auto; padding: 5px 12px; font-size: .65rem; font-weight: 800;
+    border-radius: 8px; background: var(--accent); color: #fff;
+    border: none; cursor: pointer; letter-spacing: .04em;
+}
+.mm-shop-slot-buy.disabled, .mm-shop-slot-buy[disabled] {
+    opacity: .45; pointer-events: none;
+}
+.mm-shop-slot.empty { opacity: .35; }
 
 /* ── COUNTERS ────────────────────────────────────────────── */
 .counters-row {
