@@ -11,6 +11,9 @@ const SELL_REFUND_RATIO = 0.5;
 /* ── SVG ICONS ───────────────────────────────────────────────── */
 const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.2 C12.85 4.2 13.6 4.65 14.05 5.38 L20.15 15.55 C21.1 17.15 19.95 19.18 18.1 19.18 H5.9 C4.05 19.18 2.9 17.15 3.85 15.55 L9.95 5.38 C10.4 4.65 11.15 4.2 12 4.2 Z"/></svg>`;
 const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="rgba(255,255,255,0.28)"/><line x1="12" y1="4" x2="12" y2="7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="20" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="12" x2="7" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="12" x2="20" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="6.3" x2="8.5" y2="8.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="15.5" x2="17.7" y2="17.7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="17.7" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="8.5" x2="17.7" y2="6.3" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/></svg>`;
+const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+const CROSS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+const CROSS_BIG_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
 /* ── FLOATING BACKGROUND SVGs ────────────────────────────────── */
 const FLOAT_SVGS = {
@@ -152,8 +155,13 @@ const FEAT_DEFS = [
     { id:'all_boards_done',cat:'collector', name:'Board Completionist',desc:'Complete all board feats',                iconKey:'meta' },
     { id:'all_score_done', cat:'collector', name:'Score Completionist',desc:'Complete all score feats',                iconKey:'meta' },
     { id:'all_level_done', cat:'collector', name:'Level Completionist',desc:'Complete all level feats',                iconKey:'meta' },
+    { id:'hopeless_5',     cat:'market',    name:'Hopeless I',         desc:'Lose 5 scratch cards in a row',           iconKey:'fun' },
+    { id:'hopeless_10',    cat:'market',    name:'Hopeless II',        desc:'Lose 10 scratch cards in a row',          iconKey:'fun' },
+    { id:'hopeless_15',    cat:'market',    name:'Hopeless III',       desc:'Lose 15 scratch cards in a row',          iconKey:'fun' },
+    { id:'hopeless_20',    cat:'market',    name:'Hopeless IV',        desc:'Lose 20 scratch cards in a row',          iconKey:'fun' },
     { id:'circle_board',   cat:'original',  name:'Geometric Shift',   desc:'Transform the board into a circle',       iconKey:'circle',  secret:true },
     { id:'score_69',       cat:'original',  name:'Nice.',             desc:'Score exactly 69 style in one action',    iconKey:'score_hi',secret:true },
+    { id:'sixty_nine_better', cat:'original', name:'69 Better',       desc:'Find the secret 67 code',                 iconKey:'fun',     secret:true },
     { id:'ultrakill',      cat:'original',  name:'Progression is Dead', desc:'Points are fuel\nBoards are full',      iconKey:'secret',  secret:true },
     { id:'edgelord_phase', cat:'original',  name:"it's just a phase", desc:'Unlock the black theme',                  iconKey:'secret',  secret:true },
 ];
@@ -726,7 +734,7 @@ class Minesweeper {
 
     /* ══ FEATS ═════════════════════════════════════════════════ */
     _loadFeats() {
-        const d = { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
+        const d = this._defaultFeats();
         try {
             const s = localStorage.getItem('ms_feats');
             return s ? { ...d, ...JSON.parse(s) } : d;
@@ -734,7 +742,7 @@ class Minesweeper {
     }
     _saveFeats() { localStorage.setItem('ms_feats', JSON.stringify(this.feats)); }
     _defaultFeats() {
-        return { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, completed:{} };
+        return { boardsCleared:0, currentConsecutive:0, bestConsecutive:0, totalEarned:0, bestRunStyleScore:0, bestBoardStyleScore:0, funCodeUsed:false, scratchLossStreak:0, bestScratchLossStreak:0, completed:{} };
     }
 
     _loadActiveSlotSnapshot() {
@@ -798,7 +806,11 @@ class Minesweeper {
             case 'level_100':  return this.level >= 100;
             case 'level_250':  return this.level >= 250;
             case 'level_500':  return this.level >= 500;
-            case 'circle_board': case 'score_69': case 'ultrakill': case 'ting': case 'edgelord_phase':
+            case 'hopeless_5':  return (f.bestScratchLossStreak||0) >= 5  || (f.scratchLossStreak||0) >= 5;
+            case 'hopeless_10': return (f.bestScratchLossStreak||0) >= 10 || (f.scratchLossStreak||0) >= 10;
+            case 'hopeless_15': return (f.bestScratchLossStreak||0) >= 15 || (f.scratchLossStreak||0) >= 15;
+            case 'hopeless_20': return (f.bestScratchLossStreak||0) >= 20 || (f.scratchLossStreak||0) >= 20;
+            case 'circle_board': case 'score_69': case 'ultrakill': case 'ting': case 'edgelord_phase': case 'sixty_nine_better':
                 return c[id] === true;
         }
         return false;
@@ -1176,6 +1188,13 @@ class Minesweeper {
                 clearDefs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
             this._bindFeatItemMarkers(list); return;
         }
+        if (tab === 'market') {
+            const hopeless = FEAT_DEFS.filter(d => d.cat === 'market' && d.id.startsWith('hopeless_'));
+            list.innerHTML =
+                `<div class="feats-section-header">Hopeless</div>` +
+                hopeless.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
+            this._bindFeatItemMarkers(list); return;
+        }
         const defs = FEAT_DEFS.filter(d => d.cat === tab && !d.sub);
         if (defs.length === 0) { list.innerHTML = `<div class="feats-empty-msg">Nothing here yet.</div>`; return; }
         list.innerHTML = defs.map(d => this._renderFeatItem(d, this._isFeatDone(d.id), isDev)).join('');
@@ -1218,7 +1237,7 @@ class Minesweeper {
         this._updateNotifDot(); this._updateTabDots();
     }
     _updateTabDots() {
-        document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
+        document.querySelectorAll('#feats-side-nav .feats-side-nav-btn, #feats-tab-bar .tab-btn').forEach(btn => {
             const tab = btn.dataset.featsTab;
             let dot = btn.querySelector('.notif-dot');
             if (!dot) { dot = document.createElement('span'); dot.className = 'notif-dot hidden'; btn.appendChild(dot); }
@@ -1823,10 +1842,18 @@ class Minesweeper {
                     scratchResult.textContent = `+${prize}`;
                     this.addRunPoints(prize);
                     this.sfx.play('purchase');
+                    this.feats.scratchLossStreak = 0;
+                    this._saveFeats();
                 } else {
                     scratchResult.classList.add('lose');
-                    scratchResult.textContent = '✗';
+                    scratchResult.innerHTML = CROSS_BIG_SVG;
                     this.sfx.play('error');
+                    this.feats.scratchLossStreak = (this.feats.scratchLossStreak || 0) + 1;
+                    if ((this.feats.scratchLossStreak || 0) > (this.feats.bestScratchLossStreak || 0)) {
+                        this.feats.bestScratchLossStreak = this.feats.scratchLossStreak;
+                    }
+                    this._saveFeats();
+                    this.checkFeats();
                 }
             }
             const rptEl = document.getElementById('mm-run-pts');
@@ -2104,29 +2131,52 @@ class Minesweeper {
     }
 
     renderMineHud() {
-        const slotsEl = document.getElementById('mine-hud-slots');
-        if (!slotsEl) return;
-        slotsEl.innerHTML = '';
-        for (let i = 0; i < 6; i++) {
-            const mine = this.playerMines[i];
-            const slot = document.createElement('div');
-            if (mine) {
-                const def = MINE_DEFS[mine.id];
-                const depleted = mine.charges <= 0;
-                const boardUsed = mine.boardPlacedCount >= (this._getMineMaxPerBoard(mine.id));
-                slot.className = `mine-slot${depleted ? ' depleted' : ''}${boardUsed && !depleted ? ' active-board-used' : ''}`;
-                slot.dataset.slotIndex = i;
-                slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span></div><span class="mine-slot-name">${def.name}</span>`;
-                /* Tap = info, double-tap = sell, hold-and-drag = place. Drag binding handles
-                 * the press-then-move flow; the tap-vs-double-tap dispatch lives in _bindMineTaps. */
-                this._bindMineTaps(slot, i);
-                this._bindMineDrag(slot, i);
-            } else {
-                slot.className = 'mine-slot empty-slot';
-                slot.innerHTML = `<div class="mine-slot-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="mine-slot-name" style="opacity:.3">Empty</span>`;
+        const allSlotEls = document.querySelectorAll('.mine-hud .mine-hud-slots');
+        if (!allSlotEls.length) return;
+        allSlotEls.forEach(slotsEl => {
+            slotsEl.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const mine = this.playerMines[i];
+                const slot = document.createElement('div');
+                if (mine) {
+                    const def = MINE_DEFS[mine.id];
+                    const depleted = mine.charges <= 0;
+                    const boardUsed = mine.boardPlacedCount >= (this._getMineMaxPerBoard(mine.id));
+                    slot.className = `mine-slot${depleted ? ' depleted' : ''}${boardUsed && !depleted ? ' active-board-used' : ''}`;
+                    slot.dataset.slotIndex = i;
+                    slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span></div><span class="mine-slot-name">${def.name}</span>`;
+                    /* Tap = info, double-tap = sell, hold-and-drag = place. */
+                    this._bindMineTaps(slot, i);
+                    this._bindMineDrag(slot, i);
+                } else {
+                    slot.className = 'mine-slot empty-slot';
+                    slot.innerHTML = `<div class="mine-slot-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="mine-slot-name" style="opacity:.3">Empty</span>`;
+                }
+                slotsEl.appendChild(slot);
             }
-            slotsEl.appendChild(slot);
-        }
+        });
+        this._updateMineHudVisibility();
+    }
+
+    _updateMineHudVisibility() {
+        const hasRun = !!this.runState;
+        const hasMines = (this.playerMines || []).some(m => !!m);
+        const showAny = hasRun || hasMines;
+        const huds = {
+            'mine-hud-menu':   showAny,
+            'mine-hud-game':   showAny,
+            'mine-hud-market': showAny,
+            'mine-hud-bf':     showAny,
+        };
+        Object.entries(huds).forEach(([id, show]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (show) {
+                el.classList.remove('hud-out', 'hud-empty');
+            } else {
+                el.classList.add('hud-out');
+            }
+        });
     }
 
     _getMineMaxPerBoard(mineId) {
@@ -2310,11 +2360,15 @@ class Minesweeper {
         /* Play place sound */
         this.sfx.play('mine_place');
 
-        /* Show a brief mine icon on the cell */
+        /* Show a persistent mine icon on the cell. mine_mine/grenade_mine fade after their effect. */
         const cell = this.getCell(r, c);
         if (cell) {
+            /* Remove any prior placed-overlay on this tile */
+            const prior = cell.querySelector('.mine-cell-placed');
+            if (prior) prior.remove();
             const overlay = document.createElement('div');
             overlay.className = 'mine-cell-placed';
+            overlay.dataset.mineId = mine.id;
             overlay.innerHTML = def.icon();
             overlay.style.background = def.color + '33';
             overlay.style.borderRadius = '9px';
@@ -2323,8 +2377,15 @@ class Minesweeper {
 
         /* Execute mine effect */
         setTimeout(() => {
-            if (cell) { const o = cell.querySelector('.mine-cell-placed'); if (o) o.remove(); }
             this._executeMineEffect(mine.id, r, c, slotIndex);
+            /* Fade out one-shot mine icons after effect resolves; trench/totem persist. */
+            if (cell && (mine.id === 'mine_mine' || mine.id === 'grenade_mine')) {
+                const o = cell.querySelector('.mine-cell-placed');
+                if (o) {
+                    o.classList.add('fading');
+                    setTimeout(() => { if (o.parentNode) o.remove(); }, 500);
+                }
+            }
         }, 300);
         this.saveCurrentToSlot(this.currentSlot);
     }
@@ -2502,6 +2563,7 @@ class Minesweeper {
             if (box) box.classList.add('selected');
         }
         this.renderDifficultyGrid(); this.renderCarousel(); this.renderLevelBar(); this.refreshMenuButtons();
+        this.renderMineHud();
     }
 
     /* ══ AUTO FIT BOARD ════════════════════════════════════════ */
@@ -2558,12 +2620,11 @@ class Minesweeper {
         document.getElementById('feats-btn').addEventListener('click', () => {
             this.sfx.play('modal'); this.featsTab='board';
             this.unviewedFeatIds = []; this._saveFeatIndicators();
-            document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab==='board'));
+            document.querySelectorAll('#feats-side-nav .feats-side-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab==='board'));
             this.renderFeatsPanel('board');
             document.getElementById('feats-modal').classList.add('show');
             this._updateTabDots();
             this.updateFeatsTabProgress('board');
-            if (this._updateFeatsArrows) this._updateFeatsArrows();
         });
         document.getElementById('feats-btn').addEventListener('contextmenu', e => {
             e.preventDefault();
@@ -2746,40 +2807,21 @@ class Minesweeper {
             this.sfx.play('btn');
         });
 
-        /* ── Feats tab arrow navigation ── */
-        const _featsTabs = ['board','score','level','collector','original'];
-        const _featsPrev = document.getElementById('feats-tab-prev');
-        const _featsNext = document.getElementById('feats-tab-next');
-        const _updateFeatsArrows = () => {
-            const idx = _featsTabs.indexOf(this.featsTab);
-            if (_featsPrev) _featsPrev.classList.toggle('disabled', idx <= 0);
-            if (_featsNext) _featsNext.classList.toggle('disabled', idx >= _featsTabs.length - 1);
-        };
+        /* ── Feats side-nav ── */
         const _setFeatsTab = (tab) => {
             this.featsTab = tab;
-            document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab === tab));
-            /* Scroll active tab into view */
-            const activeBtn = document.querySelector(`#feats-tab-bar .tab-btn[data-feats-tab="${tab}"]`);
-            if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            document.querySelectorAll('#feats-side-nav .feats-side-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.featsTab === tab));
+            const activeBtn = document.querySelector(`#feats-side-nav .feats-side-nav-btn[data-feats-tab="${tab}"]`);
+            if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             this.renderFeatsPanel(tab);
             this.updateFeatsTabProgress(tab);
             this._markFeatTabSeen(tab);
-            _updateFeatsArrows();
             this.sfx.play('tab');
         };
-        if (_featsPrev) _featsPrev.addEventListener('click', () => {
-            const idx = _featsTabs.indexOf(this.featsTab);
-            if (idx > 0) _setFeatsTab(_featsTabs[idx - 1]);
-        });
-        if (_featsNext) _featsNext.addEventListener('click', () => {
-            const idx = _featsTabs.indexOf(this.featsTab);
-            if (idx < _featsTabs.length - 1) _setFeatsTab(_featsTabs[idx + 1]);
-        });
-        document.querySelectorAll('#feats-tab-bar .tab-btn').forEach(btn => {
+        document.querySelectorAll('#feats-side-nav .feats-side-nav-btn').forEach(btn => {
             btn.addEventListener('click', () => _setFeatsTab(btn.dataset.featsTab));
         });
-        _updateFeatsArrows();
-        this._updateFeatsArrows = _updateFeatsArrows;
+        this._setFeatsTab = _setFeatsTab;
 
         /* ── Store tab arrow navigation ── */
         const _storeTabs = ['themes','uncommon'];
@@ -2822,14 +2864,22 @@ class Minesweeper {
         const code  = rawCode.toUpperCase();
         const codeLower = rawCode.toLowerCase();
         msg.classList.remove('hidden','success','error');
+        const setSuccess = (text) => {
+            msg.innerHTML = CHECK_SVG + ' ' + text.replace(/^[✓✔]\s*/, '');
+            msg.classList.add('success');
+        };
+        const setError = (text) => {
+            msg.innerHTML = CROSS_SVG + ' ' + text.replace(/^[✗✘]\s*/, '');
+            msg.classList.add('error');
+        };
         if (code === '123ABC') {
             this.infiniteCoins = true;
             localStorage.setItem('ms_infinite_coins', 'true');
             document.body.classList.add('dev-mode');
             this.feats.funCodeUsed = true; this._saveFeats();
             this.renderLevelBar(); this.checkFeats();
-            msg.textContent = '✓ Infinite coins activated!';
-            msg.classList.add('success'); input.value = '';
+            setSuccess('Infinite coins activated!');
+            input.value = '';
             this.sfx.play('redeem');
         } else if (codeLower === 'edgelord') {
             if (!this.ownedThemes.includes('black')) this.ownedThemes.push('black');
@@ -2840,14 +2890,21 @@ class Minesweeper {
             this._saveFeats(); this.applyTheme('black');
             this.renderStoreThemes(); this.renderDifficultyGrid();
             this._unlockSecret('edgelord_phase'); this.checkFeats();
-            msg.textContent = this.t('edgelordSuccess','✓ Black theme unlocked.');
-            msg.classList.add('success'); input.value = '';
+            const txt = (this.t('edgelordSuccess','Black theme unlocked.') || 'Black theme unlocked.').replace(/^[✓✔]\s*/, '');
+            setSuccess(txt);
+            input.value = '';
+            this.sfx.play('redeem');
+        } else if (codeLower === '67' || codeLower === 'sixty seven' || codeLower === 'sixtyseven') {
+            this.feats.funCodeUsed = true; this._saveFeats();
+            this._unlockSecret('sixty_nine_better'); this.checkFeats();
+            setSuccess('69 Better.');
+            input.value = '';
             this.sfx.play('redeem');
         } else if (code === '') {
             msg.classList.add('hidden');
         } else {
-            msg.textContent = '✗ Invalid code.';
-            msg.classList.add('error'); this.sfx.play('error');
+            setError('Invalid code.');
+            this.sfx.play('error');
         }
     }
 

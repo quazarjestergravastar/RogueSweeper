@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RogueSweeper">
+    <meta name="theme-color" content="#1a1a1a">
     <title>RogueSweeper</title>
+    <link rel="manifest" href="/static/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
@@ -129,6 +135,11 @@
                 <button class="collection-btn juicy-btn" id="collection-btn">COLLECTION</button>
             </div>
 
+            <!-- Mine HUD inline (menu, when run is active) -->
+            <div class="mine-hud mine-hud-inline mine-hud-menu" id="mine-hud-menu">
+                <div class="mine-hud-slots"></div>
+            </div>
+
         </div>
 
         <!-- ── GAME ── -->
@@ -181,9 +192,9 @@
                 <button class="mode-btn juicy-btn" id="flag-btn" data-text="flagShort">FLG</button>
             </div>
 
-            <!-- Mine HUD bar -->
-            <div class="mine-hud" id="mine-hud">
-                <div class="mine-hud-slots" id="mine-hud-slots"></div>
+            <!-- Mine HUD bar (game) -->
+            <div class="mine-hud" id="mine-hud-game">
+                <div class="mine-hud-slots"></div>
             </div>
 
             <div class="game-controls">
@@ -210,6 +221,10 @@
                     <span class="mm-rp-label">RPTS</span>
                     <span class="mm-rp-value num-font" id="mm-run-pts">0</span>
                 </div>
+            </div>
+            <!-- Mine HUD inline (mine market) -->
+            <div class="mine-hud mine-hud-inline" id="mine-hud-market">
+                <div class="mine-hud-slots"></div>
             </div>
             <div class="mm-replenish-banner" id="mm-replenish-banner">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -314,6 +329,10 @@
                 </div>
                 <p class="bf-rank-line" id="bf-rank-line"></p>
             </div>
+            <!-- Mine HUD inline (board-finished modal) -->
+            <div class="mine-hud mine-hud-inline mine-hud-bf" id="mine-hud-bf">
+                <div class="mine-hud-slots"></div>
+            </div>
             <div class="modal-buttons">
                 <button class="confirm-btn juicy-btn" id="bf-continue-btn" style="flex:1;min-width:100%" data-text="continue">Continue</button>
             </div>
@@ -402,18 +421,17 @@
     <div class="modal-overlay" id="feats-modal">
         <div class="modal-content juicy-card feats-modal-content">
             <h2 data-text="feats">Feats</h2>
-            <div class="tab-nav-container" id="feats-tab-nav">
-                <button class="tab-nav-arrow tab-nav-prev juicy-btn" id="feats-tab-prev" aria-label="Previous tab">&#8249;</button>
-                <div class="modal-tab-bar" id="feats-tab-bar">
-                    <button class="tab-btn active" data-feats-tab="board" data-text="boards">Boards</button>
-                    <button class="tab-btn" data-feats-tab="score" data-text="score">Score</button>
-                    <button class="tab-btn" data-feats-tab="level" data-text="level">Level</button>
-                    <button class="tab-btn" data-feats-tab="collector" data-text="collection">Collection</button>
-                    <button class="tab-btn" data-feats-tab="original" id="original-tab-btn" data-text="secrets">Secrets</button>
+            <div class="feats-modal-body">
+                <div class="feats-side-nav" id="feats-side-nav">
+                    <button class="feats-side-nav-btn active" data-feats-tab="board" data-text="boards">Boards</button>
+                    <button class="feats-side-nav-btn" data-feats-tab="score" data-text="score">Score</button>
+                    <button class="feats-side-nav-btn" data-feats-tab="level" data-text="level">Level</button>
+                    <button class="feats-side-nav-btn" data-feats-tab="collector" data-text="collection">Collection</button>
+                    <button class="feats-side-nav-btn" data-feats-tab="market">Mine Market</button>
+                    <button class="feats-side-nav-btn" data-feats-tab="original" id="original-tab-btn" data-text="secrets">Secrets</button>
                 </div>
-                <button class="tab-nav-arrow tab-nav-next juicy-btn" id="feats-tab-next" aria-label="Next tab">&#8250;</button>
+                <div class="feats-list" id="feats-list"></div>
             </div>
-            <div class="feats-list" id="feats-list"></div>
             <button class="close-settings-btn juicy-btn" id="feats-close-btn" data-text="close">Close</button>
         </div>
     </div>
@@ -527,6 +545,13 @@
     <!-- ── MINE DRAG GHOST ── -->
     <div class="mine-drag-ghost hidden" id="mine-drag-ghost"></div>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+            });
+        }
+    </script>
     <script src="/static/game.js"></script>
 </body>
 </html>
