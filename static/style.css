@@ -134,16 +134,18 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── FLOATING BACKGROUND ─────────────────────────────────── */
 .floating-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
 .floating-shape {
-    position: absolute; bottom: -80px;
+    position: absolute; bottom: -120px;
     animation: floatUp linear infinite;
     will-change: transform, opacity;
+    transform-origin: 50% 50%;
 }
 .floating-shape svg { display: block; width: 100%; height: 100%; }
 @keyframes floatUp {
-    0%  { transform:translateY(0) rotate(0deg); opacity:0; }
-    8%  { opacity:.7; }
-    92% { opacity:.5; }
-    100%{ transform:translateY(-115vh) rotate(390deg); opacity:0; }
+    0%   { transform: translateY(0) scale(1) rotate(0deg);          opacity: 0; }
+    8%   { transform: translateY(-8vh) scale(.96) rotate(28deg);    opacity: 1; }
+    50%  { transform: translateY(-58vh) scale(.7) rotate(180deg);   opacity: .55; }
+    85%  { transform: translateY(-95vh) scale(.36) rotate(330deg);  opacity: .22; }
+    100% { transform: translateY(-118vh) scale(.18) rotate(390deg); opacity: 0; }
 }
 
 /* ── SCREEN TRANSITION ───────────────────────────────────── */
@@ -164,7 +166,8 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     display: flex; flex-direction: column; gap: 10px;
     padding: 16px 16px max(20px, env(safe-area-inset-bottom, 20px));
     padding-top: max(16px, env(safe-area-inset-top, 16px));
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
 }
 .menu-screen::-webkit-scrollbar { display: none; }
@@ -358,16 +361,19 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── CAROUSEL MINE MARKET INDICATORS ────────────────────── */
 .mm-car-ind {
     width: 10px; height: 44px; border-radius: 5px; flex-shrink: 0;
-    background: var(--accent); opacity: .9;
-    transition: background .25s, opacity .25s, box-shadow .25s, transform .25s;
+    background: var(--border); opacity: .55;
+    filter: grayscale(.85);
+    transition: background .25s, opacity .25s, box-shadow .25s, transform .25s, filter .25s;
     display: flex; align-items: center; justify-content: center;
 }
 .mm-car-ind.hidden-ind { visibility: hidden; }
 .mm-car-ind.reached {
     background: var(--accent); opacity: 1;
+    filter: none;
 }
 .mm-car-ind.highlight {
     background: var(--accent); opacity: 1;
+    filter: none;
     transform: scaleY(1.15);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
     animation: mmIndPulse 1.2s ease-in-out infinite;
@@ -494,7 +500,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .game-screen {
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
-    background: var(--bg);
+    background: transparent;
 }
 .header {
     display: flex; gap: 8px; padding: 10px 12px 8px;
@@ -630,14 +636,37 @@ body.dark-mode .sm-ring-bg {
     padding: 6px;
     transition: transform .35s cubic-bezier(.3,.7,.3,1.5), opacity .3s;
 }
-/* Inline (non-fixed) hud lives inside flex containers (menu, market, board-finished modal) */
+/* Inline (non-fixed) hud lives inside flex containers (menu only) */
 .mine-hud.mine-hud-inline {
     position: relative; bottom: auto; left: auto;
     transform: none;
     margin: 4px auto 6px; align-self: center;
 }
-.mine-hud.mine-hud-bf { margin: 6px auto 8px; }
 .mine-hud.mine-hud-menu { margin-top: auto; }
+/* Mine-market HUD: pinned to same fixed position as the in-game hud, above the footer buttons. */
+.mine-hud.mine-hud-market {
+    position: absolute;
+    bottom: 86px;
+    left: 50%; transform: translateX(-50%);
+    z-index: 12;
+    margin: 0; align-self: auto;
+}
+/* Board-finished HUD: lives outside .modal-content, pinned at the same fixed position so the
+   loadout appears in the same spot across game / board-clear / market screens. */
+.mine-hud.mine-hud-bf {
+    position: absolute;
+    bottom: 66px;
+    left: 50%; transform: translateX(-50%);
+    z-index: 105;
+    margin: 0; align-self: auto;
+    pointer-events: auto;
+    /* Fade in slightly after the modal pops in for visual continuity. */
+    animation: hudFadeIn .26s .08s cubic-bezier(.3,.7,.3,1.5) both;
+}
+@keyframes hudFadeIn {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(20px) scale(.94); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1); }
+}
 /* Animate-out state for any mine-hud */
 .mine-hud.hud-out {
     transform: translateX(-50%) translateY(60px) scale(.95);
@@ -876,31 +905,41 @@ body.dark-mode .sm-ring-bg {
 }
 .modal-content h2 { font-size: 1.2rem; font-weight: 900; margin-bottom: 8px; }
 .modal-content p   { font-size: .85rem; color: var(--text2); margin-bottom: 4px; }
-.points-earned { font-size: 1.05rem; font-weight: 800; color: var(--accent); margin: 6px 0 4px; }
+.points-earned { font-size: 1rem; font-weight: 800; color: var(--accent); margin: 4px 0 2px; }
 .bf-rank-badge {
     --rank-color: var(--accent);
-    width: 116px; min-height: 116px; margin: 0; border-radius: 22px;
+    width: 100px; min-height: 100px; margin: 0; border-radius: 20px;
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 4px;
     background: color-mix(in srgb, var(--card) 80%, var(--rank-color) 20%);
     border: 3px solid var(--rank-color);
     box-shadow: inset 0 -8px 18px rgba(0,0,0,.08);
 }
-.bf-rank-badge.compact { width: 92px; min-height: 92px; border-radius: 18px; }
-.bf-rank-badge.compact span { font-size: 2.7rem; }
+.bf-rank-badge.compact { width: 78px; min-height: 78px; border-radius: 16px; }
+.bf-rank-badge.compact span { font-size: 2.4rem; }
 .result-feedback {
     display: flex; align-items: center; justify-content: flex-start;
-    gap: 14px; margin: 14px 0 14px; text-align: left;
+    gap: 12px; margin: 8px 0 10px; text-align: left;
 }
-.result-feedback .bf-rank-line { flex: 1; margin: 0; line-height: 1.35; }
+.result-feedback .bf-rank-line { flex: 1; margin: 0; line-height: 1.3; font-size: .78rem; }
 .bf-rank-badge span {
     color: var(--rank-color); font-family: 'Nunito', var(--sys-font);
-    font-size: 3.4rem; font-weight: 1000; line-height: .9;
+    font-size: 2.9rem; font-weight: 1000; line-height: .9;
 }
 .bf-rank-badge small {
     color: var(--text-muted); font-size: .48rem; font-weight: 1000; letter-spacing: .14em;
 }
-.bf-rank-line { font-size: .85rem; font-weight: 800; color: var(--sm-color); margin-bottom: 14px; transition: color .6s; }
+.bf-rank-line { font-size: .82rem; font-weight: 800; color: var(--sm-color); margin-bottom: 10px; transition: color .6s; }
+/* Tighter board-finished / game-over modals so the loadout below stays visible. */
+#board-finished-modal .modal-content,
+#game-over-modal .modal-content {
+    padding: 22px 20px 18px;
+    margin-bottom: 110px;
+}
+#board-finished-modal .modal-content h2,
+#game-over-modal .modal-content h2 { margin-bottom: 4px; font-size: 1.1rem; }
+#board-finished-modal .modal-content p,
+#game-over-modal .modal-content p { font-size: .78rem; margin-bottom: 2px; }
 .modal-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
 .modal-buttons > * { flex: 1; }
 
@@ -1294,9 +1333,9 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
 .mine-market-screen {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; gap: 10px;
-    padding: 16px 16px 20px;
+    padding: 16px 16px 110px;
     overflow-y: auto; overflow-x: hidden;
-    background: var(--bg);
+    background: transparent;
     -webkit-overflow-scrolling: touch;
 }
 .mine-market-screen::-webkit-scrollbar { display: none; }
@@ -1578,7 +1617,7 @@ body.board-complete-pulse .container { animation: pop .34s cubic-bezier(.3,.7,.3
     50%  { transform: scale(1.22) rotate(4deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg);   opacity: 1; }
 }
-.cell.flag-pop { animation: flagPlacePop .3s cubic-bezier(.3,.7,.3,1.5); }
+/* (flag-pop animation defined above; duplicate intentionally removed to avoid restart glitches.) */
 
 @keyframes shopBuyPop {
     0%   { transform: scale(1); }
@@ -1613,3 +1652,60 @@ body.board-complete-pulse .game-board { animation: completePulse .55s ease-out; 
     40%{ transform: translate(0,0); filter: none; }
 }
 body.ting-glitch .container { animation: tingGlitch .8s steps(1) forwards; }
+
+/* ── SYNTHWAVE THEME (uncommon) ──────────────────────────── */
+/* Light "Sunset Synthwave" variant */
+body.theme-synthwave {
+    --accent: #ff2bd6;
+    --bg: #ffe2f3;
+    --card: #ffffff;
+    --card-shadow: rgba(255, 43, 214, .25);
+    --text: #2a0d3a;
+    --text2: #5a1a6e;
+    --text-muted: #a14fb1;
+    --border: #f7b6e3;
+    --btn-dark: #2a0d3a;
+    --btn-dark-t: #ffe2f3;
+    --diff-bg: #ffd1ec;
+}
+body.theme-synthwave .container {
+    background:
+        radial-gradient(ellipse at top, #ffd1ec 0%, transparent 55%),
+        radial-gradient(ellipse at bottom, #ffe9c2 0%, transparent 60%),
+        linear-gradient(180deg, #ffe2f3 0%, #fff7d8 100%);
+}
+/* Dark "Neon Synthwave" variant */
+body.dark-mode.theme-synthwave {
+    --accent: #ff2bd6;
+    --bg: #0d0420;
+    --card: #1c0a35;
+    --card-shadow: rgba(255, 43, 214, .35);
+    --text: #ffffff;
+    --text2: #f7d4ff;
+    --text-muted: #b18ddc;
+    --border: #4a1f6b;
+    --btn-dark: #ff2bd6;
+    --btn-dark-t: #0d0420;
+    --diff-bg: #2a1248;
+}
+body.dark-mode.theme-synthwave .container {
+    background:
+        radial-gradient(ellipse at top, #4a1077 0%, transparent 55%),
+        radial-gradient(ellipse at bottom, #00d4ff22 0%, transparent 60%),
+        linear-gradient(180deg, #0d0420 0%, #1a0838 100%);
+}
+/* Synthwave theme card preview chrome */
+.theme-card[data-theme-key="synthwave"] {
+    background: linear-gradient(135deg, #2a0d3a 0%, #ff2bd6 50%, #00d4ff 100%);
+    color: #fff;
+    border-color: #ff2bd6;
+    box-shadow: 0 4px 14px rgba(255, 43, 214, .35);
+    position: relative; overflow: hidden;
+}
+.theme-card[data-theme-key="synthwave"] .theme-card-name { color: #fff; text-shadow: 0 0 6px rgba(0,0,0,.45); }
+.theme-card[data-theme-key="synthwave"] .theme-cost-pill { background: rgba(0,0,0,.45); color: #ffe2f3; border-color: rgba(255,255,255,.3); }
+.theme-card[data-theme-key="synthwave"]::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(180deg, transparent 0, transparent 6px, rgba(255,255,255,.05) 6px, rgba(255,255,255,.05) 7px);
+    pointer-events: none;
+}

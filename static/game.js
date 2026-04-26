@@ -115,12 +115,13 @@ const BOARD_CONFIGS = {
 
 /* ── THEMES ─────────────────────────────────────────────────── */
 const THEMES = {
-    green:  { name:'Green Theme',  accent:'#4CAF50', cost:0,   diff:{ easy:'#8BC34A', normal:'#4CAF50', hard:'#00695C' } },
-    red:    { name:'Red Theme',    accent:'#F44336', cost:150, diff:{ easy:'#FFEB3B', normal:'#FF9800', hard:'#F44336' } },
-    blue:   { name:'Blue Theme',   accent:'#2196F3', cost:150, diff:{ easy:'#00BCD4', normal:'#2196F3', hard:'#3F51B5' } },
-    yellow: { name:'Yellow Theme', accent:'#FFC107', cost:150, diff:{ easy:'#FFF176', normal:'#FFC107', hard:'#FF8F00' } },
-    purple: { name:'Purple Theme', accent:'#9C27B0', cost:150, diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
-    black:  { name:'Black Theme',  accent:'#111111', cost:0, secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
+    green:    { name:'Green Theme',    accent:'#4CAF50', cost:0,    diff:{ easy:'#8BC34A', normal:'#4CAF50', hard:'#00695C' } },
+    red:      { name:'Red Theme',      accent:'#F44336', cost:150,  diff:{ easy:'#FFEB3B', normal:'#FF9800', hard:'#F44336' } },
+    blue:     { name:'Blue Theme',     accent:'#2196F3', cost:150,  diff:{ easy:'#00BCD4', normal:'#2196F3', hard:'#3F51B5' } },
+    yellow:   { name:'Yellow Theme',   accent:'#FFC107', cost:150,  diff:{ easy:'#FFF176', normal:'#FFC107', hard:'#FF8F00' } },
+    purple:   { name:'Purple Theme',   accent:'#9C27B0', cost:150,  diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
+    black:    { name:'Black Theme',    accent:'#111111', cost:0,    secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
+    synthwave:{ name:'Synthwave Theme',accent:'#ff2bd6', cost:1000, rarity:'uncommon', diff:{ easy:'#00d4ff', normal:'#ff2bd6', hard:'#7c1fa3' } },
 };
 
 /* ── FEAT DEFINITIONS ────────────────────────────────────────── */
@@ -226,10 +227,10 @@ class SoundEngine {
                     this._tone(340,'triangle',t+0.025,0.003,0.055,0.05);
                     break;
                 case 'mine':
-                    this._noise(0.55,0.45);
-                    this._tone(90,'sawtooth',t,0.002,0.42,0.18);
-                    this._tone(55,'sawtooth',t+0.05,0.003,0.34,0.14);
-                    this._tone(140,'sine',t+0.12,0.004,0.22,0.08);
+                    this._noise(0.45,0.32);
+                    this._tone(880,'sawtooth',t,0.002,0.34,0.10);
+                    this._tone(660,'square',t+0.04,0.003,0.28,0.10);
+                    this._tone(1320,'sine',t+0.10,0.004,0.22,0.08);
                     break;
                 case 'btn':
                     this._tone(520,'sine',t,0.002,0.032,0.055);
@@ -251,9 +252,9 @@ class SoundEngine {
                     this._tone(2093,'sine',t+0.16,0.003,0.16,0.08);
                     break;
                 case 'error':
-                    this._tone(180,'sawtooth',t,0.004,0.12,0.10);
-                    this._tone(130,'sawtooth',t+0.065,0.004,0.16,0.09);
-                    this._noise(0.12, 0.18);
+                    this._tone(880,'square',t,0.004,0.10,0.08);
+                    this._tone(660,'square',t+0.065,0.004,0.12,0.08);
+                    this._noise(0.08, 0.14);
                     break;
                 case 'redeem':
                     this._tone(1046,'sine',t,0.005,0.09,0.10);
@@ -281,16 +282,16 @@ class SoundEngine {
                     this._tone(1600,'sine',t+0.046,0.002,0.035,0.05);
                     break;
                 case 'ultrakill':
-                    this._noise(0.22,0.35);
-                    this._tone(180,'sawtooth',t,0.002,0.32,0.22);
-                    this._tone(120,'sawtooth',t+0.05,0.003,0.26,0.16);
-                    this._tone(80,'sine',t+0.14,0.004,0.20,0.10);
+                    this._noise(0.18,0.28);
+                    this._tone(1480,'sawtooth',t,0.002,0.28,0.18);
+                    this._tone(1108,'square',t+0.05,0.003,0.24,0.14);
+                    this._tone(1760,'sine',t+0.14,0.004,0.20,0.10);
                     break;
                 case 'runover':
-                    this._noise(0.35,0.28);
-                    this._tone(220,'triangle',t,0.004,0.24,0.10);
-                    this._tone(150,'sine',t+0.09,0.005,0.28,0.08);
-                    this._tone(100,'sawtooth',t+0.22,0.004,0.26,0.07);
+                    this._noise(0.22,0.22);
+                    this._tone(1175,'triangle',t,0.004,0.22,0.10);
+                    this._tone(880,'sine',t+0.09,0.005,0.24,0.08);
+                    this._tone(740,'square',t+0.22,0.004,0.22,0.07);
                     break;
                 case 'boardwin':
                     [392,494,587,698,880,1047,1319].forEach((f,i) => this._tone(f,'triangle',t+i*0.06,0.01,0.30,0.12));
@@ -313,10 +314,10 @@ class SoundEngine {
                     [1047,1319,1568,2093].forEach((f,i) => this._tone(f,'triangle',t+i*0.035,0.007,0.14,0.11));
                     break;
                 case 'grenade_fx':
-                    this._noise(0.6,0.55);
-                    this._tone(70,'sawtooth',t,0.002,0.5,0.22);
-                    this._tone(110,'sine',t+0.06,0.003,0.38,0.17);
-                    this._tone(55,'sawtooth',t+0.18,0.003,0.30,0.12);
+                    this._noise(0.5,0.42);
+                    this._tone(1480,'sawtooth',t,0.002,0.34,0.18);
+                    this._tone(1108,'square',t+0.06,0.003,0.30,0.14);
+                    this._tone(1760,'sine',t+0.18,0.003,0.24,0.10);
                     break;
                 case 'totem_fx':
                     [523,659,784,1047,1319,1568,2093].forEach((f,i) => this._tone(f,'sine',t+i*0.055,0.005,0.20,0.11));
@@ -373,11 +374,13 @@ class FloatingBackground {
         const keys  = Object.keys(FLOAT_SVGS);
         const type  = keys[Math.floor(Math.random() * keys.length)];
         shape.className = 'floating-shape';
-        const size = 28 + Math.random() * 60;
+        /* Bigger, more opaque shapes spawn at the bottom; the floatUp keyframe
+         * scales them down and fades them out as they rise.                     */
+        const size = 60 + Math.random() * 110;
         shape.style.width = `${size}px`; shape.style.height = `${size}px`;
         shape.style.left  = `${Math.random() * 100}%`;
-        shape.style.animationDuration = `${14 + Math.random() * 18}s`;
-        const opacity = 0.04 + Math.random() * 0.07;
+        shape.style.animationDuration = `${16 + Math.random() * 18}s`;
+        const opacity = 0.22 + Math.random() * 0.18;
         shape.innerHTML = FLOAT_SVGS[type](this._makeColor(opacity));
         this.container.appendChild(shape);
         this.shapes.push(shape);
@@ -1066,6 +1069,8 @@ class Minesweeper {
     /* ══ THEMES ════════════════════════════════════════════════ */
     applyTheme(key) {
         const t = THEMES[key]; if (!t) return;
+        Object.keys(THEMES).forEach(k => document.body.classList.remove(`theme-${k}`));
+        document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
         document.documentElement.style.setProperty('--easy-c',   t.diff.easy);
         document.documentElement.style.setProperty('--normal-c', t.diff.normal);
@@ -1074,6 +1079,8 @@ class Minesweeper {
     previewTheme(key) {
         this._previewTheme = key;
         const t = THEMES[key]; if (!t) return;
+        Object.keys(THEMES).forEach(k => document.body.classList.remove(`theme-${k}`));
+        document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
         document.documentElement.style.setProperty('--easy-c',   t.diff.easy);
         document.documentElement.style.setProperty('--normal-c', t.diff.normal);
@@ -1117,8 +1124,8 @@ class Minesweeper {
         this.sfx.play('modal');
     }
     renderStoreThemes() {
-        const panel = document.getElementById('store-panel-themes');
-        if (!panel) return;
+        const commonPanel   = document.getElementById('store-panel-themes');
+        const uncommonPanel = document.getElementById('store-panel-uncommon');
         const isDark = document.body.classList.contains('dark-mode');
         const s1 = isDark ? '#1e1e1e' : '#3a3a3a';
         const s2 = isDark ? '#333333' : '#666666';
@@ -1130,8 +1137,7 @@ class Minesweeper {
             if (lum < 25) { const boost=35; return `rgb(${Math.min(255,rv+boost)},${Math.min(255,gv+boost)},${Math.min(255,bv+boost)})`; }
             return hex;
         };
-        const entries = Object.entries(THEMES).filter(([key, t]) => !t.secret || this.ownedThemes.includes(key));
-        panel.innerHTML = `<div class="themes-grid">${entries.map(([key, t]) => {
+        const cardHtml = ([key, t]) => {
             const owned = this.ownedThemes.includes(key);
             const active= key === this.activeTheme;
             const pill  = active ? `<span class="theme-cost-pill pill-active">Active</span>`
@@ -1140,19 +1146,36 @@ class Minesweeper {
             return `<div class="theme-card${active?' theme-active-card':''}" data-theme-key="${key}" style="${active?`border-color:${t.accent};box-shadow:0 0 0 2px ${t.accent}`:''}">
                 <div class="theme-swatches"><div class="swatch" style="background:${adj(s1)}"></div><div class="swatch" style="background:${adj(s2)}"></div><div class="swatch" style="background:${adj(s3)}"></div><div class="swatch" style="background:${t.accent}"></div></div>
                 <span class="theme-card-name">${t.name}</span>${pill}</div>`;
-        }).join('')}</div>`;
-        panel.querySelectorAll('.theme-card').forEach(card => {
-            const key = card.dataset.themeKey;
-            let pressTimer = null, isPreviewing = false;
-            card.addEventListener('pointerdown', () => { pressTimer = setTimeout(() => { isPreviewing=true; this.previewTheme(key); }, 180); });
-            card.addEventListener('pointerup',   () => {
-                clearTimeout(pressTimer);
-                if (isPreviewing) { this.revertPreview(); isPreviewing=false; }
-                else { const owned=this.ownedThemes.includes(key); if(owned){this.selectTheme(key);this.sfx.play('btn');}else{this.purchaseTheme(key,null);} }
+        };
+        const visible = Object.entries(THEMES).filter(([key, t]) => !t.secret || this.ownedThemes.includes(key));
+        const commons   = visible.filter(([k, t]) => t.rarity !== 'uncommon');
+        const uncommons = visible.filter(([k, t]) => t.rarity === 'uncommon');
+
+        if (commonPanel) commonPanel.innerHTML = `<div class="themes-grid">${commons.map(cardHtml).join('')}</div>`;
+        if (uncommonPanel) {
+            uncommonPanel.innerHTML = uncommons.length
+                ? `<div class="themes-grid">${uncommons.map(cardHtml).join('')}</div>
+                   <p style="text-align:center;font-size:.6rem;color:var(--text-muted);margin-top:10px;font-weight:700;letter-spacing:.08em">Uncommon themes adapt to dark mode for two distinct looks.</p>`
+                : `<div style="text-align:center;padding:28px 0;color:var(--text-muted);font-size:.82rem;font-weight:700">Coming soon.</div>`;
+        }
+
+        const bindCards = (panel) => {
+            if (!panel) return;
+            panel.querySelectorAll('.theme-card').forEach(card => {
+                const key = card.dataset.themeKey;
+                let pressTimer = null, isPreviewing = false;
+                card.addEventListener('pointerdown', () => { pressTimer = setTimeout(() => { isPreviewing=true; this.previewTheme(key); }, 180); });
+                card.addEventListener('pointerup',   () => {
+                    clearTimeout(pressTimer);
+                    if (isPreviewing) { this.revertPreview(); isPreviewing=false; }
+                    else { const owned=this.ownedThemes.includes(key); if(owned){this.selectTheme(key);this.sfx.play('btn');}else{this.purchaseTheme(key,null);} }
+                });
+                card.addEventListener('pointerleave',() => { clearTimeout(pressTimer); if(isPreviewing){this.revertPreview();isPreviewing=false;} });
+                card.addEventListener('contextmenu', e => e.preventDefault());
             });
-            card.addEventListener('pointerleave',() => { clearTimeout(pressTimer); if(isPreviewing){this.revertPreview();isPreviewing=false;} });
-            card.addEventListener('contextmenu', e => e.preventDefault());
-        });
+        };
+        bindCards(commonPanel);
+        bindCards(uncommonPanel);
     }
 
     /* ══ FEATS PANEL ═══════════════════════════════════════════ */
@@ -3199,11 +3222,15 @@ class Minesweeper {
         const flagCount = adj.filter(([ar,ac]) => this.flagged[ar][ac]).length;
         const unrevealed = adj.filter(([ar,ac]) => !this.revealed[ar][ac] && !this.flagged[ar][ac]);
         if (flagCount + unrevealed.length === this.board[r][c] && unrevealed.length > 0) {
-            for (const [ar, ac] of unrevealed) {
-                if (this.gameOver) break;
-                this.toggleFlag(ar, ac);
-            }
-            this.updateDisplay(); this.saveCurrentBoardToRun();
+            /* Stagger flag placements so the flag-pop animation never stacks on top of itself,
+             * which previously caused the playing UI to briefly disappear during quick-flag. */
+            unrevealed.forEach(([ar, ac], i) => {
+                setTimeout(() => {
+                    if (this.gameOver || this.flagged[ar][ac] || this.revealed[ar][ac]) return;
+                    this.toggleFlag(ar, ac);
+                    this.updateDisplay(); this.saveCurrentBoardToRun();
+                }, i * 35);
+            });
             return true;
         }
         return false;
@@ -3411,7 +3438,10 @@ class Minesweeper {
         this.carouselIndex = 0;
         this._flushRunPointsToMain();
         this._clearRunState(); this.runState=null;
-        this._resetRunState();
+        /* NOTE: do NOT reset playerMines / loadout here — the user wants the
+         * loadout to remain visible behind the run-over modal. The loadout is
+         * cleared on the next startRun() call instead. */
+        this.renderMineHud();
         const earned = this.awardPoints(correctFlags);
         const stylePts = this.styleMeter ? this.styleMeter.getScore() : 0;
         const styleRank = this.styleMeter ? this.styleMeter.getFinalRank() : 'D';

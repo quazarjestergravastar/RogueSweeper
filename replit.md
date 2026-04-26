@@ -92,14 +92,26 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 - ∞ display only shows when cheat is active for that save
 
 ### Themes
-- green, red, blue, yellow, purple, plus secret black
+- Common: green, red, blue, yellow, purple, plus secret black
+- Uncommon: Synthwave (1000pts) — distinct dark/light variants with magenta-cyan-purple palette
+- Rendered in separate Common (default) and Uncommon store tabs
 - Themes affect: accent color, UI highlights, progress bars, particles
 - Dark mode uses JS-applied accent (no hardcoded green override in CSS)
+- `applyTheme`/`previewTheme` toggle `body.theme-{key}` class for rarity themes
 
 ### Particles (FloatingBackground)
 - 8 shape types: circle, blob, shard, ring, roundsq, cross, tri, dot
-- Colors tinted by active theme accent with low opacity
-- Subtle, varied, non-repetitive background
+- Bigger (60–170px) and more opaque (.22–.40) — `floatUp` keyframe scales them down and fades them as they rise so the bottom of the screen feels rich while the top stays subtle
+- Colors tinted by active theme accent
+- Now visible on game-playing and mine-market screens (transparent backgrounds)
+
+### Loadout HUD persistence
+- Loadout (mine-hud) stays visible across playing → board-finished → mine-market in the same anchored bottom position
+- During run-over modal, loadout remains visible (does NOT reset until next startRun or user dismisses modal)
+- Quick-flag (chord) staggers flag placements 35ms apart to prevent stacked flag-pop animations from glitching the UI
+
+### Audio
+- All low-pitched SFX (mine, error, ultrakill, runover, grenade_fx) raised to high frequencies (660–1760Hz) for a brighter, less muddy feel
 
 ## Technical Notes
 

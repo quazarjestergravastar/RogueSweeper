@@ -323,19 +323,18 @@
             <p id="bf-message"></p>
             <p class="points-earned" id="bf-points"></p>
             <div class="result-feedback">
-                <div class="bf-rank-badge" id="bf-rank-badge">
+                <div class="bf-rank-badge compact" id="bf-rank-badge">
                     <span id="bf-rank-badge-letter">D</span>
-                    <small data-text="overallRank">OVERALL RANK</small>
                 </div>
                 <p class="bf-rank-line" id="bf-rank-line"></p>
-            </div>
-            <!-- Mine HUD inline (board-finished modal) -->
-            <div class="mine-hud mine-hud-inline mine-hud-bf" id="mine-hud-bf">
-                <div class="mine-hud-slots"></div>
             </div>
             <div class="modal-buttons">
                 <button class="confirm-btn juicy-btn" id="bf-continue-btn" style="flex:1;min-width:100%" data-text="continue">Continue</button>
             </div>
+        </div>
+        <!-- Mine HUD (board-finished modal) – fixed at game-hud position -->
+        <div class="mine-hud mine-hud-bf" id="mine-hud-bf">
+            <div class="mine-hud-slots"></div>
         </div>
     </div>
 
@@ -410,9 +409,7 @@
                 <button class="tab-nav-arrow tab-nav-next juicy-btn" id="store-tab-next" aria-label="Next tab">&#8250;</button>
             </div>
             <div class="tab-panel active" id="store-panel-themes"></div>
-            <div class="tab-panel" id="store-panel-uncommon">
-                <div style="text-align:center;padding:28px 0;color:var(--text-muted);font-size:.82rem;font-weight:700">Coming soon.</div>
-            </div>
+            <div class="tab-panel" id="store-panel-uncommon"></div>
             <button class="close-settings-btn juicy-btn" id="store-close-btn" data-text="close">Close</button>
         </div>
     </div>
