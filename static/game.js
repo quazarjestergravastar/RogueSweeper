@@ -16,7 +16,8 @@ const SELL_REFUND_RATIO = 0.5;
 const Sprites = {};
 const SPRITE_FILES = {
     flag:'flag', mine:'mine', check:'check', cross:'cross', dot:'dot',
-    mine_mine:'mine-mine', trench_mine:'trench-mine', grenade_mine:'grenade-mine', totem_mine:'totem-mine',
+    mine_mine:'mine-mine', trench_mine:'trench-mine', grenade_mine:'grenade-mine',
+    totem_mine:'totem-mine', fractal_mine:'fractal-mine',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
     feat_level:'feat-level', feat_level_hi:'feat-level-hi',
@@ -25,6 +26,11 @@ const SPRITE_FILES = {
     float_circle:'float-circle', float_blob:'float-blob', float_shard:'float-shard',
     float_ring:'float-ring', float_roundsq:'float-roundsq', float_cross:'float-cross',
     float_tri:'float-tri', float_dot:'float-dot',
+    /* UI sprites — referenced by elements with [data-sprite="key"] in HTML
+     * and injected by Sprites.hydrateUi() after preload completes.        */
+    ui_settings:'ui-settings', ui_info:'ui-info', ui_refresh:'ui-refresh',
+    ui_star:'ui-star',
+    ui_diff_easy:'ui-diff-easy', ui_diff_normal:'ui-diff-normal', ui_diff_hard:'ui-diff-hard',
 };
 Sprites.preload = async function() {
     const entries = await Promise.all(Object.entries(SPRITE_FILES).map(async ([key, file]) => {
@@ -60,6 +66,7 @@ const MINE_DEFS = {
     mine_mine: {
         id: 'mine_mine', name: 'Mine Mine', cost: 50,
         color: '#f44336', maxCharges: 2, placesPerBoard: 1,
+        rarity: 'common',
         requirement: 'None',
         effect: 'Flags all adjacent mines if any are present. If none, plays a disappearing animation.',
         trigger: 'Instantly on placement',
@@ -69,6 +76,7 @@ const MINE_DEFS = {
     trench_mine: {
         id: 'trench_mine', name: 'Trench Mine', cost: 100,
         color: '#795548', maxCharges: 2, placesPerBoard: 2,
+        rarity: 'common',
         requirement: 'Must be placed on a zero tile adjacent to number tiles',
         effect: 'Gives style points equal to the total of all adjacent number tiles whenever the style rank goes up.',
         trigger: 'Passive — activates on each style rank-up',
@@ -78,6 +86,7 @@ const MINE_DEFS = {
     grenade_mine: {
         id: 'grenade_mine', name: 'Grenade Mine', cost: 200,
         color: '#4CAF50', maxCharges: 2, placesPerBoard: 1,
+        rarity: 'common',
         requirement: 'Style rank C or above',
         effect: 'Opens a large area if placed on a mine tile. Ends the run if placed on a non-mine tile.',
         trigger: 'Instantly on placement',
@@ -87,11 +96,22 @@ const MINE_DEFS = {
     totem_mine: {
         id: 'totem_mine', name: 'Totem Mine', cost: 250,
         color: '#FFC107', maxCharges: 2, placesPerBoard: 1,
+        rarity: 'uncommon',
         requirement: 'None',
         effect: 'Prevents the run from ending once when the player would dig up a mine. Becomes permanently unusable afterwards.',
         trigger: 'Passive — triggers automatically when a mine would end the run',
         limit: '1 time per board; permanently consumed once triggered',
         icon: () => Sprites.totem_mine
+    },
+    fractal_mine: {
+        id: 'fractal_mine', name: 'Fractal Mine', cost: 300,
+        color: '#9C27B0', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'rare',
+        requirement: 'None',
+        effect: 'When any mine within its 3×3 radius is triggered, all mines in that radius (including other fractal mines) detonate twice in a chain reaction.',
+        trigger: 'Passive — activates when any mine in radius is triggered',
+        limit: '1 time per board',
+        icon: () => Sprites.fractal_mine
     }
 };
 const ALL_MINE_IDS = Object.keys(MINE_DEFS);
@@ -339,6 +359,15 @@ class SoundEngine {
                     break;
                 case 'totem_fx':
                     [523,659,784,1047,1319,1568,2093].forEach((f,i) => this._tone(f,'sine',t+i*0.055,0.005,0.20,0.11));
+                    break;
+                case 'trench_fx':
+                    this._tone(220,'sawtooth',t,0.004,0.14,0.10);
+                    this._tone(440,'square',  t+0.05,0.003,0.10,0.08);
+                    this._tone(880,'triangle',t+0.10,0.003,0.10,0.07);
+                    break;
+                case 'fractal_fx':
+                    [392,523,659,784,988,1175,1397,1760].forEach((f,i) => this._tone(f,'square',t+i*0.04,0.003,0.10,0.08));
+                    this._noise(0.18, 0.18);
                     break;
                 case 'scratch_reveal':
                     this._noise(0.18, 0.22);
@@ -631,6 +660,10 @@ class Minesweeper {
         this.bannedMineIds = [];
         /* Trench mines placed on board this board (cleared each board) */
         this.trenchMines = []; // [{r, c}]
+        /* Fractal mines placed on board this board (cleared each board) */
+        this.fractalMines = []; // [{r, c}]
+        /* Throttle: timestamp of last successful placement (1/sec cap) */
+        this._lastPlaceAt = 0;
         /* Scratch card used this market visit */
         this.scratchUsed = false;
         /* Slot machine used this market visit */
@@ -1094,6 +1127,7 @@ class Minesweeper {
         this.totemTriggered = false;
         this.bannedMineIds = [];
         this.trenchMines = [];
+        this.fractalMines = [];
         this._updateRunPtsHud();
         this.renderMineHud();
     }
@@ -1861,6 +1895,7 @@ class Minesweeper {
         this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
         this.boardStyleScore = 0;
         this.trenchMines = [];
+        this.fractalMines = [];
         /* Reset per-board placement counts */
         this.playerMines.forEach(m => { m.boardPlacedCount = 0; });
         document.getElementById('game-screen').classList.remove('hidden');
@@ -2086,11 +2121,13 @@ class Minesweeper {
     _mineRarityWeight(id) {
         const def = MINE_DEFS[id];
         if (!def) return 1;
-        /* Cheaper mines are common; expensive mines are rare */
-        if (def.cost <= 50)  return 5;
-        if (def.cost <= 100) return 3;
-        if (def.cost <= 200) return 1.5;
-        return 1;
+        /* Driven by the explicit `rarity` field on each MINE_DEFS entry. */
+        switch (def.rarity) {
+            case 'common':   return 5;
+            case 'uncommon': return 2;
+            case 'rare':     return 0.7;
+            default:         return 1;
+        }
     }
     _pickRandomMine() {
         const ids = ALL_MINE_IDS;
@@ -2241,7 +2278,10 @@ class Minesweeper {
     }
 
     _getMineMaxPerBoard(mineId) {
-        const limits = { mine_mine: 1, trench_mine: 2, grenade_mine: 1, totem_mine: 1 };
+        const limits = {
+            mine_mine: 1, trench_mine: 2, grenade_mine: 1,
+            totem_mine: 1, fractal_mine: 1,
+        };
         return limits[mineId] || 1;
     }
 
@@ -2389,12 +2429,21 @@ class Minesweeper {
          * Per-mine effects still respect their own rules below. */
         if (this.flagged[r] && this.flagged[r][c]) { this.sfx.play('error'); return; }
 
+        /* Throttle: cap mine placement to one per second. Quietly chirps and
+         * pulses the offending HUD slot if the player tries to spam.        */
+        const now = Date.now();
+        if (now - this._lastPlaceAt < 1000) {
+            this.sfx.play('error');
+            this._flashPlaceCooldown(slotIndex);
+            return;
+        }
+
         /* Additional requirements */
         if (mine.id === 'grenade_mine') {
             const currentRankIdx = this.styleMeter.rankIdx;
             if (currentRankIdx < 1) { /* Need C or above (idx >= 1) */
                 this.sfx.play('error');
-                this.showDiffModal('Rank Required', 'The Grenade Mine requires C rank or above to place.', [{label:'OK', cls:'restart-btn', action:()=>{}}]);
+                this._flashGrenadeRankBlock();
                 return;
             }
         }
@@ -2416,6 +2465,7 @@ class Minesweeper {
         /* Deduct charges and increment board count */
         mine.charges--;
         mine.boardPlacedCount++;
+        this._lastPlaceAt = now;
         this.renderMineHud();
 
         /* Play place sound */
@@ -2509,6 +2559,8 @@ class Minesweeper {
                 setTimeout(() => document.body.classList.remove('runover-pulse'), 500);
                 this.sfx.play('grenade_fx');
                 if (isMine) {
+                    /* Grenade detonated a real mine: chain any nearby fractals. */
+                    this._triggerFractalChain(r, c);
                     /* Open large area around placement */
                     const RADIUS = 3;
                     for (let di = -RADIUS; di <= RADIUS; di++) {
@@ -2537,21 +2589,138 @@ class Minesweeper {
                 this.sfx.play('mine_place');
                 break;
             }
+            case 'fractal_mine': {
+                /* Register fractal mine: it sits dormant and reacts when any
+                 * mine inside its 3×3 radius is triggered.                  */
+                this.fractalMines.push({r, c});
+                if (cell) {
+                    cell.style.boxShadow = `0 0 0 4px #9C27B0, 0 0 14px #9C27B099`;
+                }
+                this.sfx.play('mine_place');
+                break;
+            }
+        }
+    }
+
+    /* ── Cooldown / blocked-placement feedback ───────────────── */
+    _flashPlaceCooldown(slotIndex) {
+        /* Pulse every visible HUD slot with a quick red ring so the player
+         * sees the throttle on whichever HUD is on screen.                */
+        const slots = document.querySelectorAll(`.mine-slot[data-slot-index="${slotIndex}"]`);
+        slots.forEach((s) => {
+            s.classList.remove('place-cooldown'); void s.offsetWidth;
+            s.classList.add('place-cooldown');
+            setTimeout(() => s.classList.remove('place-cooldown'), 450);
+        });
+    }
+    _flashGrenadeRankBlock() {
+        /* Replaces the old "Rank Required" modal with a brief red full-screen
+         * pulse so play isn't interrupted.                                  */
+        document.body.classList.remove('grenade-rank-flash');
+        void document.body.offsetWidth;
+        document.body.classList.add('grenade-rank-flash');
+        setTimeout(() => document.body.classList.remove('grenade-rank-flash'), 520);
+    }
+
+    /* ── Floating "+N trench!" / similar one-shot label helper ─ */
+    _spawnFloatingLabel(x, y, text, color) {
+        const container = document.getElementById('explosion-container');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = 'floating-label-fx';
+        el.textContent = text;
+        el.style.cssText = `left:${x}px;top:${y}px;color:${color || '#fff'};`;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 1400);
+    }
+
+    /* ── Fractal chain reaction ──────────────────────────────────
+     * When any mine inside a fractal mine's 3×3 radius is triggered
+     * (whether by a player dig or by a grenade), every mine in the
+     * radius — including other fractal mines — detonates twice.
+     * Triggering a fractal that contains another fractal in its
+     * radius chains to that fractal too.                              */
+    _triggerFractalChain(srcR, srcC) {
+        if (!this.fractalMines || this.fractalMines.length === 0) return;
+        const visited = new Set();
+        const queue = [[srcR, srcC, 0]];
+        const inRadius = (a, b, c, d) => Math.abs(a - c) <= 1 && Math.abs(b - d) <= 1;
+        while (queue.length) {
+            const [tr, tc, depth] = queue.shift();
+            for (const fm of this.fractalMines) {
+                const key = `${fm.r},${fm.c}`;
+                if (visited.has(key)) continue;
+                if (!inRadius(fm.r, fm.c, tr, tc)) continue;
+                visited.add(key);
+                const fractalDelay = depth * 280;
+                this._detonateFractalRadius(fm.r, fm.c, fractalDelay, queue, depth);
+            }
+        }
+    }
+    _detonateFractalRadius(fr, fc, baseDelay, queue, depth) {
+        /* Fractal flash on the fractal cell itself */
+        setTimeout(() => {
+            const fcell = this.getCell(fr, fc);
+            if (fcell) {
+                fcell.style.boxShadow = '0 0 0 6px #9C27B0, 0 0 24px #9C27B0aa';
+                setTimeout(() => { if (fcell) fcell.style.boxShadow = ''; }, 380);
+            }
+            this.sfx.play('fractal_fx');
+            const frect = fcell ? fcell.getBoundingClientRect() : null;
+            if (frect) {
+                this.spawnExplosion(frect.left + frect.width/2, frect.top + frect.height/2, '#9C27B0', 14);
+            }
+        }, baseDelay);
+
+        for (let di = -1; di <= 1; di++) {
+            for (let dj = -1; dj <= 1; dj++) {
+                const nr = fr + di, nc = fc + dj;
+                if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) continue;
+                const isMine = this.board[nr] && this.board[nr][nc] === -1;
+                const isFractalPlacement = this.fractalMines.some(m => m.r === nr && m.c === nc);
+                if (!isMine && !isFractalPlacement) continue;
+                /* Detonate twice with a small interval. */
+                for (let t = 0; t < 2; t++) {
+                    const dly = baseDelay + 120 + t * 220 + (Math.abs(di) + Math.abs(dj)) * 35;
+                    setTimeout(() => {
+                        const c2 = this.getCell(nr, nc);
+                        const rect = c2 ? c2.getBoundingClientRect() : null;
+                        const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+                        const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
+                        const color = isFractalPlacement ? '#9C27B0' : '#f44336';
+                        this.spawnExplosion(cx, cy, color, 9);
+                    }, dly);
+                }
+                /* Chain to other fractals in radius. */
+                if (isFractalPlacement && (nr !== fr || nc !== fc)) {
+                    queue.push([nr, nc, depth + 1]);
+                }
+            }
         }
     }
 
     _onStyleRankUp(rank) {
-        /* Trench mine: give style points = sum of adjacent numbers for each placed trench mine */
-        this.trenchMines.forEach(({r, c}) => {
+        /* Trench mine: give style points = sum of adjacent numbers for each
+         * placed trench mine. Each contributing trench plays an SFX, spawns
+         * a small explosion at its tile, and pops a "+N trench!" label.    */
+        this.trenchMines.forEach(({r, c}, idx) => {
             const adj = this._getAdj(r, c);
             const total = adj.reduce((sum, [ar, ac]) => {
                 const v = this.board[ar] && this.board[ar][ac] > 0 ? this.board[ar][ac] : 0;
                 return sum + v;
             }, 0);
-            if (total > 0) {
-                this.styleMeter.addScore(total);
-                this.boardStyleScore = this.styleMeter.getScore();
-            }
+            if (total <= 0) return;
+            this.styleMeter.addScore(total);
+            this.boardStyleScore = this.styleMeter.getScore();
+            const cell = this.getCell(r, c);
+            const rect = cell ? cell.getBoundingClientRect() : null;
+            const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+            const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
+            setTimeout(() => {
+                this.spawnExplosion(cx, cy, '#a87555', 8);
+                this.sfx.play('trench_fx');
+                this._spawnFloatingLabel(cx, cy, `+${total} trench!`, '#d8a878');
+            }, idx * 130);
         });
     }
 
@@ -3398,6 +3567,9 @@ class Minesweeper {
         if (this.board[r][c]===-1) {
             /* Check totem mine protection */
             if (this._checkTotemProtection(r, c)) return;
+            /* Fractal chain reaction — purely visual flourish before endGame.
+             * Triggers when the dug-up mine sits inside any fractal's 3×3.  */
+            this._triggerFractalChain(r, c);
             this.gameOver=true; this.endGame(); return;
         }
         if (this.board[r][c] > 0) {
