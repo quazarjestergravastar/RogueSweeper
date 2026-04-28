@@ -606,6 +606,35 @@ body.dark-mode .sm-ring-bg {
 }
 @keyframes smolderRing { 0%,100%{ stroke: #7C4DFF; } 50%{ stroke: #FF6D00; } }
 
+/* ── Style HUD trigger feedback (mine procs) ─────────────── */
+.style-trigger-stack {
+    margin-top: 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    pointer-events: none;
+    max-height: 140px; overflow: visible;
+}
+.style-trigger-text {
+    font-family: 'Nunito', var(--sys-font);
+    font-weight: 900; font-size: .72rem; letter-spacing: .04em;
+    padding: 3px 9px; border-radius: 9px;
+    background: var(--card);
+    box-shadow: 0 2px 8px var(--card-shadow), inset 0 -2px 4px rgba(0,0,0,.05);
+    color: var(--sm-color);
+    border: 1.5px solid currentColor;
+    white-space: nowrap;
+    transform-origin: center;
+    animation: styleTrigPop 1.05s cubic-bezier(.3,.7,.3,1.5) forwards;
+    will-change: transform, opacity;
+}
+@keyframes styleTrigPop {
+    0%   { transform: scale(0) rotate(-220deg); opacity: 0; }
+    25%  { transform: scale(1.32) rotate(14deg); opacity: 1; }
+    45%  { transform: scale(.92) rotate(-5deg); opacity: 1; }
+    65%  { transform: scale(1) rotate(0); opacity: 1; }
+    85%  { transform: scale(1) rotate(0); opacity: 1; }
+    100% { transform: scale(.45) rotate(0); opacity: 0; }
+}
+
 /* ── MODE TOGGLE (bottom center) ─────────────────────────── */
 .mode-toggle-bottom {
     position: absolute;
@@ -757,6 +786,44 @@ body.dark-mode .sm-ring-bg {
     100%{ opacity: 0; transform: scale(.4); }
 }
 .mine-cell-placed.fading { animation: mineCellFadeOut .25s ease-in forwards; }
+
+/* When placed on a revealed numbered tile: shrink to a small corner badge so
+ * the underlying number stays visible. */
+.mine-cell-placed.on-number {
+    inset: auto -2px -2px auto;
+    width: 14px; height: 14px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 1.5px var(--card);
+    background: var(--card) !important;
+}
+.mine-cell-placed.on-number svg { width: 96%; height: 96%; }
+
+/* Fractal mine 3×3 radius indicator. Brightness scales with overlap count
+ * via the --fractal-overlap CSS variable (1..N). Uses ::after on the cell
+ * itself so it sits below numbers/icons in stacking order.                */
+.cell.fractal-radius {
+    position: relative;
+}
+.cell.fractal-radius::after {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 9px; pointer-events: none; z-index: 0;
+    background: rgba(156, 39, 176, calc(0.10 + 0.10 * var(--fractal-overlap, 1)));
+    box-shadow: inset 0 0 0 1.5px rgba(156, 39, 176, calc(0.30 + 0.16 * var(--fractal-overlap, 1)));
+    animation: fractalRadiusPulse 2.4s ease-in-out infinite;
+}
+@keyframes fractalRadiusPulse {
+    0%,100% { filter: brightness(1); }
+    50%      { filter: brightness(1.3); }
+}
+
+/* Modal exit animation (Board Clear / Run Over / Run Won) */
+@keyframes popOut {
+    0%   { transform: scale(1) rotate(0deg); opacity: 1; }
+    35%  { transform: scale(1.06) rotate(-2deg); opacity: 1; }
+    100% { transform: scale(.6) rotate(8deg); opacity: 0; }
+}
+.modal-content.exiting { animation: popOut .32s cubic-bezier(.55,.05,.7,.4) forwards !important; }
+.modal-overlay.exiting { transition: opacity .32s ease; opacity: 0; pointer-events: none; }
 
 /* zoom container & board */
 .zoom-container {

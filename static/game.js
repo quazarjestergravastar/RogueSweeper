@@ -1678,8 +1678,20 @@ class Minesweeper {
     }
     _doAbortRun() {
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
+        /* Aborting grants the same payout as losing: flag bonus → PTS plus
+         * RPTS earned this run flushed to PTS.                              */
+        let correctFlags = 0;
+        if (this.board && this.flagged && this.rows && this.cols) {
+            for (let i = 0; i < this.rows; i++) {
+                for (let j = 0; j < this.cols; j++) {
+                    if (this.board[i] && this.board[i][j] === -1
+                        && this.flagged[i] && this.flagged[i][j]) correctFlags++;
+                }
+            }
+        }
         this.styleMeter.hide(); this.styleMeter.reset();
         this._flushRunPointsToMain();
+        if (correctFlags > 0) this.awardPoints(correctFlags);
         this._clearRunState(); this.runState = null; this.carouselIndex = 0;
         this._resetRunState();
         this.renderDifficultyGrid(); this.renderCarousel(); this.refreshMenuButtons();
@@ -2481,8 +2493,16 @@ class Minesweeper {
             overlay.className = 'mine-cell-placed';
             overlay.dataset.mineId = mine.id;
             overlay.innerHTML = def.icon();
-            overlay.style.background = def.color + '33';
-            overlay.style.borderRadius = '9px';
+            /* If placed on a revealed numbered tile, render as small corner
+             * badge so the underlying number remains visible.              */
+            const onNumber = this.revealed[r] && this.revealed[r][c] && this.board[r][c] > 0;
+            if (onNumber) {
+                overlay.classList.add('on-number');
+                overlay.style.color = def.color;
+            } else {
+                overlay.style.background = def.color + '33';
+                overlay.style.borderRadius = '9px';
+            }
             cell.appendChild(overlay);
         }
 
@@ -2521,6 +2541,7 @@ class Minesweeper {
                     });
                     this.sfx.play('mine_mine_fx');
                     this.spawnExplosion(cx, cy, '#f44336', 12);
+                    this._spawnStyleTriggerText(`+${adjMines.length} flag${adjMines.length!==1?'s':''}!`, '#f44336');
                     this.updateDisplay();
                 } else {
                     /* Disappearing animation */
@@ -2542,6 +2563,7 @@ class Minesweeper {
                 /* Flash effect */
                 if (cell) { cell.style.boxShadow = `0 0 0 4px #795548`; setTimeout(() => { cell.style.boxShadow = ''; }, 600); }
                 this.sfx.play('mine_place');
+                this._spawnStyleTriggerText('Trench armed', '#a87555');
                 break;
             }
             case 'grenade_mine': {
@@ -2558,6 +2580,7 @@ class Minesweeper {
                 document.body.classList.add('runover-pulse');
                 setTimeout(() => document.body.classList.remove('runover-pulse'), 500);
                 this.sfx.play('grenade_fx');
+                this._spawnStyleTriggerText(isMine ? 'Boom!' : 'Whiff!', isMine ? '#4CAF50' : '#999');
                 if (isMine) {
                     /* Grenade detonated a real mine: chain any nearby fractals. */
                     this._triggerFractalChain(r, c);
@@ -2597,6 +2620,8 @@ class Minesweeper {
                     cell.style.boxShadow = `0 0 0 4px #9C27B0, 0 0 14px #9C27B099`;
                 }
                 this.sfx.play('mine_place');
+                this._spawnStyleTriggerText('Fractal armed', '#9C27B0');
+                this._updateFractalIndicators();
                 break;
             }
         }
@@ -2622,6 +2647,23 @@ class Minesweeper {
         setTimeout(() => document.body.classList.remove('grenade-rank-flash'), 520);
     }
 
+    /* ── Polished modal close: exit animation + SFX before hiding ── */
+    _closeModalWithExit(modalId, sfxName) {
+        const modal = document.getElementById(modalId);
+        if (!modal || !modal.classList.contains('show')) return Promise.resolve();
+        const content = modal.querySelector('.modal-content');
+        if (sfxName && this.sfx) this.sfx.play(sfxName);
+        if (content) content.classList.add('exiting');
+        modal.classList.add('exiting');
+        return new Promise(resolve => {
+            setTimeout(() => {
+                modal.classList.remove('show', 'exiting');
+                if (content) content.classList.remove('exiting');
+                resolve();
+            }, 320);
+        });
+    }
+
     /* ── Floating "+N trench!" / similar one-shot label helper ─ */
     _spawnFloatingLabel(x, y, text, color) {
         const container = document.getElementById('explosion-container');
@@ -2632,6 +2674,53 @@ class Minesweeper {
         el.style.cssText = `left:${x}px;top:${y}px;color:${color || '#fff'};`;
         container.appendChild(el);
         setTimeout(() => el.remove(), 1400);
+    }
+
+    /* ── Style HUD trigger feedback: unified scale/spin/shrink pop. ─
+     * All mine procs (mine-mine, grenade, trench, fractal, totem) push a
+     * short text into the style meter stack so the player sees every
+     * effect in one consistent place.                                   */
+    _spawnStyleTriggerText(text, color, sfxName) {
+        const stack = document.getElementById('style-trigger-stack');
+        if (!stack) return;
+        const el = document.createElement('div');
+        el.className = 'style-trigger-text';
+        el.textContent = text;
+        if (color) el.style.color = color;
+        stack.appendChild(el);
+        if (sfxName && this.sfx) this.sfx.play(sfxName);
+        /* Cap stack to last 4 to avoid runaway growth */
+        while (stack.children.length > 4) stack.removeChild(stack.firstChild);
+        setTimeout(() => { if (el.parentNode) el.remove(); }, 1100);
+    }
+
+    /* ── Fractal radius indicator (3×3) with overlap brightness ─────
+     * Counts how many fractal mines cover each cell, then paints an
+     * overlay whose alpha scales with the overlap count so the player
+     * can see chain hot-spots.                                       */
+    _updateFractalIndicators() {
+        /* Clear any existing radius marks first. */
+        document.querySelectorAll('.cell.fractal-radius').forEach(c => {
+            c.classList.remove('fractal-radius');
+            c.style.removeProperty('--fractal-overlap');
+        });
+        if (!this.fractalMines || this.fractalMines.length === 0) return;
+        const counts = new Map();
+        for (const fm of this.fractalMines) {
+            for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+                const nr = fm.r + di, nc = fm.c + dj;
+                if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) continue;
+                const k = `${nr},${nc}`;
+                counts.set(k, (counts.get(k) || 0) + 1);
+            }
+        }
+        for (const [k, count] of counts) {
+            const [rr, cc] = k.split(',').map(Number);
+            const cell = this.getCell(rr, cc);
+            if (!cell) continue;
+            cell.classList.add('fractal-radius');
+            cell.style.setProperty('--fractal-overlap', count);
+        }
     }
 
     /* ── Fractal chain reaction ──────────────────────────────────
@@ -2670,6 +2759,8 @@ class Minesweeper {
             if (frect) {
                 this.spawnExplosion(frect.left + frect.width/2, frect.top + frect.height/2, '#9C27B0', 14);
             }
+            /* HUD pop with the unified style-trigger animation per fractal proc. */
+            this._spawnStyleTriggerText('Fractal!', '#9C27B0');
         }, baseDelay);
 
         for (let di = -1; di <= 1; di++) {
@@ -2679,18 +2770,18 @@ class Minesweeper {
                 const isMine = this.board[nr] && this.board[nr][nc] === -1;
                 const isFractalPlacement = this.fractalMines.some(m => m.r === nr && m.c === nc);
                 if (!isMine && !isFractalPlacement) continue;
-                /* Detonate twice with a small interval. */
-                for (let t = 0; t < 2; t++) {
-                    const dly = baseDelay + 120 + t * 220 + (Math.abs(di) + Math.abs(dj)) * 35;
-                    setTimeout(() => {
-                        const c2 = this.getCell(nr, nc);
-                        const rect = c2 ? c2.getBoundingClientRect() : null;
-                        const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
-                        const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
-                        const color = isFractalPlacement ? '#9C27B0' : '#f44336';
-                        this.spawnExplosion(cx, cy, color, 9);
-                    }, dly);
-                }
+                /* Detonate ONCE per fractal — overlapping fractals naturally
+                 * produce multiplicative re-triggers because each one fires
+                 * its own pulse on shared cells.                            */
+                const dly = baseDelay + 120 + (Math.abs(di) + Math.abs(dj)) * 35;
+                setTimeout(() => {
+                    const c2 = this.getCell(nr, nc);
+                    const rect = c2 ? c2.getBoundingClientRect() : null;
+                    const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+                    const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
+                    const color = isFractalPlacement ? '#9C27B0' : '#f44336';
+                    this.spawnExplosion(cx, cy, color, 9);
+                }, dly);
                 /* Chain to other fractals in radius. */
                 if (isFractalPlacement && (nr !== fr || nc !== fc)) {
                     queue.push([nr, nc, depth + 1]);
@@ -2702,7 +2793,8 @@ class Minesweeper {
     _onStyleRankUp(rank) {
         /* Trench mine: give style points = sum of adjacent numbers for each
          * placed trench mine. Each contributing trench plays an SFX, spawns
-         * a small explosion at its tile, and pops a "+N trench!" label.    */
+         * a small explosion at its tile, and pops a "+N trench!" label in
+         * the unified Style HUD trigger stack.                             */
         this.trenchMines.forEach(({r, c}, idx) => {
             const adj = this._getAdj(r, c);
             const total = adj.reduce((sum, [ar, ac]) => {
@@ -2718,8 +2810,7 @@ class Minesweeper {
             const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
             setTimeout(() => {
                 this.spawnExplosion(cx, cy, '#a87555', 8);
-                this.sfx.play('trench_fx');
-                this._spawnFloatingLabel(cx, cy, `+${total} trench!`, '#d8a878');
+                this._spawnStyleTriggerText(`+${total} trench!`, '#a87555', 'trench_fx');
             }, idx * 130);
         });
     }
@@ -2880,38 +2971,38 @@ class Minesweeper {
         /* Board Finished Modal — continue goes to MineMarket */
         document.getElementById('bf-continue-btn').addEventListener('click', () => {
             if (this.runState) {
-                this.startNextBoard();
+                this._closeModalWithExit('board-finished-modal', 'btn').then(() => this.showMineMarket());
             } else {
                 /* Run complete — go to menu */
-                document.getElementById('board-finished-modal').classList.remove('show');
-                this.showMenu();
+                this._closeModalWithExit('board-finished-modal', 'boardwin').then(() => this.showMenu());
             }
         });
         this.bindHoldToHide('bf-hold-hide-btn', 'board-finished-modal');
 
         /* Game Over Modal */
         document.getElementById('menu-btn').addEventListener('click', () => {
-            document.getElementById('game-over-modal').classList.remove('show');
-            this._flushRunPointsToMain();
-            this._clearRunState(); this.runState = null;
-            this._resetRunState();
-            this.showMenu();
+            this._closeModalWithExit('game-over-modal', 'btn').then(() => {
+                this._flushRunPointsToMain();
+                this._clearRunState(); this.runState = null;
+                this._resetRunState();
+                this.showMenu();
+            });
         });
         document.getElementById('restart-btn').addEventListener('click', () => {
             const prevDiff = this.currentDifficulty || 'normal';
-            document.getElementById('game-over-modal').classList.remove('show');
-            this._flushRunPointsToMain();
-            this._clearRunState(); this.runState = null;
-            this.currentDifficulty = prevDiff;
-            this.carouselIndex = 0;
-            this.runStyleScore = 0; this.boardStyleScore = 0;
-            this._resetRunState();
-            this.runState = { active:true, difficulty:prevDiff, currentBoard:0, unlockedUpTo:0, paused:false, boardState:null, boardRanks:[] };
-            this._saveRunState();
-            const cfg = this.getBoardConfig(0);
-            this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
-            this.sfx.play('btn');
-            this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
+            this._closeModalWithExit('game-over-modal', 'btn').then(() => {
+                this._flushRunPointsToMain();
+                this._clearRunState(); this.runState = null;
+                this.currentDifficulty = prevDiff;
+                this.carouselIndex = 0;
+                this.runStyleScore = 0; this.boardStyleScore = 0;
+                this._resetRunState();
+                this.runState = { active:true, difficulty:prevDiff, currentBoard:0, unlockedUpTo:0, paused:false, boardState:null, boardRanks:[] };
+                this._saveRunState();
+                const cfg = this.getBoardConfig(0);
+                this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
+                this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
+            });
         });
         this.bindHoldToHide('modal-hold-hide-btn', 'game-over-modal');
 

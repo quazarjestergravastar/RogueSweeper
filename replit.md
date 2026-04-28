@@ -168,6 +168,14 @@ python main.py
   - **Mine Shop in market**: New "Mine Shop" section with 2 random mine slots picked using rarity weights (cheaper mines more common). REROLL button starts at 50 RPTS and increases by 25 RPTS per reroll within a market visit. Buying a mine deducts RPTS, marks slot SOLD, and adds the mine to loadout
   - **Mine rarity weights**: cost ≤50 → weight 5; ≤100 → 3; ≤200 → 1.5; >200 → 1
 
+- April 28, 2026: Mine FX & abort polish:
+  - **Style HUD trigger feedback**: All mine procs (mine-mine, grenade, trench, fractal) now pop unified text under the Style meter with a scale → spin → shrink animation; replaces the old floating cell-anchored labels for a single, consistent feedback surface
+  - **Fractal Mine 3×3 indicator**: Each fractal mine paints its 3×3 radius with a soft purple tint; cells covered by multiple fractals get visibly brighter via a `--fractal-overlap` CSS variable
+  - **Fractal multiplicative re-trigger**: Removed fixed "detonate twice" loop. Each fractal now fires the cells in its radius exactly once; overlapping fractals naturally produce N detonations on shared cells (one per overlapping fractal)
+  - **Mine-on-number passthrough**: Placing a mine on a revealed numbered tile now renders the mine icon as a small corner badge so the underlying number stays visible
+  - **Abort grants flag bonus**: Aborting a run now awards `correctFlags × 10` PTS and flushes RPTS to PTS, matching the loss payout. Abort confirm modal text updated accordingly
+  - **Modal exit polish**: Board Clear / Run Over / Run Won popups now play a `popOut` shrink-rotate animation + SFX on close before vanishing
+
 - April 20, 2026: Major game update:
   - **RPTS/PTS split**: Run Points (RPTS) are now strictly separate from main Points (PTS). Flag bonuses on mid-run boards go to RPTS; only flush on win/loss/abort
   - **Loading screen**: Replaced spinning circle with rotating square card that cycles through mine icons + horizontal progress bar (ease-in fill)
