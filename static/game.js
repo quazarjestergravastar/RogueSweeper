@@ -3338,41 +3338,80 @@ class Minesweeper {
         const newGb = gb.cloneNode(true);
         gb.parentNode.replaceChild(newGb, gb);
 
-        let longPressTimer=null, isLongPress=false, pressedCell=null;
-        let touchStartX=0, touchStartY=0;
-        const LONG=400, THR=8;
+        /* Unified pointer-event handling.
+           The tap action fires on pointerdown via a one-frame microdefer so a
+           true tap feels instant, while a quick swipe past MOVE_THR cancels it
+           in favor of panning. Long-press still triggers the alternate action. */
+        let longPressTimer=null, tapTimer=null;
+        let pressedCell=null, pointerId=null;
+        let pressX=0, pressY=0, isLongPress=false, actionFired=false;
+        const LONG=400, MOVE_THR=10;
 
-        const onStart = (cell, x, y) => {
+        const fireTap = () => {
+            if (actionFired || !pressedCell || isLongPress) return;
+            actionFired = true;
+            const r=parseInt(pressedCell.dataset.row), c=parseInt(pressedCell.dataset.col);
+            this.handleCellTap(r, c);
+        };
+
+        const clearTimers = () => {
+            if (tapTimer)       { clearTimeout(tapTimer);       tapTimer=null; }
+            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer=null; }
+        };
+
+        const release = () => {
+            clearTimers();
+            if (pressedCell) pressedCell.classList.remove('pressed');
+            pressedCell=null; pointerId=null;
+            isLongPress=false; actionFired=false;
+        };
+
+        const onDown = e => {
+            if (e.button !== undefined && e.button !== 0) return;
+            const cell = e.target.closest('.cell');
             if (!cell) return;
-            isLongPress=false; pressedCell=cell; touchStartX=x; touchStartY=y;
+            release();
+            pressedCell = cell;
+            pointerId   = e.pointerId;
+            pressX = e.clientX; pressY = e.clientY;
             cell.classList.add('pressed');
-            const r=parseInt(cell.dataset.row), c=parseInt(cell.dataset.col);
+            /* Fire on the next frame so a starting pan can cancel via pointermove. */
+            tapTimer = setTimeout(fireTap, 0);
             longPressTimer = setTimeout(() => {
-                isLongPress=true; cell.classList.remove('pressed');
-                if (!this.hasDragged) this.handleLongPress(r, c);
+                if (actionFired || !pressedCell) return;
+                isLongPress = true;
+                pressedCell.classList.remove('pressed');
+                const r=parseInt(pressedCell.dataset.row), c=parseInt(pressedCell.dataset.col);
+                this.handleLongPress(r, c);
             }, LONG);
         };
-        const onEnd = (x, y) => {
-            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer=null; }
-            if (pressedCell) pressedCell.classList.remove('pressed');
-            if (!isLongPress && !this.hasDragged && pressedCell &&
-                Math.abs(x-touchStartX)<THR && Math.abs(y-touchStartY)<THR)
-                this.handleCellTap(parseInt(pressedCell.dataset.row), parseInt(pressedCell.dataset.col));
-            isLongPress=false; pressedCell=null;
-        };
-        const onCancel = () => {
-            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer=null; }
-            if (pressedCell) pressedCell.classList.remove('pressed');
-            isLongPress=false; pressedCell=null;
+
+        const onMove = e => {
+            if (pointerId !== null && e.pointerId !== pointerId) return;
+            if (!pressedCell || actionFired) return;
+            if (Math.abs(e.clientX-pressX) > MOVE_THR || Math.abs(e.clientY-pressY) > MOVE_THR) {
+                /* User is panning — cancel the pending tap & long-press. */
+                clearTimers();
+                pressedCell.classList.remove('pressed');
+                pressedCell=null;
+            }
         };
 
-        newGb.addEventListener('mousedown',  e => onStart(e.target.closest('.cell'), e.clientX, e.clientY));
-        newGb.addEventListener('mouseup',    e => onEnd(e.clientX, e.clientY));
-        newGb.addEventListener('mouseleave', onCancel);
-        newGb.addEventListener('touchstart', e => { if(e.touches.length===1) onStart(e.target.closest('.cell'), e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
-        newGb.addEventListener('touchend',   e => { if(e.changedTouches.length===1){e.preventDefault(); onEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);} });
-        newGb.addEventListener('touchcancel',onCancel);
-        newGb.addEventListener('contextmenu',e => e.preventDefault());
+        const onUp = e => {
+            if (pointerId !== null && e.pointerId !== pointerId) return;
+            /* If the press was released before the deferred tap ran, fire now. */
+            if (pressedCell && !actionFired && !isLongPress) {
+                clearTimers();
+                fireTap();
+            }
+            release();
+        };
+
+        newGb.addEventListener('pointerdown',   onDown);
+        newGb.addEventListener('pointermove',   onMove);
+        newGb.addEventListener('pointerup',     onUp);
+        newGb.addEventListener('pointercancel', release);
+        newGb.addEventListener('contextmenu',   e => e.preventDefault());
 
         document.getElementById('dig-btn').onclick = () => { this.mode='dig'; document.getElementById('dig-btn').classList.add('active'); document.getElementById('flag-btn').classList.remove('active'); this.sfx.play('btn'); };
         document.getElementById('flag-btn').onclick= () => { this.mode='flag'; document.getElementById('flag-btn').classList.add('active'); document.getElementById('dig-btn').classList.remove('active'); this.sfx.play('btn'); };
