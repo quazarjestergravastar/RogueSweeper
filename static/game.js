@@ -30,15 +30,60 @@ const SPRITE_FILES = {
      * and injected by Sprites.hydrateUi() after preload completes.        */
     ui_settings:'ui-settings', ui_info:'ui-info', ui_refresh:'ui-refresh',
     ui_star:'ui-star',
-    ui_diff_easy:'ui-diff-easy', ui_diff_normal:'ui-diff-normal', ui_diff_hard:'ui-diff-hard',
 };
+
+/* Per-theme difficulty icon variants (each color = own SVG file).
+ * Stored under /static/assets/themes/<theme>/diff-<level>.svg and
+ * /static/assets/difficulties/diff-hard-locked.svg for the gray
+ * locked state. Populated by Sprites.preload() into Sprites.themedDiff
+ * = { <theme>: { easy, normal, hard }, _locked: <hardLockedSvg> }.    */
+const THEMED_DIFF_THEMES = ['green','red','blue','yellow','purple','black','synthwave'];
+const THEMED_DIFF_LEVELS = ['easy','normal','hard'];
+Sprites.themedDiff = {};
+
 Sprites.preload = async function() {
-    const entries = await Promise.all(Object.entries(SPRITE_FILES).map(async ([key, file]) => {
-        const res = await fetch(`/static/sprites/${file}.svg`, { cache: 'force-cache' });
-        const txt = await res.text();
-        return [key, txt.trim()];
-    }));
-    entries.forEach(([k, v]) => Sprites[k] = v);
+    const fetches = [];
+    /* Generic sprites */
+    for (const [key, file] of Object.entries(SPRITE_FILES)) {
+        fetches.push(
+            fetch(`/static/sprites/${file}.svg`, { cache: 'force-cache' })
+                .then(r => r.text())
+                .then(t => { Sprites[key] = t.trim(); })
+        );
+    }
+    /* Themed difficulty icons — one SVG per theme/level combo */
+    for (const theme of THEMED_DIFF_THEMES) {
+        Sprites.themedDiff[theme] = {};
+        for (const level of THEMED_DIFF_LEVELS) {
+            fetches.push(
+                fetch(`/static/assets/themes/${theme}/diff-${level}.svg`, { cache: 'force-cache' })
+                    .then(r => r.text())
+                    .then(t => { Sprites.themedDiff[theme][level] = t.trim(); })
+            );
+        }
+    }
+    /* Locked-hard variant (theme-independent gray) */
+    fetches.push(
+        fetch('/static/assets/difficulties/diff-hard-locked.svg', { cache: 'force-cache' })
+            .then(r => r.text())
+            .then(t => { Sprites.themedDiff._locked = t.trim(); })
+    );
+    await Promise.all(fetches);
+};
+
+/* Inject the appropriate per-color difficulty SVG into every element
+ * tagged with [data-themed-diff="easy|normal|hard"]. Hard uses the
+ * locked gray variant when hardUnlocked is false.                      */
+Sprites.renderThemedDiff = function(themeKey, hardUnlocked) {
+    const themePack = Sprites.themedDiff[themeKey] || Sprites.themedDiff.green;
+    if (!themePack) return;
+    document.querySelectorAll('[data-themed-diff]').forEach(el => {
+        const level = el.dataset.themedDiff;
+        let svg;
+        if (level === 'hard' && !hardUnlocked) svg = Sprites.themedDiff._locked;
+        else svg = themePack[level];
+        if (svg) el.innerHTML = svg;
+    });
 };
 
 /* Convenience accessors that wrap the cached SVG with the right
@@ -1138,9 +1183,7 @@ class Minesweeper {
         Object.keys(THEMES).forEach(k => document.body.classList.remove(`theme-${k}`));
         document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
-        document.documentElement.style.setProperty('--easy-c',   t.diff.easy);
-        document.documentElement.style.setProperty('--normal-c', t.diff.normal);
-        document.documentElement.style.setProperty('--hard-c',   t.diff.hard);
+        Sprites.renderThemedDiff(key, this.hardUnlocked);
     }
     previewTheme(key) {
         this._previewTheme = key;
@@ -1148,9 +1191,7 @@ class Minesweeper {
         Object.keys(THEMES).forEach(k => document.body.classList.remove(`theme-${k}`));
         document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
-        document.documentElement.style.setProperty('--easy-c',   t.diff.easy);
-        document.documentElement.style.setProperty('--normal-c', t.diff.normal);
-        document.documentElement.style.setProperty('--hard-c',   t.diff.hard);
+        Sprites.renderThemedDiff(key, this.hardUnlocked);
     }
     revertPreview() { this._previewTheme = null; this.applyTheme(this.activeTheme); }
     selectTheme(key) {
@@ -1426,6 +1467,7 @@ class Minesweeper {
         if (this.hardUnlocked) { hardBox.classList.add('hard-unlocked'); hardBox.classList.remove('diff-locked'); }
         else { hardBox.classList.remove('hard-unlocked'); hardBox.classList.add('diff-locked'); }
         document.getElementById('difficulty-grid').classList.toggle('run-locked', !!this.runState);
+        Sprites.renderThemedDiff(this.activeTheme || 'green', this.hardUnlocked);
     }
 
     showDiffModal(title, bodyHtml, buttons) {

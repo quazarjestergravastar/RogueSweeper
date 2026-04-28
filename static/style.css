@@ -17,9 +17,6 @@
     --revealed:    #e8e8e8;
     --accent:      #4CAF50;
     --accent-t:    #ffffff;
-    --easy-c:      #8BC34A;
-    --normal-c:    #4CAF50;
-    --hard-c:      #00695C;
     --diff-bg:     #f4f4f4;
     --mine:        #f44336;
     --flag:        var(--accent);
@@ -243,11 +240,8 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     display: flex; align-items: center; justify-content: center;
     font-size: 1.05rem; color: #fff; font-weight: 900;
 }
-.easy-wrap   { background: var(--easy-c); }
-.normal-wrap { background: var(--normal-c); }
-.hard-wrap   { background: #bbb; }
-.diff-locked .hard-wrap { background: #bbb; }
-.hard-unlocked .hard-wrap { background: var(--hard-c); }
+.diff-icon-wrap[data-themed-diff] { background: transparent; }
+.diff-icon-wrap[data-themed-diff] svg { width: 40px; height: 40px; display: block; }
 .soon-wrap   { background: #ccc; font-size: .9rem; color: #888; }
 .diff-name { font-size: .63rem; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); text-transform: uppercase; }
 .diff-box.diff-soon { opacity: .5; }

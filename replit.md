@@ -136,7 +136,10 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 │   ├── style.css        # CSS with variables for light/dark theme
 │   ├── text.json        # Live-editable UI text strings
 │   ├── game.js          # All game logic (FloatingBackground + Minesweeper classes)
-│   ├── sprites/         # Reusable SVG art (cell icons, mines, feats, particles)
+│   ├── sprites/         # Reusable single-color SVG art (cell icons, mines, feats, particles)
+│   ├── assets/
+│   │   ├── themes/<theme>/diff-{easy,normal,hard}.svg   # Per-theme difficulty icons
+│   │   └── difficulties/diff-hard-locked.svg            # Gray locked-hard variant
 │   └── sounds/          # SFX
 ```
 
@@ -167,6 +170,13 @@ python main.py
   - **Slot machine prize is FREE**: After paying for the slot machine, the picked mine costs 0 RPTS (was charging full cost again). Limit one pick (slotUsed)
   - **Mine Shop in market**: New "Mine Shop" section with 2 random mine slots picked using rarity weights (cheaper mines more common). REROLL button starts at 50 RPTS and increases by 25 RPTS per reroll within a market visit. Buying a mine deducts RPTS, marks slot SOLD, and adds the mine to loadout
   - **Mine rarity weights**: cost ≤50 → weight 5; ≤100 → 3; ≤200 → 1.5; >200 → 1
+
+- April 28, 2026: Per-color SVG asset refactor:
+  - **Difficulty icons no longer recolored dynamically.** Replaced the single `currentColor` SVGs + `--easy-c/--normal-c/--hard-c` CSS vars with **22 standalone per-theme SVG files** under a structured asset folder
+  - **Folder layout**: `static/assets/themes/<theme>/diff-{easy,normal,hard}.svg` (7 themes × 3 levels = 21 files) plus `static/assets/difficulties/diff-hard-locked.svg` for the gray locked state
+  - **Each SVG is fully self-contained**: bakes in both the colored circle background and the white shape — no `currentColor`, no CSS dependency
+  - **Loader**: `Sprites.preload()` fetches every variant in parallel into `Sprites.themedDiff[<theme>]`. New `Sprites.renderThemedDiff(themeKey, hardUnlocked)` injects the right variant into all `[data-themed-diff="easy|normal|hard"]` wrappers; called from `applyTheme`, `previewTheme`, and `renderDifficultyGrid` so the icons swap on theme change, theme preview, and hard-mode unlock
+  - **Cleanup**: removed `--easy-c/--normal-c/--hard-c` CSS vars and the `.easy-wrap/.normal-wrap/.hard-wrap` background rules; removed the now-unused `ui-diff-easy/normal/hard.svg` references from the sprite registry
 
 - April 28, 2026: Mine FX & abort polish:
   - **Style HUD trigger feedback**: All mine procs (mine-mine, grenade, trench, fractal) now pop unified text under the Style meter with a scale → spin → shrink animation; replaces the old floating cell-anchored labels for a single, consistent feedback surface
