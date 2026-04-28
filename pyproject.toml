@@ -1,13 +1,12 @@
-[project]
-name = "python-template"
+[tool.poetry]
+name = "roguesweeper"
 version = "0.1.0"
 description = ""
-requires-python = ">=3.10"
-[tool.poetry]
 package-mode = false
-dependencies = [
-    "flask>=3.1.2",
-]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+flask = ">=3.1.2"
 
 [tool.pyright]
 useLibraryCodeForTypes = true
