@@ -1,5 +1,6 @@
 {
   "pageTitle": "RogueSweeper",
+  "autoFlagOnEmpty": "Auto-switch to Flag on Empty Tap",
   "title": "RogueSweeper",
   "subtitle": "MineSweeper Gone Rogue",
   "levelUp": "LEVEL UP",

@@ -128,12 +128,16 @@ Flask (Python) serves a single-page app. All game logic runs in the browser via 
 
 ```
 ├── main.py              # Flask server (port 5000)
+├── README.md            # Public project overview + run instructions
+├── LICENSE              # MIT
 ├── templates/
 │   └── index.html       # Game HTML
 ├── static/
 │   ├── style.css        # CSS with variables for light/dark theme
 │   ├── text.json        # Live-editable UI text strings
-│   └── game.js          # All game logic (FloatingBackground + Minesweeper classes)
+│   ├── game.js          # All game logic (FloatingBackground + Minesweeper classes)
+│   ├── sprites/         # Reusable SVG art (cell icons, mines, feats, particles)
+│   └── sounds/          # SFX
 ```
 
 ## Running
@@ -143,6 +147,17 @@ python main.py
 ```
 
 ## Recent Changes
+
+- April 28, 2026: Open-source housekeeping + UX/economy polish:
+  - **Sprite loader**: All inline SVGs (FLAG, MINE, CHECK/CROSS, MINE_DOT, FEAT_ICONS, MINE_DEFS icons, FLOAT particle shapes) extracted to `static/sprites/*.svg`. A small `Sprites` loader fetches them in parallel during the loading screen; consumers read `Sprites.<key>` via thin convenience accessors that re-attach sizing/class attributes
+  - **Particle sprites use `currentColor`**: spawnShape sets `style.color` on the wrapper so sprites tint with the active theme accent
+  - **README.md + LICENSE (MIT)** added at project root
+  - **Common theme prices** bumped from 150 → 500 RPTS (red/blue/yellow/purple)
+  - **Synthwave theme reworked**: simplified palette, all menu glow/text-shadow/stripe overlays removed; tile colors (--cell, --revealed, --n1..n8, --mine, --flag-w, --sm-color) now apply during gameplay in both light and dark variants
+  - **Menu particles** restricted to roundsq/dot/tri only (no rings/blobs/shards/etc.)
+  - **mine-hud-inline centered**: `max-width:calc(100vw - 24px)`, `flex-wrap:wrap` on slots, slot width fixed at 48px so the loadout never overflows on the menu or mine market
+  - **Auto-switch to Flag on Empty Tap** setting added (default ON, persisted to `ms_auto_flag_empty`). When `digCell` reveals a 0-tile (cascade) and it isn't the first click, the input mode flips to flag automatically. Skipped during swipe drags because `handleCellTap` is already gated on `!hasDragged`
+  - Removed unused screenshot from `attached_assets/`
 
 - April 22, 2026: Hotfix batch:
   - **Dynamic carousel mine market indicators**: Each indicator now represents a specific market between two boards. Grayed out when not yet reached; green when unlocked; pulsing highlight when the run is currently paused in that market. Hidden when out of range (e.g., before board 1 or after board 8)

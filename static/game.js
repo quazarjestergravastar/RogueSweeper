@@ -8,31 +8,52 @@ const SLOT_MACHINE_COST = 100;
 const SCRATCH_COST = 50;
 const SELL_REFUND_RATIO = 0.5;
 
-/* ── SVG ICONS ───────────────────────────────────────────────── */
-const FLAG_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.2 C12.85 4.2 13.6 4.65 14.05 5.38 L20.15 15.55 C21.1 17.15 19.95 19.18 18.1 19.18 H5.9 C4.05 19.18 2.9 17.15 3.85 15.55 L9.95 5.38 C10.4 4.65 11.15 4.2 12 4.2 Z"/></svg>`;
-const MINE_SVG = `<svg class="cell-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="rgba(255,255,255,0.28)"/><line x1="12" y1="4" x2="12" y2="7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="20" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="12" x2="7" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="12" x2="20" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="6.3" x2="8.5" y2="8.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="15.5" x2="17.7" y2="17.7" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="17.7" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="15.5" y1="8.5" x2="17.7" y2="6.3" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/></svg>`;
-const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
-const CROSS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-const CROSS_BIG_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-
-/* ── FLOATING BACKGROUND SVGs ────────────────────────────────── */
-const FLOAT_SVGS = {
-    circle:    (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="${c}" stroke-width="6"/></svg>`,
-    blob:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 C72,10 90,28 90,50 C90,72 70,92 48,90 C26,88 8,70 10,48 C12,26 28,10 50,10" fill="${c}"/></svg>`,
-    shard:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,12 88,50 50,88 12,50" fill="${c}"/></svg>`,
-    ring:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="60 40"/></svg>`,
-    roundsq:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="12" y="12" width="76" height="76" rx="20" fill="${c}"/></svg>`,
-    cross:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="10" fill="${c}"/><rect x="10" y="38" width="80" height="24" rx="10" fill="${c}"/></svg>`,
-    tri:       (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,15 L88,82 Q88,88 82,88 L18,88 Q12,88 12,82 Z" fill="${c}"/></svg>`,
-    dot:       (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="28" fill="${c}"/></svg>`,
-    star:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,8 61,35 90,35 67,55 76,82 50,65 24,82 33,55 10,35 39,35" fill="${c}"/></svg>`,
-    hexagon:   (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,8 88,29 88,71 50,92 12,71 12,29" fill="${c}"/></svg>`,
-    arc:       (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,80 A40,40 0 0,1 80,80" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round"/></svg>`,
-    pill:      (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="35" width="60" height="30" rx="15" fill="${c}"/></svg>`,
-    arrow:     (c) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,50 L65,50 M50,30 L70,50 L50,70" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+/* ── SPRITE LOADER ──────────────────────────────────────────────
+ * All reusable SVG art lives in /static/sprites/ as standalone .svg
+ * files using `currentColor` where appropriate. Sprites is populated
+ * by Sprites.preload() before the game boots, so the rest of the
+ * code can just read `Sprites.flag`, `Sprites.mine_mine`, etc.        */
+const Sprites = {};
+const SPRITE_FILES = {
+    flag:'flag', mine:'mine', check:'check', cross:'cross', dot:'dot',
+    mine_mine:'mine-mine', trench_mine:'trench-mine', grenade_mine:'grenade-mine', totem_mine:'totem-mine',
+    feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
+    feat_score:'feat-score', feat_score_hi:'feat-score-hi',
+    feat_level:'feat-level', feat_level_hi:'feat-level-hi',
+    feat_meta:'feat-meta', feat_secret:'feat-secret', feat_circle:'feat-circle',
+    feat_lock:'feat-lock', feat_fun:'feat-fun',
+    float_circle:'float-circle', float_blob:'float-blob', float_shard:'float-shard',
+    float_ring:'float-ring', float_roundsq:'float-roundsq', float_cross:'float-cross',
+    float_tri:'float-tri', float_dot:'float-dot',
+};
+Sprites.preload = async function() {
+    const entries = await Promise.all(Object.entries(SPRITE_FILES).map(async ([key, file]) => {
+        const res = await fetch(`/static/sprites/${file}.svg`, { cache: 'force-cache' });
+        const txt = await res.text();
+        return [key, txt.trim()];
+    }));
+    entries.forEach(([k, v]) => Sprites[k] = v);
 };
 
-const MINE_DOT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 10 10" style="display:inline-block;vertical-align:middle" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>`;
+/* Convenience accessors that wrap the cached SVG with the right
+ * sizing / class attributes the rest of the codebase expects. If the
+ * sprite hasn't loaded yet (e.g. an early render before the loading
+ * screen completes preload) we just return ''; consumers re-render
+ * after loading is done.                                              */
+const _withAttrs = (svg, attrs) => svg ? svg.replace(/^<svg\b/, `<svg ${attrs}`) : '';
+const FLAG_SVG       = () => _withAttrs(Sprites.flag,  'class="cell-svg-icon" aria-hidden="true"');
+const MINE_SVG       = () => _withAttrs(Sprites.mine,  'class="cell-svg-icon" aria-hidden="true"');
+const CHECK_SVG      = () => _withAttrs(Sprites.check, 'width="16" height="16" aria-hidden="true"');
+const CROSS_SVG      = () => _withAttrs(Sprites.cross, 'width="16" height="16" aria-hidden="true"');
+const CROSS_BIG_SVG  = () => _withAttrs(Sprites.cross, 'aria-hidden="true"');
+const MINE_DOT_SVG   = () => _withAttrs(Sprites.dot,   'width="8" height="8" style="display:inline-block;vertical-align:middle" aria-hidden="true"');
+
+/* Floating-background sprites use currentColor; spawnShape() sets
+ * `style.color` on the wrapper to apply the theme tint.               */
+const FLOAT_SPRITE_KEYS = {
+    circle:'float_circle', blob:'float_blob', shard:'float_shard', ring:'float_ring',
+    roundsq:'float_roundsq', cross:'float_cross', tri:'float_tri', dot:'float_dot',
+};
 
 /* ── MINE DEFINITIONS ────────────────────────────────────────── */
 const MINE_DEFS = {
@@ -43,7 +64,7 @@ const MINE_DEFS = {
         effect: 'Flags all adjacent mines if any are present. If none, plays a disappearing animation.',
         trigger: 'Instantly on placement',
         limit: '1 time per board',
-        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#f44336"/><circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.35)"/><line x1="20" y1="10" x2="20" y2="13" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/><line x1="20" y1="27" x2="20" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/><line x1="10" y1="20" x2="13" y2="20" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/><line x1="27" y1="20" x2="30" y2="20" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round"/></svg>`
+        icon: () => Sprites.mine_mine
     },
     trench_mine: {
         id: 'trench_mine', name: 'Trench Mine', cost: 100,
@@ -52,7 +73,7 @@ const MINE_DEFS = {
         effect: 'Gives style points equal to the total of all adjacent number tiles whenever the style rank goes up.',
         trigger: 'Passive — activates on each style rank-up',
         limit: '2 times per board',
-        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#795548"/><rect x="9" y="17" width="22" height="6" rx="3" fill="rgba(255,255,255,0.35)"/><rect x="9" y="24" width="22" height="4" rx="2" fill="rgba(255,255,255,0.2)"/><rect x="9" y="12" width="22" height="4" rx="2" fill="rgba(255,255,255,0.2)"/></svg>`
+        icon: () => Sprites.trench_mine
     },
     grenade_mine: {
         id: 'grenade_mine', name: 'Grenade Mine', cost: 200,
@@ -61,7 +82,7 @@ const MINE_DEFS = {
         effect: 'Opens a large area if placed on a mine tile. Ends the run if placed on a non-mine tile.',
         trigger: 'Instantly on placement',
         limit: '1 time per board',
-        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#4CAF50"/><circle cx="20" cy="21" r="9" fill="rgba(255,255,255,0.3)"/><rect x="18" y="9" width="4" height="6" rx="2" fill="rgba(255,255,255,0.6)"/><circle cx="20" cy="21" r="4" fill="rgba(255,255,255,0.5)"/><line x1="14" y1="15" x2="17" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="15" x2="23" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/></svg>`
+        icon: () => Sprites.grenade_mine
     },
     totem_mine: {
         id: 'totem_mine', name: 'Totem Mine', cost: 250,
@@ -70,26 +91,23 @@ const MINE_DEFS = {
         effect: 'Prevents the run from ending once when the player would dig up a mine. Becomes permanently unusable afterwards.',
         trigger: 'Passive — triggers automatically when a mine would end the run',
         limit: '1 time per board; permanently consumed once triggered',
-        icon: () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect x="4" y="4" width="32" height="32" rx="9" fill="#FFC107"/><path d="M20 10 L20 30" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" stroke-linecap="round"/><path d="M13 14 C13 14 20 11 27 14" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"/><path d="M13 20 C13 20 20 17 27 20" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"/><path d="M13 26 C13 26 20 23 27 26" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="10" r="3" fill="rgba(255,255,255,0.7)"/></svg>`
+        icon: () => Sprites.totem_mine
     }
 };
 const ALL_MINE_IDS = Object.keys(MINE_DEFS);
 
-/* ── FEAT ICONS ──────────────────────────────────────────────── */
-const FEAT_ICONS_SVG = {
-    board:     `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="9,12 11,14 15,10"/></svg>`,
-    streak:    `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 L4 14 h7 l-1 8 9-12h-7z"/></svg>`,
-    collector: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/></svg>`,
-    score:     `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,3 15.1,8.3 21,9.3 16.5,13.6 17.6,19.5 12,16.5 6.4,19.5 7.5,13.6 3,9.3 8.9,8.3"/></svg>`,
-    score_hi:  `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.1,7.3 21,8.3 16.5,12.6 17.6,18.5 12,15.5 6.4,18.5 7.5,12.6 3,8.3 8.9,7.3"/><circle cx="12" cy="10" r="2" fill="currentColor" stroke="none"/></svg>`,
-    level:     `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>`,
-    level_hi:  `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L14 8 L20 8 L15 12 L17 18 L12 14 L7 18 L9 12 L4 8 L10 8 Z"/><line x1="4" y1="22" x2="20" y2="22"/></svg>`,
-    meta:      `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
-    secret:    `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    circle:    `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>`,
-    lock:      `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
-    fun:       `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>`,
-};
+/* ── FEAT ICONS ────────────────────────────────────────────────
+ * Pulled from the sprite cache. Each entry is sized 18x18 and uses
+ * currentColor so the parent's `color:` controls the icon tint.       */
+const FEAT_ICON_KEYS = [
+    'board','streak','collector','score','score_hi','level','level_hi',
+    'meta','secret','circle','lock','fun',
+];
+const _featIcon = (key) => _withAttrs(Sprites['feat_' + key] || Sprites.feat_board, 'width="18" height="18"');
+const FEAT_ICONS_SVG = new Proxy({}, {
+    get: (_t, key) => _featIcon(key),
+    has: (_t, key) => FEAT_ICON_KEYS.includes(key),
+});
 
 /* ── BOARD CONFIGS ──────────────────────────────────────────── */
 const BOARD_CONFIGS = {
@@ -116,10 +134,10 @@ const BOARD_CONFIGS = {
 /* ── THEMES ─────────────────────────────────────────────────── */
 const THEMES = {
     green:    { name:'Green Theme',    accent:'#4CAF50', cost:0,    diff:{ easy:'#8BC34A', normal:'#4CAF50', hard:'#00695C' } },
-    red:      { name:'Red Theme',      accent:'#F44336', cost:150,  diff:{ easy:'#FFEB3B', normal:'#FF9800', hard:'#F44336' } },
-    blue:     { name:'Blue Theme',     accent:'#2196F3', cost:150,  diff:{ easy:'#00BCD4', normal:'#2196F3', hard:'#3F51B5' } },
-    yellow:   { name:'Yellow Theme',   accent:'#FFC107', cost:150,  diff:{ easy:'#FFF176', normal:'#FFC107', hard:'#FF8F00' } },
-    purple:   { name:'Purple Theme',   accent:'#9C27B0', cost:150,  diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
+    red:      { name:'Red Theme',      accent:'#F44336', cost:500,  diff:{ easy:'#FFEB3B', normal:'#FF9800', hard:'#F44336' } },
+    blue:     { name:'Blue Theme',     accent:'#2196F3', cost:500,  diff:{ easy:'#00BCD4', normal:'#2196F3', hard:'#3F51B5' } },
+    yellow:   { name:'Yellow Theme',   accent:'#FFC107', cost:500,  diff:{ easy:'#FFF176', normal:'#FFC107', hard:'#FF8F00' } },
+    purple:   { name:'Purple Theme',   accent:'#9C27B0', cost:500,  diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
     black:    { name:'Black Theme',    accent:'#111111', cost:0,    secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
     synthwave:{ name:'Synthwave Theme',accent:'#ff2bd6', cost:1000, rarity:'uncommon', diff:{ easy:'#00d4ff', normal:'#ff2bd6', hard:'#7c1fa3' } },
 };
@@ -371,7 +389,9 @@ class FloatingBackground {
             if (old && old.parentNode) old.parentNode.removeChild(old);
         }
         const shape = document.createElement('div');
-        const keys  = Object.keys(FLOAT_SVGS);
+        /* Restrict the menu/game backdrop to three primitive shapes only:
+         * square (roundsq), circle (dot), and triangle (tri). */
+        const keys  = ['roundsq', 'dot', 'tri'];
         const type  = keys[Math.floor(Math.random() * keys.length)];
         shape.className = 'floating-shape';
         /* Bigger, more opaque shapes spawn at the bottom; the floatUp keyframe
@@ -381,7 +401,10 @@ class FloatingBackground {
         shape.style.left  = `${Math.random() * 100}%`;
         shape.style.animationDuration = `${16 + Math.random() * 18}s`;
         const opacity = 0.22 + Math.random() * 0.18;
-        shape.innerHTML = FLOAT_SVGS[type](this._makeColor(opacity));
+        /* Sprites use currentColor → set the wrapper's color so the
+         * shape inherits the active theme tint at the chosen opacity. */
+        shape.style.color = this._makeColor(opacity);
+        shape.innerHTML = Sprites[FLOAT_SPRITE_KEYS[type]] || '';
         this.container.appendChild(shape);
         this.shapes.push(shape);
         setTimeout(() => {
@@ -645,18 +668,23 @@ class Minesweeper {
         /* Wire style meter rank-up callback for trench mine */
         this.styleMeter.onRankUp = (rank) => this._onStyleRankUp(rank);
 
-        /* Show loading screen */
+        /* Kick off sprite preload, then show loading screen.       */
         this._showLoadingScreen();
     }
 
     /* ══ LOADING SCREEN ══════════════════════════════════════════ */
-    _showLoadingScreen() {
+    async _showLoadingScreen() {
         const screen  = document.getElementById('loading-screen');
         const barEl   = document.getElementById('loading-bar-fill');
         const pctEl   = document.getElementById('loading-pct');
         const textEl  = document.getElementById('loading-text');
         const sqEl    = document.getElementById('loading-sq');
         const iconEl  = document.getElementById('loading-sq-icon');
+
+        /* Wait for sprite assets before doing anything that depends
+         * on them (mine icons, flag/mine cell renders, particles).  */
+        await Sprites.preload();
+
         if (!screen) { this._afterLoading(); return; }
 
         const mineIds = Object.keys(MINE_DEFS);
@@ -722,6 +750,10 @@ class Minesweeper {
 
     _afterLoading() {
         this.floatingBg = new FloatingBackground(this.particleAmount);
+        /* Re-render any menu surfaces that include sprite icons —
+         * the initial constructor pass ran before sprites finished
+         * loading and rendered them as empty strings.               */
+        this.renderCarousel();
     }
 
     /* ══ RUN STATE ═════════════════════════════════════════════ */
@@ -1346,6 +1378,12 @@ class Minesweeper {
         const pDisplay = document.getElementById('particle-amount-display');
         if (pSlider)  pSlider.value = Math.round(pAmt * 100);
         if (pDisplay) pDisplay.textContent = `${Math.round(pAmt * 100)}%`;
+
+        /* Auto-switch to flag mode after revealing an empty cascade. Default ON. */
+        const stored = localStorage.getItem('ms_auto_flag_empty');
+        this.autoFlagOnEmpty = (stored === null) ? true : (stored === 'true');
+        const afEl = document.getElementById('auto-flag-empty-toggle');
+        if (afEl) afEl.checked = this.autoFlagOnEmpty;
     }
 
     /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
@@ -1431,7 +1469,7 @@ class Minesweeper {
                 <div class="card-band" style="background:${bandColor}">BOARD ${boardIdx+1}</div>
                 <div class="card-num num-font" style="color:${isU?diffColor:'#aaa'}">${boardIdx+1}</div>
                 <div class="card-dims" style="color:${isU?'':'var(--text-muted)'}">
-                    ${isU ? `${cfg.cols}×${cfg.rows} · ${cfg.mines}${MINE_DOT_SVG}` : 'LOCKED'}
+                    ${isU ? `${cfg.cols}×${cfg.rows} · ${cfg.mines}${MINE_DOT_SVG()}` : 'LOCKED'}
                 </div>
                 ${rankLetter ? `<div class="card-rank-badge" style="--rank-color:${rankColor}">${rankLetter}</div>` : ''}
             </div>`;
@@ -1869,7 +1907,7 @@ class Minesweeper {
                     this._saveFeats();
                 } else {
                     scratchResult.classList.add('lose');
-                    scratchResult.innerHTML = CROSS_BIG_SVG;
+                    scratchResult.innerHTML = CROSS_BIG_SVG();
                     this.sfx.play('error');
                     this.feats.scratchLossStreak = (this.feats.scratchLossStreak || 0) + 1;
                     if ((this.feats.scratchLossStreak || 0) > (this.feats.bestScratchLossStreak || 0)) {
@@ -2428,7 +2466,7 @@ class Minesweeper {
                         setTimeout(() => {
                             this.flagged[ar][ac] = true;
                             const ac2 = this.getCell(ar, ac);
-                            if (ac2) { ac2.classList.add('flagged'); ac2.innerHTML = ''; ac2.insertAdjacentHTML('beforeend', FLAG_SVG); this.playCellFx(ac2, 'flag-pop'); }
+                            if (ac2) { ac2.classList.add('flagged'); ac2.innerHTML = ''; ac2.insertAdjacentHTML('beforeend', FLAG_SVG()); this.playCellFx(ac2, 'flag-pop'); }
                         }, i * 80);
                     });
                     this.sfx.play('mine_mine_fx');
@@ -2730,6 +2768,12 @@ class Minesweeper {
             localStorage.setItem('ms_style_meter_right', e.target.checked);
             this.sfx.play('btn');
         });
+        const autoFlagToggle = document.getElementById('auto-flag-empty-toggle');
+        if (autoFlagToggle) autoFlagToggle.addEventListener('change', e => {
+            this.autoFlagOnEmpty = e.target.checked;
+            localStorage.setItem('ms_auto_flag_empty', e.target.checked);
+            this.sfx.play('btn');
+        });
 
         /* SFX Volume */
         const volSlider = document.getElementById('sfx-volume-slider');
@@ -2888,11 +2932,11 @@ class Minesweeper {
         const codeLower = rawCode.toLowerCase();
         msg.classList.remove('hidden','success','error');
         const setSuccess = (text) => {
-            msg.innerHTML = CHECK_SVG + ' ' + text.replace(/^[✓✔]\s*/, '');
+            msg.innerHTML = CHECK_SVG() + ' ' + text.replace(/^[✓✔]\s*/, '');
             msg.classList.add('success');
         };
         const setError = (text) => {
-            msg.innerHTML = CROSS_SVG + ' ' + text.replace(/^[✗✘]\s*/, '');
+            msg.innerHTML = CROSS_SVG() + ' ' + text.replace(/^[✗✘]\s*/, '');
             msg.classList.add('error');
         };
         if (code === '123ABC') {
@@ -3111,7 +3155,7 @@ class Minesweeper {
             if (this.revealed[i][j]) {
                 cell.classList.add('revealed');
                 if (this.board[i][j] > 0) { cell.textContent=this.board[i][j]; cell.classList.add('n'+this.board[i][j]); }
-            } else if (this.flagged[i][j]) { cell.classList.add('flagged'); cell.insertAdjacentHTML('beforeend', FLAG_SVG); }
+            } else if (this.flagged[i][j]) { cell.classList.add('flagged'); cell.insertAdjacentHTML('beforeend', FLAG_SVG()); }
         }
         const dig = document.getElementById('dig-btn'), flag = document.getElementById('flag-btn');
         if (this.mode==='dig') { dig.classList.add('active'); flag.classList.remove('active'); }
@@ -3259,6 +3303,7 @@ class Minesweeper {
 
     digCell(r, c) {
         if (this.flagged[r][c]) return;
+        const wasFirstClick = this.firstClick;
         if (this.firstClick) {
             this.firstClick=false; this.placeMines(r, c); this.startTimer();
             this.evaluateFlagCompletion();
@@ -3269,6 +3314,23 @@ class Minesweeper {
         if (res && res.hit69) this._unlockSecret('score_69');
         this.boardStyleScore = this.styleMeter.getScore();
         this.reveal(r, c);
+        /* Auto-switch to flag mode after revealing a zero/empty tile (cascade).
+         * Skipped on the very first click so the player can keep digging the
+         * starting area without the mode flipping under them. */
+        if (this.autoFlagOnEmpty && !wasFirstClick && !this.gameOver
+            && this.mode === 'dig' && this.board[r][c] === 0) {
+            this._switchModeTo('flag');
+        }
+    }
+
+    _switchModeTo(mode) {
+        if (this.mode === mode) return;
+        this.mode = mode;
+        const dig = document.getElementById('dig-btn'), flag = document.getElementById('flag-btn');
+        if (dig && flag) {
+            if (mode === 'dig') { dig.classList.add('active'); flag.classList.remove('active'); }
+            else                { flag.classList.add('active'); dig.classList.remove('active'); }
+        }
     }
 
     toggleFlag(r, c) {
@@ -3279,7 +3341,7 @@ class Minesweeper {
         if (cell) {
             cell.classList.toggle('flagged', this.flagged[r][c]);
             const ex = cell.querySelector('.cell-svg-icon'); if (ex) ex.remove();
-            if (this.flagged[r][c]) { cell.insertAdjacentHTML('beforeend', FLAG_SVG); this.sfx.play('flag'); this.playCellFx(cell, 'flag-pop'); }
+            if (this.flagged[r][c]) { cell.insertAdjacentHTML('beforeend', FLAG_SVG()); this.sfx.play('flag'); this.playCellFx(cell, 'flag-pop'); }
             else this.sfx.play('unflag');
         }
         if (placingFlag) this.evaluateFlagCompletion();
@@ -3422,7 +3484,7 @@ class Minesweeper {
                     if (c) {
                         c.classList.add('mine'); c.classList.remove('flagged');
                         const ex=c.querySelector('.cell-svg-icon'); if(ex) ex.remove();
-                        c.insertAdjacentHTML('beforeend',MINE_SVG);
+                        c.insertAdjacentHTML('beforeend', MINE_SVG());
                         /* Spawn small explosion per mine */
                         const rect = c.getBoundingClientRect();
                         this.spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#f44336', 5);

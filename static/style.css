@@ -636,21 +636,25 @@ body.dark-mode .sm-ring-bg {
     padding: 6px;
     transition: transform .35s cubic-bezier(.3,.7,.3,1.5), opacity .3s;
 }
-/* Inline (non-fixed) hud lives inside flex containers (menu only) */
+/* Inline (non-fixed) hud lives inside flex containers (menu, mine market).
+ * Centred horizontally and capped to viewport width so it never overflows. */
 .mine-hud.mine-hud-inline {
     position: relative; bottom: auto; left: auto;
     transform: none;
     margin: 4px auto 6px; align-self: center;
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
+}
+.mine-hud.mine-hud-inline .mine-hud-slots {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    max-width: 100%;
+}
+.mine-hud.mine-hud-inline .mine-slot {
+    width: 48px;
 }
 .mine-hud.mine-hud-menu { margin-top: auto; }
-/* Mine-market HUD: pinned to same fixed position as the in-game hud, above the footer buttons. */
-.mine-hud.mine-hud-market {
-    position: absolute;
-    bottom: 86px;
-    left: 50%; transform: translateX(-50%);
-    z-index: 12;
-    margin: 0; align-self: auto;
-}
 /* Board-finished HUD: lives outside .modal-content, pinned at the same fixed position so the
    loadout appears in the same spot across game / board-clear / market screens. */
 .mine-hud.mine-hud-bf {
@@ -1653,59 +1657,57 @@ body.board-complete-pulse .game-board { animation: completePulse .55s ease-out; 
 }
 body.ting-glitch .container { animation: tingGlitch .8s steps(1) forwards; }
 
-/* ── SYNTHWAVE THEME (uncommon) ──────────────────────────── */
-/* Light "Sunset Synthwave" variant */
+/* ── SYNTHWAVE THEME (uncommon) ──────────────────────────────
+ * Simple, flat magenta + cyan palette. No glow, no gradients on
+ * containers — same shadows as the default theme. The theme also
+ * overrides cell colours so the gameplay board reflects it. */
+
+/* Light variant */
 body.theme-synthwave {
     --accent: #ff2bd6;
-    --bg: #ffe2f3;
+    --bg: #fbeaf6;
     --card: #ffffff;
-    --card-shadow: rgba(255, 43, 214, .25);
     --text: #2a0d3a;
     --text2: #5a1a6e;
     --text-muted: #a14fb1;
-    --border: #f7b6e3;
+    --border: #f0c9e6;
     --btn-dark: #2a0d3a;
-    --btn-dark-t: #ffe2f3;
-    --diff-bg: #ffd1ec;
+    --btn-dark-t: #fbeaf6;
+    --diff-bg: #f5dcec;
+    --cell: #ffffff;
+    --revealed: #f5dcec;
+    --n1:#00b8d4; --n2:#ff2bd6; --n3:#ff5e8a;
+    --n4:#7c1fa3; --n5:#ff8a00; --n6:#00d4ff;
+    --n7:#2a0d3a; --n8:#a14fb1;
+    --sm-color:#ff2bd6;
+    --flag-w:#ff5e8a;
+    --mine:#ff2bd6;
 }
-body.theme-synthwave .container {
-    background:
-        radial-gradient(ellipse at top, #ffd1ec 0%, transparent 55%),
-        radial-gradient(ellipse at bottom, #ffe9c2 0%, transparent 60%),
-        linear-gradient(180deg, #ffe2f3 0%, #fff7d8 100%);
-}
-/* Dark "Neon Synthwave" variant */
+/* Dark variant */
 body.dark-mode.theme-synthwave {
     --accent: #ff2bd6;
-    --bg: #0d0420;
-    --card: #1c0a35;
-    --card-shadow: rgba(255, 43, 214, .35);
+    --bg: #1a0a2a;
+    --card: #2a1248;
     --text: #ffffff;
-    --text2: #f7d4ff;
-    --text-muted: #b18ddc;
-    --border: #4a1f6b;
+    --text2: #e0c8f5;
+    --text-muted: #9a7cc4;
+    --border: #3d1a5c;
     --btn-dark: #ff2bd6;
-    --btn-dark-t: #0d0420;
+    --btn-dark-t: #1a0a2a;
     --diff-bg: #2a1248;
+    --cell: #3d1a5c;
+    --revealed: #2a1248;
+    --n1:#00d4ff; --n2:#ff2bd6; --n3:#ff7eb0;
+    --n4:#b07cff; --n5:#ffb84d; --n6:#5ee7ff;
+    --n7:#ffffff; --n8:#9a7cc4;
 }
-body.dark-mode.theme-synthwave .container {
-    background:
-        radial-gradient(ellipse at top, #4a1077 0%, transparent 55%),
-        radial-gradient(ellipse at bottom, #00d4ff22 0%, transparent 60%),
-        linear-gradient(180deg, #0d0420 0%, #1a0838 100%);
-}
-/* Synthwave theme card preview chrome */
+/* Theme card preview — flat, no inner stripes, no extra glow. */
 .theme-card[data-theme-key="synthwave"] {
-    background: linear-gradient(135deg, #2a0d3a 0%, #ff2bd6 50%, #00d4ff 100%);
+    background: linear-gradient(135deg, #2a0d3a 0%, #ff2bd6 60%, #00d4ff 100%);
     color: #fff;
     border-color: #ff2bd6;
-    box-shadow: 0 4px 14px rgba(255, 43, 214, .35);
-    position: relative; overflow: hidden;
 }
-.theme-card[data-theme-key="synthwave"] .theme-card-name { color: #fff; text-shadow: 0 0 6px rgba(0,0,0,.45); }
-.theme-card[data-theme-key="synthwave"] .theme-cost-pill { background: rgba(0,0,0,.45); color: #ffe2f3; border-color: rgba(255,255,255,.3); }
-.theme-card[data-theme-key="synthwave"]::after {
-    content: ''; position: absolute; inset: 0;
-    background: repeating-linear-gradient(180deg, transparent 0, transparent 6px, rgba(255,255,255,.05) 6px, rgba(255,255,255,.05) 7px);
-    pointer-events: none;
+.theme-card[data-theme-key="synthwave"] .theme-card-name { color: #fff; }
+.theme-card[data-theme-key="synthwave"] .theme-cost-pill {
+    background: rgba(0,0,0,.4); color: #ffe2f3; border-color: rgba(255,255,255,.25);
 }
