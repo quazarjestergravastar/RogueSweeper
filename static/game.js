@@ -1435,7 +1435,7 @@ class Minesweeper {
         panel.innerHTML = `<div class="mines-collection-grid">${ALL_MINE_IDS.map(id => {
             const def = MINE_DEFS[id];
             return `<div class="mine-coll-card" data-mine-id="${id}">
-                <div class="mine-coll-icon" style="background:${def.color}22;border:2px solid ${def.color}44">${def.icon()}</div>
+                <div class="mine-coll-icon" data-rarity="${def.rarity}" style="background:${def.color}22;border:2px solid ${def.color}44">${def.icon()}</div>
                 <span class="mine-coll-name">${def.name}</span>
             </div>`;
         }).join('')}</div>`;
@@ -2208,6 +2208,7 @@ class Minesweeper {
             const isFull = this.playerMines.length >= 6;
             const card = document.createElement('div');
             card.className = `slot-result-mine-card${isFull ? ' full' : ''}`;
+            card.dataset.rarity = def.rarity;
             card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">FREE</span>`;
             if (!isFull) {
                 card.addEventListener('click', () => {
@@ -2272,7 +2273,7 @@ class Minesweeper {
             const isFull = this.playerMines.length >= 6;
             slot.className = `mm-shop-slot${sold ? ' sold' : ''}`;
             slot.innerHTML = `
-                <div class="mm-shop-slot-icon" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}</div>
+                <div class="mm-shop-slot-icon" data-rarity="${def.rarity}" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}</div>
                 <div class="mm-shop-slot-name">${def.name}</div>
                 <div class="mm-shop-slot-cost">${def.cost} RPTS</div>
                 <button class="mm-shop-slot-buy juicy-btn ${(!canAfford || isFull || sold) ? 'disabled' : ''}" data-shop-idx="${i}">${sold ? 'SOLD' : 'BUY'}</button>
@@ -3303,6 +3304,18 @@ class Minesweeper {
 
         /* Settings */
         document.getElementById('settings-open-btn').addEventListener('click', () => { document.getElementById('settings-modal').classList.add('show'); this.sfx.play('modal'); });
+        const updateTagBtn = document.getElementById('update-tag-btn');
+        if (updateTagBtn) {
+            updateTagBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.sfx.play('modal');
+                this.showDiffModal(
+                    'Update: Explosive Aesthetics!',
+                    'The new update, fixing old bugs (and new ones.) adding more power ups, and more features!',
+                    [{ label: this.t('ok','OK'), cls: 'restart-btn', action: () => {} }]
+                );
+            });
+        }
         document.getElementById('settings-close-btn').addEventListener('click', () => { document.getElementById('settings-modal').classList.remove('show'); this.sfx.play('btn'); });
         document.getElementById('settings-modal').addEventListener('click', e => { if (e.target===document.getElementById('settings-modal')) document.getElementById('settings-modal').classList.remove('show'); });
         document.getElementById('dark-mode-toggle').addEventListener('change', e => {
