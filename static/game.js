@@ -193,10 +193,10 @@ const MINE_DEFS = {
     circle_mine: {
         id: 'circle_mine', name: 'Circle Mine', cost: 350,
         color: '#E91E63', maxCharges: 1, placesPerBoard: 1,
-        rarity: 'rare',
+        rarity: 'rare', passive: true,
         requirement: 'None',
-        effect: 'Warps the board into a circular play area, voiding out the corners permanently for the rest of the board.',
-        trigger: 'Instantly on placement',
+        effect: 'Warps the board into a circular play area the instant the board starts, voiding out the corners permanently for the rest of the board.',
+        trigger: 'Passive — activates automatically at the start of each board',
         limit: '1 time per board',
         icon: () => Sprites.circle_mine
     },
@@ -2657,7 +2657,7 @@ class Minesweeper {
         setTimeout(() => {
             this._executeMineEffect(mine.id, r, c, slotIndex);
             /* Fade out one-shot mine icons after effect resolves; trench/totem persist. */
-            if (cell && (mine.id === 'mine_mine' || mine.id === 'grenade_mine' || mine.id === 'pipe_mine' || mine.id === 'nuke_mimb' || mine.id === 'circle_mine')) {
+            if (cell && (mine.id === 'mine_mine' || mine.id === 'grenade_mine' || mine.id === 'pipe_mine' || mine.id === 'nuke_mimb')) {
                 const o = cell.querySelector('.mine-cell-placed');
                 if (o) {
                     o.classList.add('fading');
@@ -2831,15 +2831,6 @@ class Minesweeper {
                 this.sfx.play('mine_place');
                 this._spawnStyleTriggerText('Pipe blast!', '#607D8B');
                 doStep();
-                break;
-            }
-            case 'circle_mine': {
-                /* Reuse the existing secret circle-void easter egg mode. */
-                this._applyCircleMode();
-                this._unlockSecret && this._unlockSecret('circle_board');
-                this.spawnExplosion(cx, cy, '#3F51B5', 16);
-                this.sfx.play('mine_place');
-                this._spawnStyleTriggerText('Circle!', '#3F51B5');
                 break;
             }
             case 'nuke_mimb': {
@@ -3703,6 +3694,23 @@ class Minesweeper {
 
         /* Show style meter */
         this.styleMeter.reset(); this.styleMeter.show();
+
+        /* Circle Mine: passive, warps the board into a circle the instant
+         * the board starts (no manual placement needed).                  */
+        this._checkCirclePassive();
+    }
+
+    _checkCirclePassive() {
+        const idx = this.playerMines.findIndex(m => m.id === 'circle_mine' && m.charges > 0 && !this.bannedMineIds.includes('circle_mine'));
+        if (idx === -1) return;
+        const mine = this.playerMines[idx];
+        mine.charges--;
+        this.renderMineHud();
+        this._applyCircleMode();
+        this._unlockSecret && this._unlockSecret('circle_board');
+        this.spawnExplosion(window.innerWidth/2, window.innerHeight/2, '#E91E63', 16);
+        this._spawnStyleTriggerText('Circle!', '#E91E63');
+        this.sfx.play('mine_place');
     }
 
     renderBoard() {
@@ -3921,7 +3929,7 @@ class Minesweeper {
             if (res && res.hit69) this._unlockSecret('score_69');
             this.boardStyleScore = this.styleMeter.getScore();
         }
-        this.reveal(r, c);
+        this.reveal(r, c, wasFirstClick);
         /* Auto-switch to flag mode after revealing a zero/empty tile (cascade).
          * Skipped on the very first click so the player can keep digging the
          * starting area without the mode flipping under them. */
@@ -3998,7 +4006,7 @@ class Minesweeper {
         }
         return n;
     }
-    reveal(r, c) {
+    reveal(r, c, isFirstClickCascade = false) {
         if (r<0||r>=this.rows||c<0||c>=this.cols) return;
         if (this.revealed[r][c]||this.flagged[r][c]) return;
         this.revealed[r][c]=true;
@@ -4017,10 +4025,16 @@ class Minesweeper {
         if (this.board[r][c] > 0) {
             if (cell) { cell.textContent=this.board[r][c]; cell.classList.add('n'+this.board[r][c]); }
         } else {
-            const res = this.styleMeter.onAction('cascade');
-            if (res && res.hit69) this._unlockSecret('score_69');
+            /* The guaranteed-safe cascade from the very first click of a
+             * board grants no Style — cells opened by that initial reveal
+             * shouldn't count, regardless of loadout (Kickstart grants its
+             * own separate bonus via _checkKickstart, called once).        */
+            if (!isFirstClickCascade) {
+                const res = this.styleMeter.onAction('cascade');
+                if (res && res.hit69) this._unlockSecret('score_69');
+            }
             for (let di=-1;di<=1;di++) for (let dj=-1;dj<=1;dj++)
-                if (di!==0||dj!==0) setTimeout(() => this.reveal(r+di,c+dj), 18);
+                if (di!==0||dj!==0) setTimeout(() => this.reveal(r+di,c+dj,isFirstClickCascade), 18);
         }
         this.sfx.play('reveal');
         this.evaluateFlagCompletion();
@@ -4073,10 +4087,23 @@ class Minesweeper {
         this.sfx.play('totem_fx');
         if (cell) cell.classList.add('diffusal-armed');
 
-        this.diffusalCountdown = { r, c, expiresAt: Date.now() + 10000 };
+        /* Live numeric countdown badge on the armed tile itself. */
+        const badge = document.createElement('span');
+        badge.className = 'diffusal-countdown-badge';
+        badge.textContent = '10';
+        if (cell) cell.appendChild(badge);
+        const tickInterval = setInterval(() => {
+            if (!this.diffusalCountdown) { clearInterval(tickInterval); return; }
+            const remaining = Math.max(0, Math.ceil((this.diffusalCountdown.expiresAt - Date.now()) / 1000));
+            badge.textContent = String(remaining);
+        }, 200);
+
+        this.diffusalCountdown = { r, c, expiresAt: Date.now() + 10000, tickInterval, badge };
         this.diffusalCountdown.timeout = setTimeout(() => {
             if (!this.diffusalCountdown) return;
-            const { r: dr, c: dc } = this.diffusalCountdown;
+            const { r: dr, c: dc, tickInterval: ti, badge: b } = this.diffusalCountdown;
+            clearInterval(ti);
+            if (b) b.remove();
             this.diffusalCountdown = null;
             const cEl = this.getCell(dr, dc);
             if (cEl) cEl.classList.remove('diffusal-armed');
@@ -4095,9 +4122,11 @@ class Minesweeper {
     _tryDiffuse(r, c) {
         /* Called from toggleFlag when a diffusal countdown is active. */
         if (!this.diffusalCountdown) return false;
-        const { r: dr, c: dc } = this.diffusalCountdown;
+        const { r: dr, c: dc, tickInterval, badge } = this.diffusalCountdown;
         if (r !== dr || c !== dc) return false;
         clearTimeout(this.diffusalCountdown.timeout);
+        clearInterval(tickInterval);
+        if (badge) badge.remove();
         this.diffusalCountdown = null;
         const cell = this.getCell(r, c);
         if (cell) cell.classList.remove('diffusal-armed');

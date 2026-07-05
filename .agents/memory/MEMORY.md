@@ -1,0 +1,1 @@
+- [RogueSweeper testing gotcha](roguesweeper-testing.md) — screenshot tool does a fresh page load each time, so the loading screen % looks "stuck" across separate screenshots; not a bug.
