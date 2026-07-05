@@ -228,17 +228,11 @@ const FEAT_DEFS = [
     { id:'sboard_200',     cat:'score', sub:'board', name:'Board Style 200', desc:'Score 200 style in one board',      iconKey:'score_hi' },
     { id:'sboard_350',     cat:'score', sub:'board', name:'Board Style 350', desc:'Score 350 style in one board',      iconKey:'score_hi' },
     { id:'sboard_500',     cat:'score', sub:'board', name:'Board Style 500', desc:'Score 500 style in one board',      iconKey:'score_hi' },
-    { id:'level_10',       cat:'level',     name:'Level 10',           desc:'Reach level 10',                          iconKey:'level' },
-    { id:'level_15',       cat:'level',     name:'Level 15',           desc:'Reach level 15',                          iconKey:'level' },
-    { id:'level_20',       cat:'level',     name:'Level 20',           desc:'Reach level 20',                          iconKey:'level' },
-    { id:'level_100',      cat:'level',     name:'Level 100',          desc:'Reach level 100',                         iconKey:'level_hi' },
-    { id:'level_250',      cat:'level',     name:'Level 250',          desc:'Reach level 250',                         iconKey:'level_hi' },
-    { id:'level_500',      cat:'level',     name:'Level 500',          desc:'Reach level 500',                         iconKey:'level_hi' },
     { id:'all_themes',     cat:'collector', name:'Color Collector',    desc:'Purchase all available themes',           iconKey:'collector' },
     { id:'fun_code',       cat:'collector', name:'Cheat Enabled',      desc:'Enter a Fun Code',                        iconKey:'fun' },
+    { id:'big_shot',       cat:'collector', name:'BIG SHOT',           desc:'Purchase the Spamton Theme',              iconKey:'collector' },
     { id:'all_boards_done',cat:'collector', name:'Board Completionist',desc:'Complete all board feats',                iconKey:'meta' },
     { id:'all_score_done', cat:'collector', name:'Score Completionist',desc:'Complete all score feats',                iconKey:'meta' },
-    { id:'all_level_done', cat:'collector', name:'Level Completionist',desc:'Complete all level feats',                iconKey:'meta' },
     { id:'hopeless_5',     cat:'market',    name:'Hopeless I',         desc:'Lose 5 scratch cards in a row',           iconKey:'fun' },
     { id:'hopeless_10',    cat:'market',    name:'Hopeless II',        desc:'Lose 10 scratch cards in a row',          iconKey:'fun' },
     { id:'hopeless_15',    cat:'market',    name:'Hopeless III',       desc:'Lose 15 scratch cards in a row',          iconKey:'fun' },
@@ -685,7 +679,6 @@ class Minesweeper {
         this.currentSlot = parseInt(localStorage.getItem('ms_save_slot') || '0');
 
         this.points       = parseInt(localStorage.getItem('ms_points') || '0');
-        this.level        = parseInt(localStorage.getItem('ms_level')  || '0');
         this.hardUnlocked = localStorage.getItem('ms_hard_unlocked') === 'true';
         this.infiniteCoins = localStorage.getItem('ms_infinite_coins') === 'true';
 
@@ -864,7 +857,6 @@ class Minesweeper {
         const d = this.getSlotData(this.currentSlot);
         if (!d) return;
         this.points = d.points || 0;
-        this.level = d.level || 0;
         this.hardUnlocked = d.hardUnlocked || false;
         this.runState = d.runState || null;
         this.feats = { ...this._defaultFeats(), ...(d.feats || {}) };
@@ -889,7 +881,6 @@ class Minesweeper {
         const c = f.completed || {};
         const boardFeats  = ['boards_5','boards_10','boards_20','boards_25','consec_10','consec_20','consec_25'];
         const scoreFeats  = ['srun_100','srun_200','srun_350','srun_550','srun_800','srun_1150','sboard_25','sboard_50','sboard_100','sboard_200','sboard_350','sboard_500'];
-        const levelFeats  = ['level_10','level_15','level_20','level_100','level_250','level_500'];
         switch(id) {
             case 'boards_5':   return f.boardsCleared >= 5;
             case 'boards_10':  return f.boardsCleared >= 10;
@@ -914,17 +905,11 @@ class Minesweeper {
             case 'fun_code':   return f.funCodeUsed === true;
             case 'all_boards_done': return boardFeats.every(x => c[x] || this._isFeatDone(x));
             case 'all_score_done':  return scoreFeats.every(x => c[x] || this._isFeatDone(x));
-            case 'all_level_done':  return levelFeats.every(x => c[x] || this._isFeatDone(x));
-            case 'level_10':   return this.level >= 10;
-            case 'level_15':   return this.level >= 15;
-            case 'level_20':   return this.level >= 20;
-            case 'level_100':  return this.level >= 100;
-            case 'level_250':  return this.level >= 250;
-            case 'level_500':  return this.level >= 500;
             case 'hopeless_5':  return (f.bestScratchLossStreak||0) >= 5  || (f.scratchLossStreak||0) >= 5;
             case 'hopeless_10': return (f.bestScratchLossStreak||0) >= 10 || (f.scratchLossStreak||0) >= 10;
             case 'hopeless_15': return (f.bestScratchLossStreak||0) >= 15 || (f.scratchLossStreak||0) >= 15;
             case 'hopeless_20': return (f.bestScratchLossStreak||0) >= 20 || (f.scratchLossStreak||0) >= 20;
+            case 'big_shot':   return this.ownedThemes.includes('spamton');
             case 'circle_board': case 'score_69': case 'ultrakill': case 'ting': case 'edgelord_phase': case 'sixty_nine_better':
                 return c[id] === true;
         }
@@ -998,7 +983,7 @@ class Minesweeper {
     /* ══ SAVE SYSTEM ══════════════════════════════════════════ */
     _buildSaveData() {
         return {
-            points: this.points, level: this.level, hardUnlocked: this.hardUnlocked,
+            points: this.points, hardUnlocked: this.hardUnlocked,
             runState: this.runState, feats: this.feats,
             ownedThemes: this.ownedThemes, activeTheme: this.activeTheme,
             infiniteCoins: this.infiniteCoins,
@@ -1024,7 +1009,7 @@ class Minesweeper {
         localStorage.setItem('ms_save_slot', n);
         const d = this.getSlotData(n);
         if (d) {
-            this.points = d.points || 0; this.level = d.level || 0;
+            this.points = d.points || 0;
             this.hardUnlocked = d.hardUnlocked || false;
             this.runState = d.runState || null;
             this.feats = { ...this._defaultFeats(), ...(d.feats||{}) };
@@ -1044,7 +1029,7 @@ class Minesweeper {
                 localStorage.setItem('darkMode', d.darkMode);
             }
         } else {
-            this.points = 0; this.level = 0; this.hardUnlocked = false;
+            this.points = 0; this.hardUnlocked = false;
             this.runState = null;
             this.feats = this._defaultFeats();
             this.unviewedFeatIds = []; this.newFeatItemIds = [];
@@ -1052,7 +1037,6 @@ class Minesweeper {
             this.runPoints = 0; this.playerMines = []; this.totemTriggered = false; this.bannedMineIds = [];
         }
         localStorage.setItem('ms_points', this.points);
-        localStorage.setItem('ms_level', this.level);
         localStorage.setItem('ms_hard_unlocked', this.hardUnlocked);
         localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
         localStorage.setItem('ms_active_theme', this.activeTheme);
@@ -1085,13 +1069,10 @@ class Minesweeper {
             if (isEmpty) {
                 div.innerHTML = `<div class="save-slot-header"><span class="save-slot-name">Slot ${i+1}</span><span class="save-slot-badge" style="background:var(--border);color:var(--text-muted)">Empty</span></div><span class="save-slot-info">No data yet</span>`;
             } else {
-                const lvl  = isActive ? this.level : (d && d.level || 0);
                 const pts  = isActive ? this.points : (d && d.points || 0);
                 const inf  = isActive ? this.infiniteCoins : (d && d.infiniteCoins === true);
-                const cost = this.levelUpCost(lvl);
-                const pct  = inf ? 100 : Math.min(100, Math.round((pts / cost) * 100));
                 const ago  = d && d.timestamp ? this._timeAgo(d.timestamp) : 'just now';
-                div.innerHTML = `<div class="save-slot-header"><span class="save-slot-name">Slot ${i+1}</span><span class="save-slot-actions">${isActive ? '<span class="save-slot-badge">Active</span>' : ''}<button class="save-delete-btn juicy-btn" data-delete-slot="${i}">Delete</button></span></div><span class="save-slot-info">${inf ? '∞' : pts.toLocaleString()} pts · ${ago}</span><div class="save-slot-bar-row"><span class="save-slot-bar-label">LVL ${lvl}</span><div class="save-slot-bar-wrap"><div class="save-slot-bar-fill" style="width:${pct}%"></div></div><span class="save-slot-bar-pts">${pct}%</span></div>`;
+                div.innerHTML = `<div class="save-slot-header"><span class="save-slot-name">Slot ${i+1}</span><span class="save-slot-actions">${isActive ? '<span class="save-slot-badge">Active</span>' : ''}<button class="save-delete-btn juicy-btn" data-delete-slot="${i}">Delete</button></span></div><span class="save-slot-info">${inf ? '∞' : pts.toLocaleString()} pts · ${ago}</span><div class="save-slot-bar-row"><span class="save-slot-bar-label">${inf ? '∞' : pts.toLocaleString()} PTS</span></div>`;
             }
             div.addEventListener('click', () => { this.sfx.play('btn'); this.switchSlot(i); });
             const del = div.querySelector('.save-delete-btn');
@@ -1108,14 +1089,13 @@ class Minesweeper {
     deleteSlot(n) {
         localStorage.removeItem(`ms_save_${n}`);
         if (n === this.currentSlot) {
-            this.points = 0; this.level = 0; this.hardUnlocked = false; this.runState = null;
+            this.points = 0; this.hardUnlocked = false; this.runState = null;
             this.feats = this._defaultFeats();
             this.unviewedFeatIds = []; this.newFeatItemIds = [];
             this.ownedThemes = ['green']; this.activeTheme = 'green'; this.infiniteCoins = false;
             this.runPoints = 0; this.playerMines = []; this.totemTriggered = false; this.bannedMineIds = [];
             this.currentDifficulty = null; this.carouselIndex = 0;
             localStorage.setItem('ms_points', this.points);
-            localStorage.setItem('ms_level', this.level);
             localStorage.setItem('ms_hard_unlocked', 'false');
             localStorage.setItem('ms_owned_themes', JSON.stringify(this.ownedThemes));
             localStorage.setItem('ms_active_theme', this.activeTheme);
@@ -1414,17 +1394,20 @@ class Minesweeper {
         this.sfx.play('modal');
     }
 
-    /* ══ LEVEL / POINTS ════════════════════════════════════════ */
-    levelUpCost(level) { return Math.round(100 + level * 30 + level * level * 3); }
-    renderLevelBar() {
-        const cost = this.levelUpCost(this.level);
-        const pct  = this.infiniteCoins ? 1 : Math.min(1, this.points / cost);
-        document.getElementById('level-label').textContent = `LVL ${this.level}`;
-        document.getElementById('xp-bar-fill').style.width = `${Math.round(pct*100)}%`;
-        document.getElementById('xp-text').textContent = this.infiniteCoins ? `∞ / ${cost}` : `${this.points} / ${cost}`;
-        document.getElementById('upgrade-btn').classList.toggle('hidden', !this.infiniteCoins && this.points < cost);
+    /* ══ POINTS ═══════════════════════════════════════════════ */
+    renderLevelBar() { this.renderPointsDisplay(); }
+    renderPointsDisplay() {
+        const hasRun = !!this.runState;
+        const normalRow = document.getElementById('points-row-normal');
+        const splitRow  = document.getElementById('points-row-split');
+        if (normalRow) normalRow.classList.toggle('hidden', hasRun);
+        if (splitRow)  splitRow.classList.toggle('hidden', !hasRun);
         const pd = document.getElementById('points-display');
         if (pd) pd.textContent = this.infiniteCoins ? '∞' : this.points.toLocaleString();
+        const pdPerm = document.getElementById('points-display-perm');
+        if (pdPerm) pdPerm.textContent = this.infiniteCoins ? '∞' : this.points.toLocaleString();
+        const pdRun = document.getElementById('points-display-run');
+        if (pdRun) pdRun.textContent = this.runPoints.toLocaleString();
     }
     awardPoints(n) {
         const earned = n * 10;
@@ -3113,18 +3096,6 @@ class Minesweeper {
         /* Purchase Modal */
         document.getElementById('coming-soon-close-btn').addEventListener('click', () => { document.getElementById('coming-soon-modal').classList.remove('show'); this.sfx.play('btn'); });
 
-        /* Level Up */
-        document.getElementById('upgrade-btn').addEventListener('click', () => {
-            const cost = this.levelUpCost(this.level);
-            if (this.points >= cost || this.infiniteCoins) {
-                if (!this.infiniteCoins) this.points -= cost;
-                this.level++;
-                localStorage.setItem('ms_points', this.points);
-                localStorage.setItem('ms_level', this.level);
-                this.renderLevelBar(); this.checkFeats(); this.sfx.play('lvlup');
-            }
-        });
-
         /* Carousel Swipe */
         this.bindCarouselSwipe();
 
@@ -3299,7 +3270,7 @@ class Minesweeper {
     updateFeatsTabProgress(tab) {
         const bar = document.getElementById('feats-tab-progress');
         if (!bar) return;
-        const tabs = ['board','score','level','collector','original'];
+        const tabs = ['board','score','collector','original'];
         const idx = Math.max(0, tabs.indexOf(tab));
         const pct = tabs.length <= 1 ? 100 : Math.round((1 - idx / (tabs.length - 1)) * 100);
         bar.style.setProperty('--tab-progress', `${pct}%`);

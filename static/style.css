@@ -196,18 +196,9 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     box-shadow: 0 3px 16px var(--card-shadow); flex-shrink: 0;
 }
 
-/* ── LEVEL BAR ───────────────────────────────────────────── */
-.level-section { padding: 10px 14px; }
-.level-row { display: flex; align-items: center; gap: 8px; }
-.upgrade-btn {
-    background: var(--accent); color: var(--accent-t);
-    font-size: .6rem; font-weight: 800; letter-spacing: .08em;
-    padding: 6px 12px; border-radius: var(--r-sm); white-space: nowrap;
-}
-.level-label { font-size: .7rem; font-weight: 800; white-space: nowrap; color: var(--text2); }
-.xp-bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; }
-.xp-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
-.xp-text { font-size: .6rem; color: var(--text-muted); white-space: nowrap; }
+/* ── POINTS DISPLAY ──────────────────────────────────────── */
+.points-section { padding: 10px 14px; }
+.points-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .points-badge {
     display: flex; align-items: center; gap: 3px;
     font-size: .65rem; font-weight: 900;
@@ -216,6 +207,12 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     padding: 3px 7px; flex-shrink: 0;
     font-family: 'Nunito', var(--sys-font);
 }
+.points-badge-big { font-size: .85rem; padding: 6px 14px; }
+.points-row-split { justify-content: space-between; }
+.points-split-side { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+.points-split-label { font-size: .55rem; font-weight: 800; letter-spacing: .08em; color: var(--text-muted); }
+.points-split-divider { width: 1px; align-self: stretch; background: var(--border); }
+.run-points-badge { color: var(--rank-a-color, #FF9800); }
 
 /* ── DIFFICULTY GRID ─────────────────────────────────────── */
 .difficulty-grid {
