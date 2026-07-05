@@ -798,13 +798,43 @@ body.dark-mode .sm-ring-bg {
 .cell.fractal-radius::after {
     content: ''; position: absolute; inset: 0;
     border-radius: 9px; pointer-events: none; z-index: 0;
-    background: rgba(156, 39, 176, calc(0.10 + 0.10 * var(--fractal-overlap, 1)));
-    box-shadow: inset 0 0 0 1.5px rgba(156, 39, 176, calc(0.30 + 0.16 * var(--fractal-overlap, 1)));
+    background: rgba(156, 39, 176, calc(0.06 + 0.06 * var(--fractal-overlap, 1)));
+    box-shadow: inset 0 0 0 1px rgba(156, 39, 176, calc(0.18 + 0.10 * var(--fractal-overlap, 1)));
     animation: fractalRadiusPulse 2.4s ease-in-out infinite;
 }
 @keyframes fractalRadiusPulse {
     0%,100% { filter: brightness(1); }
-    50%      { filter: brightness(1.3); }
+    50%      { filter: brightness(1.15); }
+}
+
+/* Dormant Grenade/Pipe: dim + slow pulse until the required Style rank
+ * is reached, then the overlay returns to full opacity/color.            */
+.mine-cell-placed.mine-dormant {
+    opacity: .45;
+    animation: dormantPulse 1.6s ease-in-out infinite;
+}
+@keyframes dormantPulse {
+    0%,100% { filter: grayscale(.5) brightness(.9); }
+    50%      { filter: grayscale(0) brightness(1.1); }
+}
+
+/* Diffusal Mine armed countdown */
+.cell.diffusal-armed {
+    box-shadow: 0 0 0 3px #00BCD4, 0 0 14px #00BCD4aa !important;
+    animation: diffusalTick 1s ease-in-out infinite;
+}
+@keyframes diffusalTick {
+    0%,100% { filter: brightness(1); }
+    50%      { filter: brightness(1.25); }
+}
+
+/* Tsar Mimba board-shrink ring fade */
+.cell.tsar-shrink-fx {
+    animation: tsarShrinkFade .45s ease-out both;
+}
+@keyframes tsarShrinkFade {
+    0%   { transform: scale(1); opacity: 1; }
+    100% { transform: scale(.2); opacity: 0; }
 }
 
 /* Modal exit animation (Board Clear / Run Over / Run Won) */

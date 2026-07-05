@@ -18,6 +18,8 @@ const SPRITE_FILES = {
     flag:'flag', mine:'mine', check:'check', cross:'cross', dot:'dot',
     mine_mine:'mine-mine', trench_mine:'trench-mine', grenade_mine:'grenade-mine',
     totem_mine:'totem-mine', fractal_mine:'fractal-mine',
+    kickstart_mine:'kickstart-mine', diffusal_mine:'diffusal-mine', pipe_mine:'pipe-mine',
+    circle_mine:'circle-mine', nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
     feat_level:'feat-level', feat_level_hi:'feat-level-hi',
@@ -129,19 +131,19 @@ const MINE_DEFS = {
         icon: () => Sprites.trench_mine
     },
     grenade_mine: {
-        id: 'grenade_mine', name: 'Grenade Mine', cost: 200,
+        id: 'grenade_mine', name: 'Grenade Mine', cost: 220,
         color: '#4CAF50', maxCharges: 2, placesPerBoard: 1,
         rarity: 'common',
-        requirement: 'Style rank C or above',
-        effect: 'Opens a large area if placed on a mine tile. Ends the run if placed on a non-mine tile.',
-        trigger: 'Instantly on placement',
+        requirement: 'None to place — dormant until Style rank C',
+        effect: 'Opens a smaller area if placed on a mine tile. Ends the run if placed on a non-mine tile. Sits dormant on the board until Style rank reaches C, then activates automatically.',
+        trigger: 'On placement once Style rank C+ is reached',
         limit: '1 time per board',
         icon: () => Sprites.grenade_mine
     },
     totem_mine: {
         id: 'totem_mine', name: 'Totem Mine', cost: 250,
         color: '#FFC107', maxCharges: 2, placesPerBoard: 1,
-        rarity: 'uncommon',
+        rarity: 'uncommon', passive: true,
         requirement: 'None',
         effect: 'Prevents the run from ending once when the player would dig up a mine. Becomes permanently unusable afterwards.',
         trigger: 'Passive — triggers automatically when a mine would end the run',
@@ -153,10 +155,70 @@ const MINE_DEFS = {
         color: '#9C27B0', maxCharges: 1, placesPerBoard: 1,
         rarity: 'rare',
         requirement: 'None',
-        effect: 'When any mine within its 3×3 radius is triggered, all mines in that radius (including other fractal mines) detonate twice in a chain reaction.',
+        effect: 'When any mine within its 3×3 radius is triggered, all mines in that radius (including other fractal mines) detonate in a chain reaction.',
         trigger: 'Passive — activates when any mine in radius is triggered',
         limit: '1 time per board',
         icon: () => Sprites.fractal_mine
+    },
+    kickstart_mine: {
+        id: 'kickstart_mine', name: 'Kickstart Mine', cost: 180,
+        color: '#00BCD4', maxCharges: 3, placesPerBoard: 1,
+        rarity: 'uncommon', passive: true,
+        requirement: 'None',
+        effect: 'Instantly kicks the Style Meter into gear on your very first safe click of the board, granting bonus fill and score right away instead of starting cold.',
+        trigger: 'Passive — activates on the first safe click of each board',
+        limit: '1 time per board',
+        icon: () => Sprites.kickstart_mine
+    },
+    diffusal_mine: {
+        id: 'diffusal_mine', name: 'Diffusal Mine', cost: 260,
+        color: '#009688', maxCharges: 2, placesPerBoard: 1,
+        rarity: 'uncommon', passive: true,
+        requirement: 'None',
+        effect: 'If you dig up a mine, starts a 10-second countdown instead of ending the run instantly. Correctly flag that exact tile before time runs out to diffuse it and gain +2 Style ranks. If time runs out, the run ends as normal.',
+        trigger: 'Passive — triggers automatically when a mine would end the run',
+        limit: '1 time per board; permanently consumed once triggered',
+        icon: () => Sprites.diffusal_mine
+    },
+    pipe_mine: {
+        id: 'pipe_mine', name: 'Pipe Mine', cost: 240,
+        color: '#607D8B', maxCharges: 2, placesPerBoard: 1,
+        rarity: 'rare',
+        requirement: 'None to place — dormant until Style rank B',
+        effect: 'Sits dormant on the board until Style rank reaches B, then tunnels a straight line through the board, safely revealing roughly a third of the remaining tiles along that line.',
+        trigger: 'On placement once Style rank B+ is reached',
+        limit: '1 time per board',
+        icon: () => Sprites.pipe_mine
+    },
+    circle_mine: {
+        id: 'circle_mine', name: 'Circle Mine', cost: 350,
+        color: '#E91E63', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'rare',
+        requirement: 'None',
+        effect: 'Warps the board into a circular play area, voiding out the corners permanently for the rest of the board.',
+        trigger: 'Instantly on placement',
+        limit: '1 time per board',
+        icon: () => Sprites.circle_mine
+    },
+    nuke_mimb: {
+        id: 'nuke_mimb', name: 'Nuke Mimb', cost: 500,
+        color: '#FF5722', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'legendary',
+        requirement: 'None',
+        effect: 'Detonates instantly, safely revealing roughly half of all remaining safe tiles on the board at random.',
+        trigger: 'Instantly on placement',
+        limit: '1 time per board',
+        icon: () => Sprites.nuke_mimb
+    },
+    tsar_mimba: {
+        id: 'tsar_mimba', name: 'Tsar Mimba', cost: 550,
+        color: '#3F51B5', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'legendary',
+        requirement: 'None',
+        effect: 'Once armed, the board shrinks inward — voiding its outermost ring of tiles — every time your Style rank goes up for the rest of the board.',
+        trigger: 'Passive — activates on each Style rank-up after placement',
+        limit: '1 time per board',
+        icon: () => Sprites.tsar_mimba
     }
 };
 const ALL_MINE_IDS = Object.keys(MINE_DEFS);
@@ -700,6 +762,15 @@ class Minesweeper {
         this.trenchMines = []; // [{r, c}]
         /* Fractal mines placed on board this board (cleared each board) */
         this.fractalMines = []; // [{r, c}]
+        /* Dormant mines (grenade/pipe) waiting for a Style rank threshold */
+        this.dormantMines = []; // [{r, c, id, slotIndex, requiredRankIdx}]
+        /* Whether a Tsar Mimba is armed on this board (shrinks on rank-up) */
+        this.tsarArmed = false;
+        /* Diffusal Mine active countdown state */
+        this.diffusalCountdown = null;
+        /* Tsar Mimba shrink progress + voided cell tracking */
+        this.boardRingInset = 0;
+        this.voidedCells = new Set();
         /* Throttle: timestamp of last successful placement (1/sec cap) */
         this._lastPlaceAt = 0;
         /* Scratch card used this market visit */
@@ -1155,6 +1226,11 @@ class Minesweeper {
         this.bannedMineIds = [];
         this.trenchMines = [];
         this.fractalMines = [];
+        this.dormantMines = [];
+        this.tsarArmed = false;
+        this.diffusalCountdown = null;
+        this.boardRingInset = 0;
+        this.voidedCells = new Set();
         this._updateRunPtsHud();
         this.renderMineHud();
     }
@@ -1935,6 +2011,11 @@ class Minesweeper {
         this.boardStyleScore = 0;
         this.trenchMines = [];
         this.fractalMines = [];
+        this.dormantMines = [];
+        this.tsarArmed = false;
+        this.diffusalCountdown = null;
+        this.boardRingInset = 0;
+        this.voidedCells = new Set();
         /* Reset per-board placement counts */
         this.playerMines.forEach(m => { m.boardPlacedCount = 0; });
         document.getElementById('game-screen').classList.remove('hidden');
@@ -2162,10 +2243,11 @@ class Minesweeper {
         if (!def) return 1;
         /* Driven by the explicit `rarity` field on each MINE_DEFS entry. */
         switch (def.rarity) {
-            case 'common':   return 5;
-            case 'uncommon': return 2;
-            case 'rare':     return 0.7;
-            default:         return 1;
+            case 'common':    return 5;
+            case 'uncommon':  return 2;
+            case 'rare':      return 0.7;
+            case 'legendary': return 0.25;
+            default:          return 1;
         }
     }
     _pickRandomMine() {
@@ -2320,6 +2402,8 @@ class Minesweeper {
         const limits = {
             mine_mine: 1, trench_mine: 2, grenade_mine: 1,
             totem_mine: 1, fractal_mine: 1,
+            kickstart_mine: 1, diffusal_mine: 1, pipe_mine: 1,
+            circle_mine: 1, nuke_mimb: 1, tsar_mimba: 1,
         };
         return limits[mineId] || 1;
     }
@@ -2380,6 +2464,7 @@ class Minesweeper {
             const mine = this.playerMines[slotIndex];
             if (!mine) return;
             const def = MINE_DEFS[mine.id];
+            if (def.passive) { this.sfx.play('error'); this._flashPlaceCooldown(slotIndex); return; }
             if (mine.charges <= 0) return;
             isDragging = true; startX = x; startY = y;
             ghost.innerHTML = def.icon();
@@ -2478,14 +2563,6 @@ class Minesweeper {
         }
 
         /* Additional requirements */
-        if (mine.id === 'grenade_mine') {
-            const currentRankIdx = this.styleMeter.rankIdx;
-            if (currentRankIdx < 1) { /* Need C or above (idx >= 1) */
-                this.sfx.play('error');
-                this._flashGrenadeRankBlock();
-                return;
-            }
-        }
         if (mine.id === 'trench_mine') {
             /* Must be on zero tile adjacent to number tiles */
             if (this.firstClick || !this.board[r] || this.board[r][c] !== 0) { this.sfx.play('error'); return; }
@@ -2500,6 +2577,13 @@ class Minesweeper {
                 /* Allow placement but it whiffs — handled in _executeMineEffect */
             }
         }
+
+        /* Grenade/Pipe are rank-gated but placeable immediately: if the
+         * required Style rank hasn't been reached yet, the mine sits
+         * dormant on the board and auto-activates on a later rank-up. */
+        const REQUIRED_RANK_IDX = { grenade_mine: 1, pipe_mine: 2 };
+        const reqIdx = REQUIRED_RANK_IDX[mine.id];
+        const isDormant = reqIdx !== undefined && this.styleMeter.rankIdx < reqIdx;
 
         /* Deduct charges and increment board count */
         mine.charges--;
@@ -2530,14 +2614,22 @@ class Minesweeper {
                 overlay.style.background = def.color + '33';
                 overlay.style.borderRadius = '9px';
             }
+            if (isDormant) overlay.classList.add('mine-dormant');
             cell.appendChild(overlay);
+        }
+
+        if (isDormant) {
+            this.dormantMines.push({ r, c, id: mine.id, slotIndex, requiredRankIdx: reqIdx });
+            this._spawnStyleTriggerText(`${def.name} armed (dormant)`, def.color);
+            this.saveCurrentToSlot(this.currentSlot);
+            return;
         }
 
         /* Execute mine effect */
         setTimeout(() => {
             this._executeMineEffect(mine.id, r, c, slotIndex);
             /* Fade out one-shot mine icons after effect resolves; trench/totem persist. */
-            if (cell && (mine.id === 'mine_mine' || mine.id === 'grenade_mine')) {
+            if (cell && (mine.id === 'mine_mine' || mine.id === 'grenade_mine' || mine.id === 'pipe_mine' || mine.id === 'nuke_mimb' || mine.id === 'circle_mine')) {
                 const o = cell.querySelector('.mine-cell-placed');
                 if (o) {
                     o.classList.add('fading');
@@ -2546,6 +2638,26 @@ class Minesweeper {
             }
         }, 300);
         this.saveCurrentToSlot(this.currentSlot);
+    }
+
+    /* ── Dormant mines (Grenade/Pipe) — activate once required rank hit ── */
+    _checkDormantMines() {
+        if (!this.dormantMines.length) return;
+        const rankIdx = this.styleMeter.rankIdx;
+        const ready = this.dormantMines.filter(m => rankIdx >= m.requiredRankIdx);
+        if (!ready.length) return;
+        this.dormantMines = this.dormantMines.filter(m => rankIdx < m.requiredRankIdx);
+        ready.forEach((m, i) => {
+            const cell = this.getCell(m.r, m.c);
+            if (cell) cell.querySelector('.mine-cell-placed')?.classList.remove('mine-dormant');
+            setTimeout(() => {
+                this._executeMineEffect(m.id, m.r, m.c, m.slotIndex);
+                if (cell && (m.id === 'grenade_mine')) {
+                    const o = cell.querySelector('.mine-cell-placed');
+                    if (o) { o.classList.add('fading'); setTimeout(() => { if (o.parentNode) o.remove(); }, 500); }
+                }
+            }, i * 260);
+        });
     }
 
     _executeMineEffect(mineId, r, c, slotIndex) {
@@ -2611,8 +2723,8 @@ class Minesweeper {
                 if (isMine) {
                     /* Grenade detonated a real mine: chain any nearby fractals. */
                     this._triggerFractalChain(r, c);
-                    /* Open large area around placement */
-                    const RADIUS = 3;
+                    /* Open area around placement (nerfed from 3 → 2) */
+                    const RADIUS = 2;
                     for (let di = -RADIUS; di <= RADIUS; di++) {
                         for (let dj = -RADIUS; dj <= RADIUS; dj++) {
                             const nr = r + di, nc = c + dj;
@@ -2649,6 +2761,87 @@ class Minesweeper {
                 this.sfx.play('mine_place');
                 this._spawnStyleTriggerText('Fractal armed', '#9C27B0');
                 this._updateFractalIndicators();
+                break;
+            }
+            case 'kickstart_mine': {
+                /* Passive — its effect fires from digCell() on first click,
+                 * this case only handles a direct manual placement (no-op
+                 * visual flash since the passive path already awarded it). */
+                if (cell) { cell.style.boxShadow = `0 0 0 4px #FF9800, 0 0 12px #FF980066`; setTimeout(() => { if (cell) cell.style.boxShadow=''; }, 500); }
+                this.sfx.play('mine_place');
+                break;
+            }
+            case 'diffusal_mine': {
+                /* Passive — armed automatically; actual diffuse-or-lose logic
+                 * runs from reveal() when a mine is hit. Placement just arms it. */
+                if (cell) { cell.style.boxShadow = `0 0 0 4px #00BCD4, 0 0 12px #00BCD466`; }
+                this.sfx.play('mine_place');
+                this._spawnStyleTriggerText('Diffusal armed', '#00BCD4');
+                break;
+            }
+            case 'pipe_mine': {
+                /* Reveal ~1/3 of remaining safe tiles in a straight line
+                 * outward from the placement point, skipping (not
+                 * detonating) any mine tiles encountered along the way.    */
+                const remainingSafe = [];
+                for (let i = 0; i < this.rows; i++) for (let j = 0; j < this.cols; j++) {
+                    if (this.board[i][j] !== -1 && !this.revealed[i][j]) remainingSafe.push([i, j]);
+                }
+                const targetCount = Math.max(1, Math.ceil(remainingSafe.length / 3));
+                const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+                const dir = dirs[Math.floor(Math.random() * dirs.length)];
+                let revealedCount = 0, nr = r, nc = c, step = 0;
+                const doStep = () => {
+                    nr += dir[0]; nc += dir[1]; step++;
+                    if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) return;
+                    if (revealedCount >= targetCount) return;
+                    if (this.board[nr][nc] === -1) { setTimeout(doStep, 45); return; } /* pipe skips mines */
+                    if (!this.revealed[nr][nc]) { this.reveal(nr, nc); revealedCount++; }
+                    setTimeout(doStep, 45);
+                };
+                this.spawnExplosion(cx, cy, '#607D8B', 14);
+                this.sfx.play('mine_place');
+                this._spawnStyleTriggerText('Pipe blast!', '#607D8B');
+                doStep();
+                break;
+            }
+            case 'circle_mine': {
+                /* Reuse the existing secret circle-void easter egg mode. */
+                this._applyCircleMode();
+                this._unlockSecret && this._unlockSecret('circle_board');
+                this.spawnExplosion(cx, cy, '#3F51B5', 16);
+                this.sfx.play('mine_place');
+                this._spawnStyleTriggerText('Circle!', '#3F51B5');
+                break;
+            }
+            case 'nuke_mimb': {
+                /* Reveal a random 50% of remaining safe tiles. */
+                const remaining = [];
+                for (let i = 0; i < this.rows; i++) for (let j = 0; j < this.cols; j++) {
+                    if (this.board[i][j] !== -1 && !this.revealed[i][j]) remaining.push([i, j]);
+                }
+                for (let i = remaining.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+                }
+                const half = remaining.slice(0, Math.ceil(remaining.length / 2));
+                this.spawnExplosion(cx, cy, '#E91E63', 24);
+                document.body.classList.add('runover-pulse');
+                setTimeout(() => document.body.classList.remove('runover-pulse'), 500);
+                this.sfx.play('grenade_fx');
+                this._spawnStyleTriggerText('NUKE!', '#E91E63');
+                half.forEach(([nr, nc], i) => {
+                    setTimeout(() => { if (!this.revealed[nr][nc]) this.reveal(nr, nc); }, i * 12);
+                });
+                break;
+            }
+            case 'tsar_mimba': {
+                /* Arm the board-shrink mechanic; each future Style rank-up
+                 * voids the outermost remaining ring of tiles.             */
+                this.tsarArmed = true;
+                if (cell) { cell.style.boxShadow = `0 0 0 4px #3F51B5, 0 0 14px #3F51B599`; }
+                this.sfx.play('mine_place');
+                this._spawnStyleTriggerText('Tsar armed', '#3F51B5');
                 break;
             }
         }
@@ -2840,6 +3033,38 @@ class Minesweeper {
                 this._spawnStyleTriggerText(`+${total} trench!`, '#a87555', 'trench_fx');
             }, idx * 130);
         });
+
+        /* Dormant Grenade/Pipe mines: check if this rank-up unlocks them */
+        this._checkDormantMines();
+
+        /* Tsar Mimba: shrink the board inward (void outermost ring) on
+         * every rank-up once armed for this board.                       */
+        if (this.tsarArmed) this._shrinkBoardRing();
+    }
+
+    /* ── Tsar Mimba: void the outermost remaining ring of the board ── */
+    _shrinkBoardRing() {
+        if (!this.boardRingInset) this.boardRingInset = 0;
+        const inset = this.boardRingInset;
+        const top = inset, bottom = this.rows - 1 - inset;
+        const left = inset, right = this.cols - 1 - inset;
+        if (top >= bottom || left >= right) return; /* board too small to shrink further */
+        for (let j = left; j <= right; j++) { this._voidCell(top, j); this._voidCell(bottom, j); }
+        for (let i = top; i <= bottom; i++) { this._voidCell(i, left); this._voidCell(i, right); }
+        this.boardRingInset++;
+        this._spawnStyleTriggerText('Board shrinks!', '#3F51B5', 'tsar_fx');
+    }
+    _voidCell(r, c) {
+        if (!this.voidedCells) this.voidedCells = new Set();
+        const key = `${r},${c}`;
+        if (this.voidedCells.has(key)) return;
+        this.voidedCells.add(key);
+        const cell = this.getCell(r, c);
+        if (cell) cell.classList.add('circle-void', 'tsar-shrink-fx');
+        /* Auto-flag mines and auto-reveal-equivalent safe tiles that get
+         * voided so they don't block win detection.                      */
+        if (this.board[r] && this.board[r][c] === -1) this.flagged[r][c] = true;
+        else if (this.board[r]) this.revealed[r][c] = true;
     }
 
     /* ══ EXPLOSION PARTICLES ═══════════════════════════════════ */
@@ -3391,6 +3616,11 @@ class Minesweeper {
         this.board=[]; this.revealed=[]; this.flagged=[];
         this.gameOver=false; this.firstClick=true;
         this.timer=0; this.mode='dig'; this.circleMode=false;
+        this.boardRingInset = 0;
+        this.voidedCells = new Set();
+        this.dormantMines = [];
+        this.tsarArmed = false;
+        this.diffusalCountdown = null;
         this.scrollX=0; this.scrollY=0; this.zoomLevel=1; this._zoomTarget=1; this._zoomAnimating=false;
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval=null; }
 
@@ -3622,6 +3852,7 @@ class Minesweeper {
             this.firstClick=false; this.placeMines(r, c); this.startTimer();
             this.evaluateFlagCompletion();
             if (this.gameOver) return;
+            this._checkKickstart(r, c);
         }
         this.sfx.play('dig');
         const res = this.styleMeter.onAction('dig');
@@ -3648,6 +3879,7 @@ class Minesweeper {
     }
 
     toggleFlag(r, c) {
+        if (this.diffusalCountdown && this._tryDiffuse(r, c)) return;
         if (this.revealed[r][c]) return;
         const placingFlag = !this.flagged[r][c];
         this.flagged[r][c] = !this.flagged[r][c];
@@ -3712,6 +3944,8 @@ class Minesweeper {
         if (this.board[r][c]===-1) {
             /* Check totem mine protection */
             if (this._checkTotemProtection(r, c)) return;
+            /* Check diffusal mine protection (10s flag-the-mine countdown) */
+            if (this._checkDiffusalProtection(r, c)) return;
             /* Fractal chain reaction — purely visual flourish before endGame.
              * Triggers when the dug-up mine sits inside any fractal's 3×3.  */
             this._triggerFractalChain(r, c);
@@ -3727,6 +3961,94 @@ class Minesweeper {
         }
         this.sfx.play('reveal');
         this.evaluateFlagCompletion();
+    }
+
+    _checkKickstart(r, c) {
+        /* Passive: grants an instant style/score kickstart on the very
+         * first click of a board, once per board while charges remain. */
+        const idx = this.playerMines.findIndex(m => m.id === 'kickstart_mine' && m.charges > 0 && !this.bannedMineIds.includes('kickstart_mine'));
+        if (idx === -1) return;
+        const mine = this.playerMines[idx];
+        mine.charges--;
+        this.renderMineHud();
+        const res = this.styleMeter.onAction('cascade');
+        if (res && res.hit69) this._unlockSecret('score_69');
+        this.styleMeter.addScore(15);
+        this.boardStyleScore = this.styleMeter.getScore();
+        const cell = this.getCell(r, c);
+        const rect = cell ? cell.getBoundingClientRect() : null;
+        const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+        const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
+        this.spawnExplosion(cx, cy, '#FF9800', 14);
+        this._spawnStyleTriggerText('Kickstart!', '#FF9800');
+        this.sfx.play('mine_place');
+    }
+
+    _checkDiffusalProtection(r, c) {
+        /* Passive: if a Diffusal Mine is available, hitting a real mine
+         * doesn't immediately end the run — instead a 10s countdown
+         * starts. Flagging the EXACT mine tile within that window diffuses
+         * it (+2 style ranks). Letting the countdown expire (or flagging
+         * the wrong tile) ends the run as normal.                          */
+        if (this.diffusalCountdown) return true; /* already mid-countdown, don't retrigger */
+        const idx = this.playerMines.findIndex(m => m.id === 'diffusal_mine' && m.charges > 0 && !this.bannedMineIds.includes('diffusal_mine'));
+        if (idx === -1) return false;
+        const mine = this.playerMines[idx];
+        mine.charges = 0;
+        this.bannedMineIds.push('diffusal_mine');
+
+        /* Undo the reveal while the countdown is live */
+        this.revealed[r][c] = false;
+        const cell = this.getCell(r, c);
+        if (cell) cell.classList.remove('revealed');
+
+        const cellRect = cell ? cell.getBoundingClientRect() : null;
+        const cx = cellRect ? cellRect.left + cellRect.width/2 : window.innerWidth/2;
+        const cy = cellRect ? cellRect.top + cellRect.height/2 : window.innerHeight/2;
+        this.spawnExplosion(cx, cy, '#00BCD4', 16);
+        this._spawnStyleTriggerText('Diffuse it! (10s)', '#00BCD4');
+        this.sfx.play('totem_fx');
+        if (cell) cell.classList.add('diffusal-armed');
+
+        this.diffusalCountdown = { r, c, expiresAt: Date.now() + 10000 };
+        this.diffusalCountdown.timeout = setTimeout(() => {
+            if (!this.diffusalCountdown) return;
+            const { r: dr, c: dc } = this.diffusalCountdown;
+            this.diffusalCountdown = null;
+            const cEl = this.getCell(dr, dc);
+            if (cEl) cEl.classList.remove('diffusal-armed');
+            /* Countdown expired without diffusing: mine goes off for real. */
+            this.revealed[dr][dc] = true;
+            if (cEl) cEl.classList.add('revealed');
+            this._triggerFractalChain(dr, dc);
+            this.gameOver = true; this.endGame();
+        }, 10000);
+
+        this.renderMineHud();
+        this.saveCurrentToSlot(this.currentSlot);
+        return true;
+    }
+
+    _tryDiffuse(r, c) {
+        /* Called from toggleFlag when a diffusal countdown is active. */
+        if (!this.diffusalCountdown) return false;
+        const { r: dr, c: dc } = this.diffusalCountdown;
+        if (r !== dr || c !== dc) return false;
+        clearTimeout(this.diffusalCountdown.timeout);
+        this.diffusalCountdown = null;
+        const cell = this.getCell(r, c);
+        if (cell) cell.classList.remove('diffusal-armed');
+        this.flagged[r][c] = false; /* leave the tile un-flagged/un-revealed, effectively defused */
+        for (let i = 0; i < 2; i++) this.styleMeter._rankUp();
+        this.boardStyleScore = this.styleMeter.getScore();
+        const rect = cell ? cell.getBoundingClientRect() : null;
+        const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+        const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
+        this.spawnExplosion(cx, cy, '#00E5FF', 20);
+        this._spawnStyleTriggerText('Diffused!', '#00E5FF');
+        this.sfx.play('mine_place');
+        this.saveCurrentToSlot(this.currentSlot);
+        return true;
     }
 
     _checkTotemProtection(r, c) {
