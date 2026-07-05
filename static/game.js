@@ -304,6 +304,7 @@ const FEAT_DEFS = [
     { id:'sixty_nine_better', cat:'original', name:'69 Better',       desc:'Find the secret 67 code',                 iconKey:'fun',     secret:true },
     { id:'ultrakill',      cat:'original',  name:'Progression is Dead', desc:'Points are fuel\nBoards are full',      iconKey:'secret',  secret:true },
     { id:'edgelord_phase', cat:'original',  name:"it's just a phase", desc:'Unlock the black theme',                  iconKey:'secret',  secret:true },
+    { id:'tsar_mimba_bought', cat:'original', name:'The biggest boom known to minekind', desc:'bought the Tsar mimba!', iconKey:'secret', secret:true },
 ];
 
 /* ── SOUND ENGINE ───────────────────────────────────────────── */
@@ -981,7 +982,7 @@ class Minesweeper {
             case 'hopeless_15': return (f.bestScratchLossStreak||0) >= 15 || (f.scratchLossStreak||0) >= 15;
             case 'hopeless_20': return (f.bestScratchLossStreak||0) >= 20 || (f.scratchLossStreak||0) >= 20;
             case 'big_shot':   return this.ownedThemes.includes('spamton');
-            case 'circle_board': case 'score_69': case 'ultrakill': case 'ting': case 'edgelord_phase': case 'sixty_nine_better':
+            case 'circle_board': case 'score_69': case 'ultrakill': case 'ting': case 'edgelord_phase': case 'sixty_nine_better': case 'tsar_mimba_bought':
                 return c[id] === true;
         }
         return false;
@@ -2251,7 +2252,9 @@ class Minesweeper {
         }
     }
     _pickRandomMine() {
-        const ids = ALL_MINE_IDS;
+        /* Legendary mines never appear in the normal shop inventory —
+         * they're only obtainable via the Slot Machine.               */
+        const ids = ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary');
         const weights = ids.map(id => this._mineRarityWeight(id));
         const total = weights.reduce((s,w) => s+w, 0);
         let r = Math.random() * total;
@@ -2332,6 +2335,7 @@ class Minesweeper {
             id: mineId, charges: def.maxCharges, maxCharges: def.maxCharges,
             boardPlacedCount: 0
         });
+        if (mineId === 'tsar_mimba') this._unlockSecret('tsar_mimba_bought');
         this.renderMineHud();
         this.saveCurrentToSlot(this.currentSlot);
         return true;
@@ -2363,7 +2367,8 @@ class Minesweeper {
                     const boardUsed = mine.boardPlacedCount >= (this._getMineMaxPerBoard(mine.id));
                     slot.className = `mine-slot${depleted ? ' depleted' : ''}${boardUsed && !depleted ? ' active-board-used' : ''}`;
                     slot.dataset.slotIndex = i;
-                    slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span></div><span class="mine-slot-name">${def.name}</span>`;
+                    const counterHtml = def.passive ? '' : `<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span>`;
+                    slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}${counterHtml}</div><span class="mine-slot-name">${def.name}</span>`;
                     /* Tap = info, double-tap = sell, hold-and-drag = place. */
                     this._bindMineTaps(slot, i);
                     this._bindMineDrag(slot, i);
@@ -2575,6 +2580,29 @@ class Minesweeper {
              * On a revealed tile (number/empty), it has no effect (whiff). */
             if (this.revealed[r] && this.revealed[r][c] && this.board[r][c] !== -1) {
                 /* Allow placement but it whiffs — handled in _executeMineEffect */
+            }
+        }
+        if (mine.id === 'pipe_mine' || mine.id === 'nuke_mimb') {
+            /* Both must be placed on an unopened tile. Placing on an
+             * already-revealed tile is an incorrect placement and ends
+             * the run immediately.                                       */
+            if (this.revealed[r] && this.revealed[r][c]) {
+                mine.charges--;
+                mine.boardPlacedCount++;
+                this._lastPlaceAt = now;
+                this.renderMineHud();
+                const badCell = this.getCell(r, c);
+                const rect = badCell ? badCell.getBoundingClientRect() : null;
+                const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
+                const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;
+                this.spawnExplosion(cx, cy, def.color, 18);
+                document.body.classList.add('runover-pulse');
+                setTimeout(() => document.body.classList.remove('runover-pulse'), 500);
+                this._spawnStyleTriggerText('Bad placement!', def.color);
+                this.sfx.play('mine');
+                this.saveCurrentToSlot(this.currentSlot);
+                setTimeout(() => { this.gameOver = true; this.endGame(); }, 550);
+                return;
             }
         }
 
@@ -3052,7 +3080,32 @@ class Minesweeper {
         for (let j = left; j <= right; j++) { this._voidCell(top, j); this._voidCell(bottom, j); }
         for (let i = top; i <= bottom; i++) { this._voidCell(i, left); this._voidCell(i, right); }
         this.boardRingInset++;
+        this._updateBoardClipPath();
         this._spawnStyleTriggerText('Board shrinks!', '#3F51B5', 'tsar_fx');
+    }
+
+    /* ── Visually shrinks the board's own card/background — not just the
+     * individual voided cells — so Tsar Mimba and Circle Mine feel like
+     * they're physically trimming the play area down.                    */
+    _updateBoardClipPath() {
+        const board = document.getElementById('game-board');
+        if (!board) return;
+        const CELL_PITCH = 32; /* 28px cell + 4px gap */
+        const PAD = 14;
+        if (this.circleMode) {
+            const cr = (this.rows - 1) / 2, cc = (this.cols - 1) / 2;
+            const radius = Math.min(cr, cc) * 0.95;
+            const radiusPx = radius * CELL_PITCH + PAD;
+            board.style.clipPath = `circle(${radiusPx}px at 50% 50%)`;
+            board.style.borderRadius = '50%';
+        } else if (this.boardRingInset > 0) {
+            const insetPx = this.boardRingInset * CELL_PITCH;
+            board.style.clipPath = `inset(${insetPx}px round 22px)`;
+            board.style.borderRadius = '';
+        } else {
+            board.style.clipPath = '';
+            board.style.borderRadius = '';
+        }
     }
     _voidCell(r, c) {
         if (!this.voidedCells) this.voidedCells = new Set();
@@ -3621,6 +3674,10 @@ class Minesweeper {
         this.dormantMines = [];
         this.tsarArmed = false;
         this.diffusalCountdown = null;
+        /* Diffusal Mine resets each board (unlike Totem, which is a
+         * once-per-run consumable) so it can protect the player again
+         * on a later board provided they still own it.                */
+        this.bannedMineIds = (this.bannedMineIds || []).filter(id => id !== 'diffusal_mine');
         this.scrollX=0; this.scrollY=0; this.zoomLevel=1; this._zoomTarget=1; this._zoomAnimating=false;
         if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval=null; }
 
@@ -3631,6 +3688,8 @@ class Minesweeper {
         const gb = document.getElementById('game-board');
         gb.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
         gb.style.transform = 'scale(1)';
+        gb.style.clipPath = '';
+        gb.style.borderRadius = '';
         document.getElementById('zoom-level').textContent = '100%';
         this.updateCellFontSize(); this.updateBoardPosition();
         document.getElementById('dig-btn').classList.add('active');
@@ -3855,9 +3914,13 @@ class Minesweeper {
             this._checkKickstart(r, c);
         }
         this.sfx.play('dig');
-        const res = this.styleMeter.onAction('dig');
-        if (res && res.hit69) this._unlockSecret('score_69');
-        this.boardStyleScore = this.styleMeter.getScore();
+        /* By default the guaranteed-safe first click of a board grants no
+         * Style — only the Kickstart Mine (handled above) makes it count. */
+        if (!wasFirstClick) {
+            const res = this.styleMeter.onAction('dig');
+            if (res && res.hit69) this._unlockSecret('score_69');
+            this.boardStyleScore = this.styleMeter.getScore();
+        }
         this.reveal(r, c);
         /* Auto-switch to flag mode after revealing a zero/empty tile (cascade).
          * Skipped on the very first click so the player can keep digging the
@@ -4167,7 +4230,10 @@ class Minesweeper {
     _toggleCircleMode() {
         this.circleMode = !this.circleMode;
         if (this.circleMode) { this._unlockSecret('circle_board'); this._applyCircleMode(); }
-        else { document.querySelectorAll('.cell.circle-void').forEach(c => c.classList.remove('circle-void')); }
+        else {
+            document.querySelectorAll('.cell.circle-void').forEach(c => c.classList.remove('circle-void'));
+            this._updateBoardClipPath();
+        }
     }
     _applyCircleMode() {
         const cr = (this.rows-1)/2, cc = (this.cols-1)/2;
@@ -4177,6 +4243,7 @@ class Minesweeper {
             const cell = this.getCell(i, j);
             if (cell) cell.classList.toggle('circle-void', dist > radius);
         }
+        this._updateBoardClipPath();
     }
 
     /* ══ EASTER EGGS ═══════════════════════════════════════════ */
