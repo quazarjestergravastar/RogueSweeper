@@ -508,23 +508,26 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .juicy-btn { position: relative; transition: transform .12s, box-shadow .12s; -webkit-tap-highlight-color: transparent; }
 .juicy-btn:active { transform: scale(.93); }
 
-/* Hold-to-confirm progress ring — overlaid on any .juicy-btn while
- * being pressed and held. Fills clockwise over HoldConfirm.duration. */
+/* Hold-to-confirm progress outline — traces the button's own
+ * rounded-rect border while pressed and held, sweeping clockwise
+ * from the top over HoldConfirm.duration. */
 .hold-confirm-ring {
-    position: absolute; inset: -3px;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute; inset: 0;
+    display: block;
     pointer-events: none; z-index: 5;
 }
 .hold-confirm-ring svg {
-    width: 100%; height: 100%; transform: rotate(-90deg);
+    position: absolute; top: 0; left: 0;
+    transform: rotate(-90deg);
+    transform-origin: center;
     overflow: visible;
 }
 .hold-confirm-ring .hcr-track {
-    fill: none; stroke: rgba(0,0,0,.12); stroke-width: 2.5;
+    fill: none; stroke: rgba(0,0,0,.12);
 }
 body.dark-mode .hold-confirm-ring .hcr-track { stroke: rgba(255,255,255,.18); }
 .hold-confirm-ring .hcr-fill {
-    fill: none; stroke: var(--accent, #4CAF50); stroke-width: 2.5;
+    fill: none; stroke: var(--accent, #4CAF50);
     stroke-linecap: round;
     transition: stroke-dashoffset .03s linear;
 }

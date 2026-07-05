@@ -115,24 +115,62 @@ const HoldConfirm = {
         if (!ring) {
             ring = document.createElement('span');
             ring.className = 'hold-confirm-ring';
-            ring.innerHTML = `<svg viewBox="0 0 36 36"><circle class="hcr-track" cx="18" cy="18" r="15.5"/><circle class="hcr-fill" cx="18" cy="18" r="15.5"/></svg>`;
+            ring.innerHTML = `<svg><rect class="hcr-track"/><rect class="hcr-fill"/></svg>`;
             el.appendChild(ring);
         }
         return ring;
     },
+    /* Sizes the outline rect to exactly trace the button's own
+     * rounded-rect border, then returns its perimeter so the caller
+     * can drive stroke-dasharray/-dashoffset for the fill sweep. */
+    _perimeter(el) {
+        const w = el.offsetWidth, h = el.offsetHeight;
+        const cs = getComputedStyle(el);
+        let r = parseFloat(cs.borderRadius) || 0;
+        r = Math.max(0, Math.min(r, w / 2, h / 2));
+        const sw = 3;
+        const inset = sw / 2;
+        const rectW = Math.max(0, w - sw), rectH = Math.max(0, h - sw);
+        const rectR = Math.max(0, r - inset);
+        const ring = el.querySelector(':scope > .hold-confirm-ring');
+        const svg = ring && ring.querySelector('svg');
+        if (svg) {
+            svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+            svg.setAttribute('width', w);
+            svg.setAttribute('height', h);
+            [svg.querySelector('.hcr-track'), svg.querySelector('.hcr-fill')].forEach(rect => {
+                if (!rect) return;
+                rect.setAttribute('x', inset);
+                rect.setAttribute('y', inset);
+                rect.setAttribute('width', rectW);
+                rect.setAttribute('height', rectH);
+                rect.setAttribute('rx', rectR);
+                rect.setAttribute('ry', rectR);
+                rect.setAttribute('stroke-width', sw);
+            });
+        }
+        return 2 * rectW + 2 * rectH - 8 * rectR + 2 * Math.PI * rectR;
+    },
     start(el, pointerId) {
         if (this._states.has(el)) return;
         try { el.setPointerCapture(pointerId); } catch (e) {}
+        if (this.duration <= 0) {
+            /* Instant mode: no hold required, fire right away like a normal click. */
+            const state = { pointerId, startTime: performance.now(), raf: null, fired: false };
+            this._states.set(el, state);
+            this._fire(el);
+            return;
+        }
         const ring = this._ensureRing(el);
         const fillEl = ring.querySelector('.hcr-fill');
-        const CIRC = 2 * Math.PI * 15.5;
-        if (fillEl) { fillEl.style.strokeDasharray = `${CIRC}`; fillEl.style.strokeDashoffset = `${CIRC}`; }
+        const perimeter = this._perimeter(el);
+        if (fillEl) { fillEl.style.strokeDasharray = `${perimeter}`; fillEl.style.strokeDashoffset = `${perimeter}`; }
         el.classList.add('hold-confirming');
         const state = { pointerId, startTime: performance.now(), raf: null, fired: false };
         this._states.set(el, state);
         const tick = (now) => {
             const t = Math.min(1, (now - state.startTime) / Math.max(1, this.duration));
-            if (fillEl) fillEl.style.strokeDashoffset = `${CIRC * (1 - t)}`;
+            if (fillEl) fillEl.style.strokeDashoffset = `${perimeter * (1 - t)}`;
             if (t >= 1) { this._fire(el); return; }
             state.raf = requestAnimationFrame(tick);
         };
@@ -1658,7 +1696,7 @@ class Minesweeper {
         const hcSlider  = document.getElementById('hold-confirm-duration-slider');
         const hcDisplay = document.getElementById('hold-confirm-duration-display');
         if (hcSlider)  hcSlider.value = holdMs;
-        if (hcDisplay) hcDisplay.textContent = `${(holdMs/1000).toFixed(1)}s`;
+        if (hcDisplay) hcDisplay.textContent = holdMs <= 0 ? 'Instant' : `${(holdMs/1000).toFixed(1)}s`;
     }
 
     /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
@@ -3516,7 +3554,7 @@ class Minesweeper {
             const ms = parseInt(hcSlider.value, 10);
             if (window.HoldConfirm) window.HoldConfirm.duration = ms;
             localStorage.setItem('ms_hold_confirm_ms', ms);
-            if (hcDisplay) hcDisplay.textContent = `${(ms/1000).toFixed(1)}s`;
+            if (hcDisplay) hcDisplay.textContent = ms <= 0 ? 'Instant' : `${(ms/1000).toFixed(1)}s`;
         });
 
         /* Save Files */
