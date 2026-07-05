@@ -19,7 +19,7 @@ const SPRITE_FILES = {
     mine_mine:'mine-mine', trench_mine:'trench-mine', grenade_mine:'grenade-mine',
     totem_mine:'totem-mine', fractal_mine:'fractal-mine',
     kickstart_mine:'kickstart-mine', diffusal_mine:'diffusal-mine', pipe_mine:'pipe-mine',
-    circle_mine:'circle-mine', nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
+    nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
     feat_level:'feat-level', feat_level_hi:'feat-level-hi',
@@ -189,16 +189,6 @@ const MINE_DEFS = {
         trigger: 'On placement once Style rank B+ is reached',
         limit: '1 time per board',
         icon: () => Sprites.pipe_mine
-    },
-    circle_mine: {
-        id: 'circle_mine', name: 'Circle Mine', cost: 350,
-        color: '#E91E63', maxCharges: 1, placesPerBoard: 1,
-        rarity: 'rare', passive: true,
-        requirement: 'None',
-        effect: 'Warps the board into a circular play area the instant the board starts, voiding out the corners permanently for the rest of the board.',
-        trigger: 'Passive — activates automatically at the start of each board',
-        limit: '1 time per board',
-        icon: () => Sprites.circle_mine
     },
     nuke_mimb: {
         id: 'nuke_mimb', name: 'Nuke Mimb', cost: 500,
@@ -2252,9 +2242,11 @@ class Minesweeper {
         }
     }
     _pickRandomMine() {
-        /* Legendary mines never appear in the normal shop inventory —
-         * they're only obtainable via the Slot Machine.               */
-        const ids = ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary');
+        /* Legendary mines normally never appear in the normal shop
+         * inventory — they're only obtainable via the Slot Machine —
+         * unless the player has redeemed the infinite-coins cheat code,
+         * in which case legendaries are also allowed to show up here.   */
+        const ids = this.infiniteCoins ? ALL_MINE_IDS.slice() : ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary');
         const weights = ids.map(id => this._mineRarityWeight(id));
         const total = weights.reduce((s,w) => s+w, 0);
         let r = Math.random() * total;
@@ -2408,7 +2400,7 @@ class Minesweeper {
             mine_mine: 1, trench_mine: 2, grenade_mine: 1,
             totem_mine: 1, fractal_mine: 1,
             kickstart_mine: 1, diffusal_mine: 1, pipe_mine: 1,
-            circle_mine: 1, nuke_mimb: 1, tsar_mimba: 1,
+            nuke_mimb: 1, tsar_mimba: 1,
         };
         return limits[mineId] || 1;
     }
@@ -3694,23 +3686,6 @@ class Minesweeper {
 
         /* Show style meter */
         this.styleMeter.reset(); this.styleMeter.show();
-
-        /* Circle Mine: passive, warps the board into a circle the instant
-         * the board starts (no manual placement needed).                  */
-        this._checkCirclePassive();
-    }
-
-    _checkCirclePassive() {
-        const idx = this.playerMines.findIndex(m => m.id === 'circle_mine' && m.charges > 0 && !this.bannedMineIds.includes('circle_mine'));
-        if (idx === -1) return;
-        const mine = this.playerMines[idx];
-        mine.charges--;
-        this.renderMineHud();
-        this._applyCircleMode();
-        this._unlockSecret && this._unlockSecret('circle_board');
-        this.spawnExplosion(window.innerWidth/2, window.innerHeight/2, '#E91E63', 16);
-        this._spawnStyleTriggerText('Circle!', '#E91E63');
-        this.sfx.play('mine_place');
     }
 
     renderBoard() {
