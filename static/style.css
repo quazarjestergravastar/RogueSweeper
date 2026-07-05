@@ -160,9 +160,9 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── MENU SCREEN ─────────────────────────────────────────── */
 .menu-screen {
     position: absolute; inset: 0;
-    display: flex; flex-direction: column; gap: 10px;
-    padding: 16px 16px max(20px, env(safe-area-inset-bottom, 20px));
-    padding-top: max(16px, env(safe-area-inset-top, 16px));
+    display: flex; flex-direction: column; gap: clamp(5px, 1.4vh, 10px);
+    padding: 12px 16px max(14px, env(safe-area-inset-bottom, 14px));
+    padding-top: max(10px, env(safe-area-inset-top, 10px));
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -172,21 +172,22 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── TITLE ───────────────────────────────────────────────── */
 .title-section {
     display: flex; align-items: flex-start; justify-content: space-between;
-    padding: 4px 0 0; flex-shrink: 0;
+    padding: 2px 0 0; flex-shrink: 0;
 }
 .title-block { flex: 1; min-width: 0; }
-.title-row { position: relative; display: inline-block; max-width: 100%; }
+.title-row { position: relative; display: block; max-width: 100%; padding-right: 16px; box-sizing: border-box; }
 .game-title {
-    font-size: 1.95rem; font-weight: 900; letter-spacing: .06em;
+    font-size: clamp(1.15rem, 6.8vw, 1.95rem); font-weight: 900; letter-spacing: .04em;
     text-transform: uppercase; color: var(--text); line-height: 1.05;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%; display: block;
 }
 .game-subtitle {
     font-size: .67rem; font-weight: 600; letter-spacing: .13em;
-    text-transform: uppercase; color: var(--text-muted); margin-top: 3px;
+    text-transform: uppercase; color: var(--text-muted); margin-top: 2px;
 }
 .update-tag-btn {
-    position: absolute; top: -5px; right: -13px;
+    position: absolute; top: -3px; right: -2px;
     width: 18px; height: 18px; border-radius: 50%;
     background: var(--accent); color: var(--accent-t);
     display: flex; align-items: center; justify-content: center;
@@ -212,7 +213,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 
 /* ── POINTS DISPLAY ──────────────────────────────────────── */
-.points-section { padding: 10px 14px; }
+.points-section { padding: 7px 14px; }
 .points-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .points-badge {
     display: flex; align-items: center; gap: 3px;
@@ -231,14 +232,14 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 
 /* ── DIFFICULTY GRID ─────────────────────────────────────── */
 .difficulty-grid {
-    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
-    padding: 12px; flex-shrink: 0; transition: opacity .25s;
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 6px;
+    padding: 9px; flex-shrink: 0; transition: opacity .25s;
 }
 .difficulty-grid.run-locked { opacity: .45; pointer-events: none; }
 
 .diff-box {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 6px; padding: 10px 6px 8px;
+    gap: 4px; padding: 7px 6px 6px;
     background: var(--diff-bg); border-radius: 16px;
     cursor: pointer; user-select: none;
     transition: background .18s, transform .12s;
@@ -248,21 +249,21 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .diff-box:active { transform: scale(.92); }
 
 .diff-icon-wrap {
-    width: 40px; height: 40px; border-radius: 50%;
+    width: 34px; height: 34px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 1.05rem; color: #fff; font-weight: 900;
 }
 .diff-icon-wrap[data-themed-diff] { background: transparent; }
-.diff-icon-wrap[data-themed-diff] svg { width: 40px; height: 40px; display: block; }
+.diff-icon-wrap[data-themed-diff] svg { width: 34px; height: 34px; display: block; }
 .soon-wrap   { background: #ccc; font-size: .9rem; color: #888; }
 .diff-name { font-size: .63rem; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); text-transform: uppercase; }
 .diff-box.diff-soon { opacity: .5; }
 
 /* ── CAROUSEL ────────────────────────────────────────────── */
-.board-carousel-section { padding: 12px 10px 10px; flex-shrink: 0; }
+.board-carousel-section { padding: 9px 10px 8px; flex-shrink: 0; }
 .carousel-header {
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px; padding: 0 4px;
+    margin-bottom: 6px; padding: 0 4px;
 }
 .carousel-label { font-size: .6rem; font-weight: 800; letter-spacing: .1em; color: var(--text-muted); text-transform: uppercase; }
 .carousel-counter { font-size: .6rem; font-weight: 700; color: var(--text-muted); }
@@ -304,7 +305,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .carousel-wrapper.slide-prev .slot-right  { animation-delay: .03s; }
 
 .board-card {
-    width: 100%; height: 104px; border-radius: 16px;
+    width: 100%; height: 90px; border-radius: 16px;
     background: var(--card); border: 2px solid var(--border);
     display: flex; flex-direction: column; align-items: center;
     justify-content: flex-start; overflow: hidden; text-align: center;
@@ -312,7 +313,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     transition: border-color .2s, background .3s; position: relative;
 }
 .slot-center .board-card {
-    height: 118px; border-radius: 18px;
+    height: 100px; border-radius: 18px;
     box-shadow: inset 0 -9px 18px rgba(0,0,0,.055), 0 0 0 1px rgba(255,255,255,.32);
 }
 .board-card.is-locked { opacity: .52; }
@@ -328,15 +329,15 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .slot-center .card-band { font-size: .6rem; padding: 6px 0 5px; }
 .card-num {
     font-family: 'Nunito', var(--sys-font);
-    font-size: 1.8rem; font-weight: 900; margin-top: 5px; line-height: 1;
+    font-size: 1.5rem; font-weight: 900; margin-top: 3px; line-height: 1;
     color: var(--text-muted);
 }
-.slot-center .card-num { font-size: 2.2rem; margin-top: 8px; }
+.slot-center .card-num { font-size: 1.8rem; margin-top: 5px; }
 .card-dims {
-    font-size: .58rem; font-weight: 700; color: var(--text-muted);
-    margin-top: 4px; letter-spacing: .04em;
+    font-size: .55rem; font-weight: 700; color: var(--text-muted);
+    margin-top: 3px; letter-spacing: .04em;
 }
-.slot-center .card-dims { font-size: .66rem; margin-top: 5px; }
+.slot-center .card-dims { font-size: .62rem; margin-top: 3px; }
 .card-rank-badge {
     position: absolute; top: 5px; right: 7px;
     width: 26px; height: 26px; border-radius: 9px;
@@ -353,7 +354,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── CAROUSEL DOTS ───────────────────────────────────────── */
 .carousel-dots {
     display: flex; justify-content: center; align-items: center;
-    gap: 5px; margin-top: 10px;
+    gap: 5px; margin-top: 6px;
 }
 .carousel-dot {
     width: 6px; height: 6px; border-radius: 99px;
@@ -453,7 +454,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── COUNTERS ────────────────────────────────────────────── */
 .counters-row {
     display: flex; align-items: stretch; justify-content: space-around;
-    padding: 10px 0; flex-shrink: 0;
+    padding: 7px 0; flex-shrink: 0;
 }
 .counter-item { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; }
 .counter-label { font-size: .58rem; font-weight: 800; letter-spacing: .1em; color: var(--text-muted); text-transform: uppercase; }
@@ -462,41 +463,32 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── PLAY ROW ────────────────────────────────────────────── */
 .play-row { display: flex; gap: 10px; flex-shrink: 0; }
 .play-btn {
-    flex: 1; height: 52px; border-radius: var(--r-btn);
+    flex: 1; height: 46px; border-radius: var(--r-btn);
     background: var(--btn-dark); color: var(--btn-dark-t);
     font-size: .85rem; font-weight: 800; letter-spacing: .1em;
 }
 .play-btn.greyed { opacity: .38; }
 .continue-btn {
-    flex: 1; height: 52px; border-radius: var(--r-btn);
+    flex: 1; height: 46px; border-radius: var(--r-btn);
     background: var(--accent); color: #fff;
     font-size: .85rem; font-weight: 800; letter-spacing: .1em;
 }
 .abort-btn {
-    flex: 1; height: 52px; border-radius: var(--r-btn);
+    flex: 1; height: 46px; border-radius: var(--r-btn);
     background: #e53935; color: #fff;
     font-size: .85rem; font-weight: 800; letter-spacing: .1em;
 }
 
 /* ── EXTRAS ROW ──────────────────────────────────────────── */
-.extras-row { display: flex; gap: 10px; flex-shrink: 0; }
-.extra-btn, .feats-btn {
-    flex: 1; height: 48px; border-radius: var(--r-btn);
+.extras-row { display: flex; gap: 8px; flex-shrink: 0; }
+.extra-btn, .feats-btn, .collection-btn {
+    flex: 1; height: 42px; border-radius: var(--r-btn);
     background: var(--card); color: var(--text2);
-    font-size: .73rem; font-weight: 800; letter-spacing: .1em;
+    font-size: .66rem; font-weight: 800; letter-spacing: .06em;
     box-shadow: 0 2px 8px var(--card-shadow);
     border: 1.5px solid var(--border);
     position: relative;
 }
-.collection-btn {
-    flex: 1; height: 48px; border-radius: var(--r-btn);
-    background: var(--card); color: var(--text2);
-    font-size: .73rem; font-weight: 800; letter-spacing: .1em;
-    box-shadow: 0 2px 8px var(--card-shadow);
-    border: 1.5px solid var(--border);
-    position: relative;
-}
-
 /* Notification dot */
 .notif-dot {
     display: inline-block; width: 7px; height: 7px; border-radius: 50%;
