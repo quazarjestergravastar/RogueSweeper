@@ -71,27 +71,27 @@
             </div>
 
             <div class="difficulty-grid juicy-card" id="difficulty-grid">
-                <div class="diff-box" id="diff-easy">
+                <div class="diff-box juicy-btn" id="diff-easy">
                     <div class="diff-icon-wrap" data-themed-diff="easy"></div>
                     <span class="diff-name" data-text="easy">Easy</span>
                 </div>
-                <div class="diff-box" id="diff-normal">
+                <div class="diff-box juicy-btn" id="diff-normal">
                     <div class="diff-icon-wrap" data-themed-diff="normal"></div>
                     <span class="diff-name" data-text="normal">Normal</span>
                 </div>
-                <div class="diff-box diff-locked" id="diff-hard">
+                <div class="diff-box diff-locked juicy-btn" id="diff-hard">
                     <div class="diff-icon-wrap" data-themed-diff="hard"></div>
                     <span class="diff-name" data-text="hard">Hard</span>
                 </div>
-                <div class="diff-box diff-soon" id="diff-cs1">
+                <div class="diff-box diff-soon juicy-btn" id="diff-cs1">
                     <div class="diff-icon-wrap soon-wrap">?</div>
                     <span class="diff-name">???</span>
                 </div>
-                <div class="diff-box diff-soon" id="diff-cs2">
+                <div class="diff-box diff-soon juicy-btn" id="diff-cs2">
                     <div class="diff-icon-wrap soon-wrap">?</div>
                     <span class="diff-name">???</span>
                 </div>
-                <div class="diff-box diff-soon" id="diff-cs3">
+                <div class="diff-box diff-soon juicy-btn" id="diff-cs3">
                     <div class="diff-icon-wrap soon-wrap">?</div>
                     <span class="diff-name">???</span>
                 </div>
@@ -390,6 +390,11 @@
                 <span class="sfx-slider-label">Particles</span>
                 <input type="range" class="sfx-slider" id="particle-amount-slider" min="0" max="100" value="100" step="5">
                 <span class="sfx-vol-value" id="particle-amount-display">100%</span>
+            </div>
+            <div class="sfx-slider-row">
+                <span class="sfx-slider-label">Hold-to-Confirm Duration</span>
+                <input type="range" class="sfx-slider" id="hold-confirm-duration-slider" min="300" max="2000" value="1000" step="100">
+                <span class="sfx-vol-value" id="hold-confirm-duration-display">1.0s</span>
             </div>
             <button class="save-file-open-btn juicy-btn" id="save-file-open-btn" data-text="saveFiles">Save Files</button>
             <div class="redeem-section">

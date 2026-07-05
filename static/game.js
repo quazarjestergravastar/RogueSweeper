@@ -73,6 +73,120 @@ Sprites.preload = async function() {
     await Promise.all(fetches);
 };
 
+/* ── HOLD-TO-CONFIRM ────────────────────────────────────────────
+ * Menu-navigation buttons (`.juicy-btn`, minus an explicit exclude
+ * list of gameplay/board controls) require a press-and-hold of
+ * `HoldConfirm.duration` ms before their click actually fires. A
+ * circular progress ring is shown on the button while held.
+ *
+ * Design notes:
+ *  - We block the browser's normal 'click' entirely for opted-in
+ *    buttons (capture-phase listener) unless it was synthesized by
+ *    us after a completed hold (flagged via a one-shot WeakSet).
+ *  - `setPointerCapture` is used during the hold so the eventual
+ *    pointerup/click always targets the ORIGINAL button, even if a
+ *    new screen/modal renders underneath the finger mid-hold. This
+ *    is what fixes the "tap-release leaks onto the newly-opened
+ *    menu" bug — the input is consumed by the element that started
+ *    the gesture and can never bubble into freshly-rendered UI.
+ *  - A short global "swallow" window after firing also suppresses
+ *    any stray pointerdown/click that manages to land immediately
+ *    after, as an extra safety net on browsers/devices where pointer
+ *    capture compatibility events aren't fully redirected.          */
+const HoldConfirm = {
+    duration: 1000,
+    EXCLUDE_SELECTOR: '.mode-btn, .zoom-btn, .slot-spin-btn, .slot-stop-btn, .mm-shop-reroll-btn, .hold-hide-btn, [data-no-hold-confirm]',
+    _states: new WeakMap(),
+    _allowedClicks: new WeakSet(),
+    _swallowUntil: 0,
+
+    matches(el) {
+        return el && el.matches && el.matches('.juicy-btn') && !el.matches(this.EXCLUDE_SELECTOR);
+    },
+    closestTarget(node) {
+        while (node && node !== document) {
+            if (this.matches(node)) return node;
+            node = node.parentElement;
+        }
+        return null;
+    },
+    _ensureRing(el) {
+        let ring = el.querySelector(':scope > .hold-confirm-ring');
+        if (!ring) {
+            ring = document.createElement('span');
+            ring.className = 'hold-confirm-ring';
+            ring.innerHTML = `<svg viewBox="0 0 36 36"><circle class="hcr-track" cx="18" cy="18" r="15.5"/><circle class="hcr-fill" cx="18" cy="18" r="15.5"/></svg>`;
+            el.appendChild(ring);
+        }
+        return ring;
+    },
+    start(el, pointerId) {
+        if (this._states.has(el)) return;
+        try { el.setPointerCapture(pointerId); } catch (e) {}
+        const ring = this._ensureRing(el);
+        const fillEl = ring.querySelector('.hcr-fill');
+        const CIRC = 2 * Math.PI * 15.5;
+        if (fillEl) { fillEl.style.strokeDasharray = `${CIRC}`; fillEl.style.strokeDashoffset = `${CIRC}`; }
+        el.classList.add('hold-confirming');
+        const state = { pointerId, startTime: performance.now(), raf: null, fired: false };
+        this._states.set(el, state);
+        const tick = (now) => {
+            const t = Math.min(1, (now - state.startTime) / Math.max(1, this.duration));
+            if (fillEl) fillEl.style.strokeDashoffset = `${CIRC * (1 - t)}`;
+            if (t >= 1) { this._fire(el); return; }
+            state.raf = requestAnimationFrame(tick);
+        };
+        state.raf = requestAnimationFrame(tick);
+    },
+    _fire(el) {
+        const state = this._states.get(el);
+        if (!state || state.fired) return;
+        state.fired = true;
+        if (state.raf) cancelAnimationFrame(state.raf);
+        this._allowedClicks.add(el);
+        this._swallowUntil = performance.now() + 260;
+        try { el.click(); } catch (e) {}
+        this.cancel(el);
+    },
+    cancel(el) {
+        const state = this._states.get(el);
+        if (state && state.raf) cancelAnimationFrame(state.raf);
+        this._states.delete(el);
+        el.classList.remove('hold-confirming');
+        const ring = el.querySelector(':scope > .hold-confirm-ring');
+        if (ring) ring.remove();
+    },
+    init() {
+        document.addEventListener('pointerdown', e => {
+            if (e.button !== undefined && e.button !== 0) return;
+            if (performance.now() < this._swallowUntil) { e.preventDefault(); e.stopPropagation(); return; }
+            const el = this.closestTarget(e.target);
+            if (el) this.start(el, e.pointerId);
+        }, true);
+        const endHandler = e => {
+            const el = this.closestTarget(e.target) || [...document.querySelectorAll('.hold-confirming')][0];
+            if (el && this._states.has(el)) this.cancel(el);
+        };
+        document.addEventListener('pointerup', endHandler, true);
+        document.addEventListener('pointercancel', endHandler, true);
+        document.addEventListener('pointerleave', e => {
+            /* Only cancel on leave if the pointer actually left the
+             * document/window, not just moved between child elements. */
+        }, true);
+        document.addEventListener('click', e => {
+            const el = this.closestTarget(e.target);
+            if (!el) {
+                if (performance.now() < this._swallowUntil) { e.preventDefault(); e.stopPropagation(); }
+                return;
+            }
+            if (this._allowedClicks.has(el)) { this._allowedClicks.delete(el); return; }
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }, true);
+    }
+};
+window.HoldConfirm = HoldConfirm;
+
 /* Inject the appropriate per-color difficulty SVG into every element
  * tagged with [data-themed-diff="easy|normal|hard"]. Hard uses the
  * locked gray variant when hardUnlocked is false.                      */
@@ -183,7 +297,7 @@ const MINE_DEFS = {
     pipe_mine: {
         id: 'pipe_mine', name: 'Pipe Mine', cost: 240,
         color: '#607D8B', maxCharges: 2, placesPerBoard: 1,
-        rarity: 'rare',
+        rarity: 'rare', passive: true,
         requirement: 'None to place — dormant until Style rank B',
         effect: 'Sits dormant on the board until Style rank reaches B, then tunnels a straight line through the board, safely revealing roughly a third of the remaining tiles along that line.',
         trigger: 'On placement once Style rank B+ is reached',
@@ -482,8 +596,16 @@ class FloatingBackground {
         this.init();
     }
     _getThemeColor() {
-        return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4CAF50';
+        /* getComputedStyle forces a style recalc — cache the result and
+         * only recompute when the theme actually changes (invalidated
+         * via invalidateThemeColor(), called from applyTheme/previewTheme)
+         * instead of on every single particle spawn (every 1.2-2.4s).    */
+        if (this._cachedThemeColor === undefined) {
+            this._cachedThemeColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4CAF50';
+        }
+        return this._cachedThemeColor;
     }
+    invalidateThemeColor() { this._cachedThemeColor = undefined; }
     _hexToRgb(hex) {
         const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,'#$1$1$2$2$3$3'));
         return r ? { r:parseInt(r[1],16), g:parseInt(r[2],16), b:parseInt(r[3],16) } : { r:100,g:160,b:200 };
@@ -653,12 +775,29 @@ class StyleMeter {
     }
     _update() {
         if (!this.el) return;
-        document.documentElement.style.setProperty('--sm-color', this.color);
-        if (this.rankLabel) this.rankLabel.textContent = this.rank;
-        if (this.scoreEl)  this.scoreEl.textContent = Math.floor(this.score);
+        /* Skip redundant DOM writes when nothing actually changed since
+         * the last frame — this runs at 60fps while the meter is active,
+         * so avoiding no-op style/text writes meaningfully cuts main
+         * thread + layout work during gameplay.                          */
+        if (this._lastColor !== this.color) {
+            document.documentElement.style.setProperty('--sm-color', this.color);
+            this._lastColor = this.color;
+        }
+        if (this.rankLabel && this._lastRank !== this.rank) {
+            this.rankLabel.textContent = this.rank;
+            this._lastRank = this.rank;
+        }
+        const scoreFloor = Math.floor(this.score);
+        if (this.scoreEl && this._lastScore !== scoreFloor) {
+            this.scoreEl.textContent = scoreFloor;
+            this._lastScore = scoreFloor;
+        }
         if (this.ringFill) {
             const offset = Math.max(0, Math.min(1, 1 - this.fill));
-            this.ringFill.style.strokeDashoffset = offset;
+            if (this._lastOffset !== offset) {
+                this.ringFill.style.strokeDashoffset = offset;
+                this._lastOffset = offset;
+            }
         }
     }
     getFinalRank() { return this.rank; }
@@ -1233,6 +1372,7 @@ class Minesweeper {
         document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
         Sprites.renderThemedDiff(key, this.hardUnlocked);
+        if (this.floatingBg) this.floatingBg.invalidateThemeColor();
     }
     previewTheme(key) {
         this._previewTheme = key;
@@ -1241,6 +1381,7 @@ class Minesweeper {
         document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
         Sprites.renderThemedDiff(key, this.hardUnlocked);
+        if (this.floatingBg) this.floatingBg.invalidateThemeColor();
     }
     revertPreview() { this._previewTheme = null; this.applyTheme(this.activeTheme); }
     selectTheme(key) {
@@ -1511,6 +1652,13 @@ class Minesweeper {
         this.autoFlagOnEmpty = (stored === null) ? true : (stored === 'true');
         const afEl = document.getElementById('auto-flag-empty-toggle');
         if (afEl) afEl.checked = this.autoFlagOnEmpty;
+
+        const holdMs = parseInt(localStorage.getItem('ms_hold_confirm_ms') ?? '1000', 10);
+        window.HoldConfirm && (window.HoldConfirm.duration = holdMs);
+        const hcSlider  = document.getElementById('hold-confirm-duration-slider');
+        const hcDisplay = document.getElementById('hold-confirm-duration-display');
+        if (hcSlider)  hcSlider.value = holdMs;
+        if (hcDisplay) hcDisplay.textContent = `${(holdMs/1000).toFixed(1)}s`;
     }
 
     /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
@@ -2361,13 +2509,17 @@ class Minesweeper {
                     slot.className = `mine-slot${depleted ? ' depleted' : ''}${boardUsed && !depleted ? ' active-board-used' : ''}`;
                     slot.dataset.slotIndex = i;
                     const counterHtml = def.passive ? '' : `<span class="mine-slot-counter">${mine.charges}/${mine.maxCharges}</span>`;
-                    slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}${counterHtml}</div><span class="mine-slot-name">${def.name}</span>`;
+                    /* Names removed — long mine names overlapped in the
+                     * compact HUD. Icons only; tap a slot for an info
+                     * popup showing the name/description instead.        */
+                    slot.title = def.name;
+                    slot.innerHTML = `<div class="mine-slot-icon-wrap" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}${counterHtml}</div>`;
                     /* Tap = info, double-tap = sell, hold-and-drag = place. */
                     this._bindMineTaps(slot, i);
                     this._bindMineDrag(slot, i);
                 } else {
                     slot.className = 'mine-slot empty-slot';
-                    slot.innerHTML = `<div class="mine-slot-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span class="mine-slot-name" style="opacity:.3">Empty</span>`;
+                    slot.innerHTML = `<div class="mine-slot-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>`;
                 }
                 slotsEl.appendChild(slot);
             }
@@ -3199,6 +3351,7 @@ class Minesweeper {
             this.scrollX = Math.max(0, (cw - scaledW) / 2);
             this.scrollY = Math.max(0, (ch - scaledH) / 2);
             this.updateBoardPosition();
+            this._refreshScrollDims();
         });
     }
 
@@ -3354,6 +3507,16 @@ class Minesweeper {
             localStorage.setItem('ms_particle_amount', v);
             if (pDisplay) pDisplay.textContent = `${Math.round(v*100)}%`;
             if (this.floatingBg) this.floatingBg.setParticleAmount(v);
+        });
+
+        /* Hold-to-Confirm duration */
+        const hcSlider = document.getElementById('hold-confirm-duration-slider');
+        const hcDisplay = document.getElementById('hold-confirm-duration-display');
+        if (hcSlider) hcSlider.addEventListener('input', () => {
+            const ms = parseInt(hcSlider.value, 10);
+            if (window.HoldConfirm) window.HoldConfirm.duration = ms;
+            localStorage.setItem('ms_hold_confirm_ms', ms);
+            if (hcDisplay) hcDisplay.textContent = `${(ms/1000).toFixed(1)}s`;
         });
 
         /* Save Files */
@@ -3571,7 +3734,7 @@ class Minesweeper {
                 this.zoomLevel += diff * 0.18;
                 this._zoomFrame = requestAnimationFrame(step);
             }
-            const board = document.getElementById('game-board');
+            const board = this._scrollBoardEl || document.getElementById('game-board');
             if (board) board.style.transform = `scale(${this.zoomLevel})`;
             const el = document.getElementById('zoom-level');
             if (el) el.textContent = Math.round(this.zoomLevel * 100) + '%';
@@ -3592,6 +3755,11 @@ class Minesweeper {
         const wrapper = document.getElementById('board-wrapper');
         newC.appendChild(wrapper);
         container.parentNode.replaceChild(newC, container);
+        this._refreshScrollDims();
+        if (!this._resizeListenerBound) {
+            this._resizeListenerBound = true;
+            window.addEventListener('resize', () => this._refreshScrollDims());
+        }
 
         const handleStart = (x, y) => {
             if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
@@ -3635,12 +3803,21 @@ class Minesweeper {
         };
         this.animationId = requestAnimationFrame(animate);
     }
-    clampScroll() {
+    _refreshScrollDims() {
+        /* Cache container + board natural dimensions so the hot
+         * drag/inertia/zoom loops don't force a synchronous layout
+         * read (clientWidth/offsetWidth) on every single frame.        */
         const container = document.getElementById('zoom-container');
         const board = document.getElementById('game-board');
-        if (!container || !board) return;
-        const cw=container.clientWidth, ch=container.clientHeight;
-        const bw=board.offsetWidth*this.zoomLevel, bh=board.offsetHeight*this.zoomLevel;
+        this._scrollContainerEl = container;
+        this._scrollBoardEl = board;
+        if (container) { this._containerW = container.clientWidth; this._containerH = container.clientHeight; }
+        if (board) { this._boardNaturalW = board.offsetWidth; this._boardNaturalH = board.offsetHeight; }
+    }
+    clampScroll() {
+        if (this._containerW === undefined || this._boardNaturalW === undefined) this._refreshScrollDims();
+        const cw = this._containerW, ch = this._containerH;
+        const bw = this._boardNaturalW * this.zoomLevel, bh = this._boardNaturalH * this.zoomLevel;
         const pad=40;
         if (bw < cw) {
             const center = (cw - bw) / 2;
@@ -3703,11 +3880,23 @@ class Minesweeper {
 
     renderBoard() {
         const gb = document.getElementById('game-board'); gb.innerHTML = '';
-        for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++) {
-            const cell = document.createElement('button');
-            cell.className = 'cell'; cell.dataset.row=i; cell.dataset.col=j;
-            gb.appendChild(cell);
+        /* Build the DOM off-screen in a fragment (single reflow on
+         * append) and cache every cell element in a 2D array so
+         * getCell() never has to re-query the DOM during gameplay.       */
+        const frag = document.createDocumentFragment();
+        this.cellEls = [];
+        for (let i=0; i<this.rows; i++) {
+            const rowArr = [];
+            for (let j=0; j<this.cols; j++) {
+                const cell = document.createElement('button');
+                cell.className = 'cell'; cell.dataset.row=i; cell.dataset.col=j;
+                frag.appendChild(cell);
+                rowArr.push(cell);
+            }
+            this.cellEls.push(rowArr);
         }
+        gb.appendChild(frag);
+        this._refreshScrollDims();
     }
     renderSavedState() {
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++) {
@@ -3728,6 +3917,19 @@ class Minesweeper {
         const gb = document.getElementById('game-board');
         const newGb = gb.cloneNode(true);
         gb.parentNode.replaceChild(newGb, gb);
+        /* cloneNode(true) duplicates the cell buttons too, so any
+         * previously cached cellEls now point at detached originals —
+         * rebuild the cache from the live clone's children in one pass. */
+        if (this.cellEls) {
+            const liveCells = newGb.children;
+            let idx = 0;
+            for (let i=0; i<this.rows; i++) {
+                for (let j=0; j<this.cols; j++) {
+                    if (this.cellEls[i]) this.cellEls[i][j] = liveCells[idx];
+                    idx++;
+                }
+            }
+        }
 
         /* Unified pointer-event handling.
            The tap action fires on pointerdown via a one-frame microdefer so a
@@ -4167,7 +4369,14 @@ class Minesweeper {
         return true;
     }
 
-    getCell(r, c) { return document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`); }
+    getCell(r, c) {
+        /* Cached 2D lookup instead of a fresh attribute-selector query
+         * every call — getCell is invoked heavily during cascades,
+         * explosions and mine effects, so this avoids re-scanning the
+         * DOM (up to hundreds of cells on Hard boards) each time.       */
+        if (this.cellEls && this.cellEls[r] && this.cellEls[r][c]) return this.cellEls[r][c];
+        return document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    }
     playCellFx(cell, cls) {
         if (!cell) return;
         cell.classList.remove(cls); void cell.offsetWidth; cell.classList.add(cls);
@@ -4278,4 +4487,4 @@ class Minesweeper {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => new Minesweeper());
+document.addEventListener('DOMContentLoaded', () => { HoldConfirm.init(); new Minesweeper(); });

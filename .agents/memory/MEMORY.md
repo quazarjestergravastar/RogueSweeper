@@ -1,1 +1,1 @@
-- [RogueSweeper testing gotcha](roguesweeper-testing.md) — screenshot tool does a fresh page load each time, so the loading screen % looks "stuck" across separate screenshots; not a bug.
+- [Hold-to-confirm UI pattern](hold-to-confirm.md) — generic delegated press-and-hold gate for menu buttons; use setPointerCapture to prevent release leaking to newly-opened menus.

@@ -505,8 +505,30 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 
 /* ── JUICY BUTTON ────────────────────────────────────────── */
-.juicy-btn { transition: transform .12s, box-shadow .12s; -webkit-tap-highlight-color: transparent; }
+.juicy-btn { position: relative; transition: transform .12s, box-shadow .12s; -webkit-tap-highlight-color: transparent; }
 .juicy-btn:active { transform: scale(.93); }
+
+/* Hold-to-confirm progress ring — overlaid on any .juicy-btn while
+ * being pressed and held. Fills clockwise over HoldConfirm.duration. */
+.hold-confirm-ring {
+    position: absolute; inset: -3px;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 5;
+}
+.hold-confirm-ring svg {
+    width: 100%; height: 100%; transform: rotate(-90deg);
+    overflow: visible;
+}
+.hold-confirm-ring .hcr-track {
+    fill: none; stroke: rgba(0,0,0,.12); stroke-width: 2.5;
+}
+body.dark-mode .hold-confirm-ring .hcr-track { stroke: rgba(255,255,255,.18); }
+.hold-confirm-ring .hcr-fill {
+    fill: none; stroke: var(--accent, #4CAF50); stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset .03s linear;
+}
+.juicy-btn.hold-confirming { transform: scale(.96); }
 
 /* ── POP ANIMATION ───────────────────────────────────────── */
 @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.18)} 100%{transform:scale(1)} }
@@ -751,11 +773,6 @@ body.dark-mode .sm-ring-bg {
     border-radius: 6px; padding: 1px 4px; line-height: 1.2;
     font-family: 'Nunito', var(--sys-font);
     border: 1.5px solid var(--card);
-}
-.mine-slot-name {
-    font-size: .42rem; font-weight: 800; letter-spacing: .05em;
-    text-align: center; color: var(--text-muted); text-transform: uppercase;
-    line-height: 1; white-space: nowrap;
 }
 .mine-slot.empty-slot .mine-slot-icon-wrap {
     background: var(--diff-bg);
