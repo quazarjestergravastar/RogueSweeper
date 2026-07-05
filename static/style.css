@@ -174,24 +174,25 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     display: flex; align-items: flex-start; justify-content: space-between;
     padding: 4px 0 0; flex-shrink: 0;
 }
-.title-block { flex: 1; }
-.title-row { display: flex; align-items: center; gap: 8px; }
+.title-block { flex: 1; min-width: 0; }
+.title-row { position: relative; display: inline-block; max-width: 100%; }
 .game-title {
     font-size: 1.95rem; font-weight: 900; letter-spacing: .06em;
     text-transform: uppercase; color: var(--text); line-height: 1.05;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .game-subtitle {
     font-size: .67rem; font-weight: 600; letter-spacing: .13em;
     text-transform: uppercase; color: var(--text-muted); margin-top: 3px;
 }
 .update-tag-btn {
-    width: 20px; height: 20px; border-radius: 50%;
+    position: absolute; top: -5px; right: -13px;
+    width: 18px; height: 18px; border-radius: 50%;
     background: var(--accent); color: var(--accent-t);
     display: flex; align-items: center; justify-content: center;
-    font-size: .72rem; font-weight: 900; flex-shrink: 0;
+    font-size: .65rem; font-weight: 900;
     box-shadow: 0 2px 6px var(--card-shadow);
     animation: updateTagPulse 1.8s ease-in-out infinite;
-    margin-top: 2px;
 }
 @keyframes updateTagPulse {
     0%,100% { box-shadow: 0 2px 6px var(--card-shadow), 0 0 0 0 rgba(76,175,80,.5); }
