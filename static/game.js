@@ -537,13 +537,13 @@ class StyleMeter {
         const mult = RANK_MULT[this.rank];
 
         let fillBoost = 0, scoreGain = 0;
-        if      (type === 'dig')      { fillBoost = 0.08; scoreGain = 1 * mult; }
-        else if (type === 'quickdig') { fillBoost = 0.18; scoreGain = 3 * mult; }
-        else if (type === 'cascade')  { fillBoost = 0.015; scoreGain = 0.4 * mult; }
+        if      (type === 'dig')      { fillBoost = 0.084; scoreGain = 1 * mult; }
+        else if (type === 'quickdig') { fillBoost = 0.189; scoreGain = 3 * mult; }
+        else if (type === 'cascade')  { fillBoost = 0.0158; scoreGain = 0.4 * mult; }
         else if (type === 'trench')   { fillBoost = 0; scoreGain = 0; } // handled externally
 
-        if (dt < 1.5) fillBoost += 0.035;
-        else if (dt < 3) fillBoost += 0.015;
+        if (dt < 1.5) fillBoost += 0.0368;
+        else if (dt < 3) fillBoost += 0.0158;
 
         this.fill = Math.min(1, this.fill + fillBoost);
         const prevFloor = Math.floor(this.score);
@@ -831,6 +831,8 @@ class Minesweeper {
         /* Re-render any menu surfaces that include sprite icons —
          * the initial constructor pass ran before sprites finished
          * loading and rendered them as empty strings.               */
+        Sprites.renderThemedDiff(this.activeTheme || 'green', this.hardUnlocked);
+        this.renderDifficultyGrid();
         this.renderCarousel();
     }
 
