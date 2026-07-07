@@ -39,7 +39,7 @@ const SPRITE_FILES = {
  * /static/assets/difficulties/diff-hard-locked.svg for the gray
  * locked state. Populated by Sprites.preload() into Sprites.themedDiff
  * = { <theme>: { easy, normal, hard }, _locked: <hardLockedSvg> }.    */
-const THEMED_DIFF_THEMES = ['green','red','blue','yellow','purple','black','synthwave'];
+const THEMED_DIFF_THEMES = ['green','red','blue','yellow','purple','black','synthwave','spamton'];
 const THEMED_DIFF_LEVELS = ['easy','normal','hard'];
 Sprites.themedDiff = {};
 
@@ -409,6 +409,7 @@ const THEMES = {
     purple:   { name:'Purple Theme',   accent:'#9C27B0', cost:500,  diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
     black:    { name:'Black Theme',    accent:'#111111', cost:0,    secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
     synthwave:{ name:'Synthwave Theme',accent:'#ff2bd6', cost:1000, rarity:'uncommon', diff:{ easy:'#00d4ff', normal:'#ff2bd6', hard:'#7c1fa3' } },
+    spamton:  { name:'Spamton Theme',  accent:'#FFD700', cost:1000, rarity:'uncommon', diff:{ easy:'#FFD700', normal:'#FF2BD6', hard:'#7C1FA3' } },
 };
 
 /* ── FEAT DEFINITIONS ────────────────────────────────────────── */
@@ -1293,6 +1294,7 @@ class Minesweeper {
             if (box) box.classList.add('selected');
         }
         document.getElementById('saves-modal').classList.remove('show');
+        this.renderMineHud();
         this.sfx.play('btn');
     }
     renderSavesModal() {
@@ -1489,8 +1491,7 @@ class Minesweeper {
         if (commonPanel) commonPanel.innerHTML = `<div class="themes-grid">${commons.map(cardHtml).join('')}</div>`;
         if (uncommonPanel) {
             uncommonPanel.innerHTML = uncommons.length
-                ? `<div class="themes-grid">${uncommons.map(cardHtml).join('')}</div>
-                   <p style="text-align:center;font-size:.6rem;color:var(--text-muted);margin-top:10px;font-weight:700;letter-spacing:.08em">Uncommon themes adapt to dark mode for two distinct looks.</p>`
+                ? `<div class="themes-grid">${uncommons.map(cardHtml).join('')}</div>`
                 : `<div style="text-align:center;padding:28px 0;color:var(--text-muted);font-size:.82rem;font-weight:700">Coming soon.</div>`;
         }
 
@@ -1613,9 +1614,14 @@ class Minesweeper {
         if (!panel) return;
         panel.innerHTML = `<div class="mines-collection-grid">${ALL_MINE_IDS.map(id => {
             const def = MINE_DEFS[id];
+            const rarity = def.rarity || 'common';
+            const rarityBadge = rarity !== 'common'
+                ? `<span class="mine-coll-rarity rarity-${rarity}">${rarity}</span>`
+                : '';
             return `<div class="mine-coll-card" data-mine-id="${id}">
-                <div class="mine-coll-icon" data-rarity="${def.rarity}" style="background:${def.color}22;border:2px solid ${def.color}44">${def.icon()}</div>
+                <div class="mine-coll-icon" data-rarity="${rarity}" style="background:${def.color}22;border:2px solid ${def.color}44">${def.icon()}</div>
                 <span class="mine-coll-name">${def.name}</span>
+                ${rarityBadge}
             </div>`;
         }).join('')}</div>`;
         panel.querySelectorAll('.mine-coll-card').forEach(card => {
@@ -1636,6 +1642,14 @@ class Minesweeper {
         document.getElementById('mine-info-effect').textContent = def.effect;
         document.getElementById('mine-info-trigger').textContent = def.trigger;
         document.getElementById('mine-info-limit').textContent = def.limit;
+        /* Show/hide PASSIVE tag and hide placement counter row for passive mines */
+        const passiveTag = document.getElementById('mine-info-passive-tag');
+        if (passiveTag) passiveTag.classList.toggle('hidden', !def.passive);
+        const limitEl = document.getElementById('mine-info-limit');
+        if (limitEl) {
+            const limitRow = limitEl.closest('.mine-info-row');
+            if (limitRow) limitRow.style.display = def.passive ? 'none' : '';
+        }
         document.getElementById('mine-info-modal').classList.add('show');
         this.sfx.play('modal');
     }
@@ -3301,35 +3315,49 @@ class Minesweeper {
         if (!container) return;
         const actualCount = Math.max(1, Math.round(count * this.particleAmount));
 
-        /* Ring effect */
+        /* Primary ring */
         const ring = document.createElement('div');
         ring.className = 'explosion-ring';
         ring.style.cssText = `left:${x-20}px;top:${y-20}px;width:40px;height:40px;color:${color};animation:ringExpand .5s ease-out both`;
         container.appendChild(ring);
         setTimeout(() => ring.remove(), 600);
 
-        /* Particles */
+        /* Outer secondary ring */
+        const ring2 = document.createElement('div');
+        ring2.className = 'explosion-ring';
+        ring2.style.cssText = `left:${x-30}px;top:${y-30}px;width:60px;height:60px;color:${color};opacity:.45;animation:ringExpand .72s .07s ease-out both`;
+        container.appendChild(ring2);
+        setTimeout(() => ring2.remove(), 900);
+
+        /* Main particles */
+        const shapes = ['50%', '0%', '30%', '50%'];
         for (let i = 0; i < actualCount; i++) {
             const angle = (i / actualCount) * Math.PI * 2 + Math.random() * 0.5;
-            const dist = 30 + Math.random() * 50;
+            const dist = 35 + Math.random() * 65;
             const px = Math.cos(angle) * dist;
             const py = Math.sin(angle) * dist;
-            const size = 4 + Math.random() * 8;
-            const dur = 0.4 + Math.random() * 0.4;
+            const size = 4 + Math.random() * 9;
+            const dur = 0.45 + Math.random() * 0.45;
             const p = document.createElement('div');
             p.className = 'explosion-particle';
-            const shapes = ['50%', '0%', '30%'];
-            p.style.cssText = `
-                left:${x - size/2}px; top:${y - size/2}px;
-                width:${size}px; height:${size}px;
-                background:${color};
-                border-radius:${shapes[Math.floor(Math.random()*shapes.length)]};
-                --px:${px}px; --py:${py}px;
-                animation: particleOut ${dur}s cubic-bezier(.2,.8,.2,1) both;
-                animation-delay:${Math.random() * 0.1}s;
-            `;
+            p.style.cssText = `left:${x-size/2}px;top:${y-size/2}px;width:${size}px;height:${size}px;background:${color};border-radius:${shapes[Math.floor(Math.random()*shapes.length)]};--px:${px}px;--py:${py}px;animation:particleOut ${dur}s cubic-bezier(.2,.8,.2,1) both;animation-delay:${Math.random()*.12}s`;
             container.appendChild(p);
-            setTimeout(() => p.remove(), (dur + 0.2) * 1000);
+            setTimeout(() => p.remove(), (dur + 0.25) * 1000);
+        }
+
+        /* Sparks — thin fast streaks */
+        const sparkCount = Math.max(2, Math.round(5 * this.particleAmount));
+        for (let i = 0; i < sparkCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 55 + Math.random() * 40;
+            const px = Math.cos(angle) * dist;
+            const py = Math.sin(angle) * dist;
+            const dur = 0.28 + Math.random() * 0.22;
+            const p = document.createElement('div');
+            p.className = 'explosion-particle';
+            p.style.cssText = `left:${x-1}px;top:${y-3}px;width:2px;height:6px;background:${color};border-radius:2px;opacity:.85;--px:${px}px;--py:${py}px;animation:particleOut ${dur}s cubic-bezier(.1,.9,.3,1) both;animation-delay:${Math.random()*.07}s`;
+            container.appendChild(p);
+            setTimeout(() => p.remove(), (dur + 0.12) * 1000);
         }
     }
 
