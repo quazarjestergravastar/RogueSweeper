@@ -685,7 +685,12 @@ class FloatingBackground {
         const opacity = 0.22 + Math.random() * 0.18;
         /* Sprites use currentColor → set the wrapper's color so the
          * shape inherits the active theme tint at the chosen opacity. */
-        shape.style.color = this._makeColor(opacity);
+        if (document.body.classList.contains('theme-spamton')) {
+            const pick = Math.random() < 0.55 ? `rgba(255,215,0,${opacity})` : `rgba(255,43,214,${opacity})`;
+            shape.style.color = pick;
+        } else {
+            shape.style.color = this._makeColor(opacity);
+        }
         shape.innerHTML = Sprites[FLOAT_SPRITE_KEYS[type]] || '';
         this.container.appendChild(shape);
         this.shapes.push(shape);
@@ -1615,9 +1620,7 @@ class Minesweeper {
         panel.innerHTML = `<div class="mines-collection-grid">${ALL_MINE_IDS.map(id => {
             const def = MINE_DEFS[id];
             const rarity = def.rarity || 'common';
-            const rarityBadge = rarity !== 'common'
-                ? `<span class="mine-coll-rarity rarity-${rarity}">${rarity}</span>`
-                : '';
+            const rarityBadge = `<span class="mine-coll-rarity rarity-${rarity}">${rarity}</span>`;
             return `<div class="mine-coll-card" data-mine-id="${id}">
                 <div class="mine-coll-icon" data-rarity="${rarity}" style="background:${def.color}22;border:2px solid ${def.color}44">${def.icon()}</div>
                 <span class="mine-coll-name">${def.name}</span>
