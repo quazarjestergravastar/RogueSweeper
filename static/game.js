@@ -1287,6 +1287,7 @@ class Minesweeper {
         Object.keys(THEMES).forEach(k => document.body.classList.remove(`theme-${k}`));
         document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
+        document.documentElement.style.setProperty('--accent2', t.accent2 || t.accent);
         Sprites.renderThemedDiff(key, this.hardUnlocked);
         if (this.floatingBg) this.floatingBg.invalidateThemeColor();
     }
@@ -1296,6 +1297,7 @@ class Minesweeper {
         Object.keys(THEMES).forEach(k => document.body.classList.remove(`theme-${k}`));
         document.body.classList.add(`theme-${key}`);
         document.documentElement.style.setProperty('--accent', t.accent);
+        document.documentElement.style.setProperty('--accent2', t.accent2 || t.accent);
         Sprites.renderThemedDiff(key, this.hardUnlocked);
         if (this.floatingBg) this.floatingBg.invalidateThemeColor();
     }
