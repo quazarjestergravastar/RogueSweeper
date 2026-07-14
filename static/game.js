@@ -3316,7 +3316,30 @@ class Minesweeper {
     }
 
     /* ══ MENU EVENTS ═══════════════════════════════════════════ */
+    /* Global defense against "click-through" on popups: while any modal is
+     * open, a stray pointerdown/click that lands outside every open modal
+     * (e.g. a release event that resolves against whatever is now exposed
+     * behind a popup, or a mis-stacked overlay) must never reach the menu
+     * or board underneath. Runs in the capture phase so it wins the race
+     * against every other listener, regardless of where it's attached. */
+    _bindModalClickGuard() {
+        const guard = (e) => {
+            const opens = document.querySelectorAll('.modal-overlay.show');
+            if (!opens.length) return;
+            for (const overlay of opens) {
+                if (overlay.contains(e.target)) return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        };
+        ['pointerdown','mousedown','touchstart','click'].forEach(type => {
+            document.addEventListener(type, guard, { capture: true, passive: false });
+        });
+    }
+
     bindMenuEvents() {
+        this._bindModalClickGuard();
         ['easy','normal','hard','cs1','cs2','cs3'].forEach(k => {
             const el = document.getElementById(`diff-${k}`);
             if (el) el.addEventListener('click', () => this.onDifficultyClick(['cs1','cs2','cs3'].includes(k) ? 'soon' : k));

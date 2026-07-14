@@ -2,3 +2,4 @@
 - [Style meter layout fix](style-meter-layout.md) — .style-meter needs explicit `width:64px`; .style-trigger-stack must be `position:absolute` to avoid shifting meter when trigger text is wide.
 - [Themed diff SVG convention](themed-diff-svgs.md) — each theme needs 3 SVGs in `static/assets/themes/<key>/diff-{easy,normal,hard}.svg`; key must also be added to THEMED_DIFF_THEMES array; 40×40 viewBox, circle bg + white shape.
 - [Double-accent (accent2) system](accent2-double-accent.md) — `--accent-grad` gradient var falls back to flat color when a theme has no `accent2`; only apply it to solid chrome backgrounds, not borders/shadows/text.
+- [Modal click-through guard](modal-click-through-guard.md) — capture-phase document listener blocks any stray tap landing outside every open `.modal-overlay.show`, stopping leaks to menu/board behind popups.
