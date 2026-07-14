@@ -46,7 +46,6 @@
                 <div class="title-block">
                     <div class="title-row">
                         <h1 class="game-title" data-text="title">RogueSweeper</h1>
-                        <button class="update-tag-btn juicy-btn" id="update-tag-btn" title="What's new" aria-label="What's new">!</button>
                     </div>
                     <p class="game-subtitle" data-text="subtitle">MineSweeper Gone Rogue</p>
                 </div>
@@ -304,7 +303,6 @@
     <!-- ── GAME OVER MODAL ── -->
     <div class="modal-overlay" id="game-over-modal">
         <div class="modal-content juicy-card">
-            <button class="hold-hide-btn juicy-btn" id="modal-hold-hide-btn" data-text="holdToPeek">HOLD TO PEEK</button>
             <h2 id="modal-title" data-text="runOver">Run Over</h2>
             <p id="modal-message"></p>
             <p class="points-earned" id="points-earned"></p>
@@ -325,7 +323,6 @@
     <!-- ── BOARD FINISHED MODAL ── -->
     <div class="modal-overlay" id="board-finished-modal">
         <div class="modal-content juicy-card">
-            <button class="hold-hide-btn juicy-btn" id="bf-hold-hide-btn" data-text="holdToPeek">HOLD TO PEEK</button>
             <h2 id="bf-title" data-text="boardComplete">Board Complete!</h2>
             <p id="bf-message"></p>
             <p class="points-earned" id="bf-points"></p>
@@ -388,11 +385,6 @@
                 <span class="sfx-slider-label">Particles</span>
                 <input type="range" class="sfx-slider" id="particle-amount-slider" min="0" max="100" value="100" step="5">
                 <span class="sfx-vol-value" id="particle-amount-display">100%</span>
-            </div>
-            <div class="sfx-slider-row">
-                <span class="sfx-slider-label">Hold-to-Confirm Duration</span>
-                <input type="range" class="sfx-slider" id="hold-confirm-duration-slider" min="0" max="2000" value="1000" step="100">
-                <span class="sfx-vol-value" id="hold-confirm-duration-display">1.0s</span>
             </div>
             <button class="save-file-open-btn juicy-btn" id="save-file-open-btn" data-text="saveFiles">Save Files</button>
             <div class="redeem-section">

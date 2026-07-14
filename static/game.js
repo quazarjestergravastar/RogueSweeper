@@ -73,155 +73,21 @@ Sprites.preload = async function() {
     await Promise.all(fetches);
 };
 
-/* ── HOLD-TO-CONFIRM ────────────────────────────────────────────
- * Menu-navigation buttons (`.juicy-btn`, minus an explicit exclude
- * list of gameplay/board controls) require a press-and-hold of
- * `HoldConfirm.duration` ms before their click actually fires. A
- * circular progress ring is shown on the button while held.
- *
- * Design notes:
- *  - We block the browser's normal 'click' entirely for opted-in
- *    buttons (capture-phase listener) unless it was synthesized by
- *    us after a completed hold (flagged via a one-shot WeakSet).
- *  - `setPointerCapture` is used during the hold so the eventual
- *    pointerup/click always targets the ORIGINAL button, even if a
- *    new screen/modal renders underneath the finger mid-hold. This
- *    is what fixes the "tap-release leaks onto the newly-opened
- *    menu" bug — the input is consumed by the element that started
- *    the gesture and can never bubble into freshly-rendered UI.
- *  - A short global "swallow" window after firing also suppresses
- *    any stray pointerdown/click that manages to land immediately
- *    after, as an extra safety net on browsers/devices where pointer
- *    capture compatibility events aren't fully redirected.          */
+/* ── HOLD-TO-CONFIRM (removed — buttons respond to normal clicks) ── */
 const HoldConfirm = {
-    duration: 1000,
-    EXCLUDE_SELECTOR: '.mode-btn, .zoom-btn, .slot-spin-btn, .slot-stop-btn, .mm-shop-reroll-btn, .hold-hide-btn, [data-no-hold-confirm]',
+    duration: 0,
+    EXCLUDE_SELECTOR: '',
     _states: new WeakMap(),
     _allowedClicks: new WeakSet(),
     _swallowUntil: 0,
-
-    matches(el) {
-        return el && el.matches && el.matches('.juicy-btn') && !el.matches(this.EXCLUDE_SELECTOR);
-    },
-    closestTarget(node) {
-        while (node && node !== document) {
-            if (this.matches(node)) return node;
-            node = node.parentElement;
-        }
-        return null;
-    },
-    _ensureRing(el) {
-        let ring = el.querySelector(':scope > .hold-confirm-ring');
-        if (!ring) {
-            ring = document.createElement('span');
-            ring.className = 'hold-confirm-ring';
-            ring.innerHTML = `<svg><rect class="hcr-track"/><rect class="hcr-fill"/></svg>`;
-            el.appendChild(ring);
-        }
-        return ring;
-    },
-    /* Sizes the outline rect to exactly trace the button's own
-     * rounded-rect border, then returns its perimeter so the caller
-     * can drive stroke-dasharray/-dashoffset for the fill sweep. */
-    _perimeter(el) {
-        const w = el.offsetWidth, h = el.offsetHeight;
-        const cs = getComputedStyle(el);
-        let r = parseFloat(cs.borderRadius) || 0;
-        r = Math.max(0, Math.min(r, w / 2, h / 2));
-        const sw = 3;
-        const inset = sw / 2;
-        const rectW = Math.max(0, w - sw), rectH = Math.max(0, h - sw);
-        const rectR = Math.max(0, r - inset);
-        const ring = el.querySelector(':scope > .hold-confirm-ring');
-        const svg = ring && ring.querySelector('svg');
-        if (svg) {
-            svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-            svg.setAttribute('width', w);
-            svg.setAttribute('height', h);
-            [svg.querySelector('.hcr-track'), svg.querySelector('.hcr-fill')].forEach(rect => {
-                if (!rect) return;
-                rect.setAttribute('x', inset);
-                rect.setAttribute('y', inset);
-                rect.setAttribute('width', rectW);
-                rect.setAttribute('height', rectH);
-                rect.setAttribute('rx', rectR);
-                rect.setAttribute('ry', rectR);
-                rect.setAttribute('stroke-width', sw);
-            });
-        }
-        return 2 * rectW + 2 * rectH - 8 * rectR + 2 * Math.PI * rectR;
-    },
-    start(el, pointerId) {
-        if (this._states.has(el)) return;
-        try { el.setPointerCapture(pointerId); } catch (e) {}
-        if (this.duration <= 0) {
-            /* Instant mode: no hold required, fire right away like a normal click. */
-            const state = { pointerId, startTime: performance.now(), raf: null, fired: false };
-            this._states.set(el, state);
-            this._fire(el);
-            return;
-        }
-        const ring = this._ensureRing(el);
-        const fillEl = ring.querySelector('.hcr-fill');
-        const perimeter = this._perimeter(el);
-        if (fillEl) { fillEl.style.strokeDasharray = `${perimeter}`; fillEl.style.strokeDashoffset = `${perimeter}`; }
-        el.classList.add('hold-confirming');
-        const state = { pointerId, startTime: performance.now(), raf: null, fired: false };
-        this._states.set(el, state);
-        const tick = (now) => {
-            const t = Math.min(1, (now - state.startTime) / Math.max(1, this.duration));
-            if (fillEl) fillEl.style.strokeDashoffset = `${perimeter * (1 - t)}`;
-            if (t >= 1) { this._fire(el); return; }
-            state.raf = requestAnimationFrame(tick);
-        };
-        state.raf = requestAnimationFrame(tick);
-    },
-    _fire(el) {
-        const state = this._states.get(el);
-        if (!state || state.fired) return;
-        state.fired = true;
-        if (state.raf) cancelAnimationFrame(state.raf);
-        this._allowedClicks.add(el);
-        this._swallowUntil = performance.now() + 260;
-        try { el.click(); } catch (e) {}
-        this.cancel(el);
-    },
-    cancel(el) {
-        const state = this._states.get(el);
-        if (state && state.raf) cancelAnimationFrame(state.raf);
-        this._states.delete(el);
-        el.classList.remove('hold-confirming');
-        const ring = el.querySelector(':scope > .hold-confirm-ring');
-        if (ring) ring.remove();
-    },
-    init() {
-        document.addEventListener('pointerdown', e => {
-            if (e.button !== undefined && e.button !== 0) return;
-            if (performance.now() < this._swallowUntil) { e.preventDefault(); e.stopPropagation(); return; }
-            const el = this.closestTarget(e.target);
-            if (el) this.start(el, e.pointerId);
-        }, true);
-        const endHandler = e => {
-            const el = this.closestTarget(e.target) || [...document.querySelectorAll('.hold-confirming')][0];
-            if (el && this._states.has(el)) this.cancel(el);
-        };
-        document.addEventListener('pointerup', endHandler, true);
-        document.addEventListener('pointercancel', endHandler, true);
-        document.addEventListener('pointerleave', e => {
-            /* Only cancel on leave if the pointer actually left the
-             * document/window, not just moved between child elements. */
-        }, true);
-        document.addEventListener('click', e => {
-            const el = this.closestTarget(e.target);
-            if (!el) {
-                if (performance.now() < this._swallowUntil) { e.preventDefault(); e.stopPropagation(); }
-                return;
-            }
-            if (this._allowedClicks.has(el)) { this._allowedClicks.delete(el); return; }
-            e.preventDefault();
-            e.stopImmediatePropagation();
-        }, true);
-    }
+    matches()      { return false; },
+    closestTarget(){ return null;  },
+    start()        {},
+    cancel()       {},
+    _fire()        {},
+    _ensureRing()  {},
+    _perimeter()   { return 0; },
+    init()         {},
 };
 window.HoldConfirm = HoldConfirm;
 
@@ -409,7 +275,7 @@ const THEMES = {
     purple:   { name:'Purple Theme',   accent:'#9C27B0', cost:500,  diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
     black:    { name:'Black Theme',    accent:'#111111', cost:0,    secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
     synthwave:{ name:'Synthwave Theme',accent:'#ff2bd6', cost:1000, rarity:'uncommon', diff:{ easy:'#00d4ff', normal:'#ff2bd6', hard:'#7c1fa3' } },
-    spamton:  { name:'Spamton Theme',  accent:'#FFD700', cost:1000, rarity:'uncommon', diff:{ easy:'#FFD700', normal:'#FF2BD6', hard:'#7C1FA3' } },
+    spamton:  { name:'Spamton Theme',  accent:'#FF2BD6', accent2:'#FFD700', cost:1000, rarity:'uncommon', diff:{ easy:'#FFD700', normal:'#FF2BD6', hard:'#FF2BD6' } },
 };
 
 /* ── FEAT DEFINITIONS ────────────────────────────────────────── */
@@ -686,7 +552,12 @@ class FloatingBackground {
         /* Sprites use currentColor → set the wrapper's color so the
          * shape inherits the active theme tint at the chosen opacity. */
         if (document.body.classList.contains('theme-spamton')) {
-            const pick = Math.random() < 0.55 ? `rgba(255,215,0,${opacity})` : `rgba(255,43,214,${opacity})`;
+            /* Start mostly yellow; after a few spawns mix in pink. */
+            const spawnCount = this.shapes.length;
+            const pinkChance = Math.min(0.45, spawnCount * 0.06);
+            const pick = Math.random() < pinkChance
+                ? `rgba(255,43,214,${opacity})`
+                : `rgba(255,215,0,${opacity})`;
             shape.style.color = pick;
         } else {
             shape.style.color = this._makeColor(opacity);
@@ -1482,12 +1353,20 @@ class Minesweeper {
         const cardHtml = ([key, t]) => {
             const owned = this.ownedThemes.includes(key);
             const active= key === this.activeTheme;
+            const isUncommon = t.rarity === 'uncommon';
             const pill  = active ? `<span class="theme-cost-pill pill-active">Active</span>`
                         : owned  ? `<span class="theme-cost-pill pill-owned">Owned</span>`
                         :          `<span class="theme-cost-pill">${t.cost} pts</span>`;
-            return `<div class="theme-card${active?' theme-active-card':''}" data-theme-key="${key}" style="${active?`border-color:${t.accent};box-shadow:0 0 0 2px ${t.accent}`:''}">
+            const rarityBadge = isUncommon ? `<span class="uc-rarity-badge">✦ UNCOMMON</span>` : '';
+            const particles = isUncommon ? `<div class="uc-particles" aria-hidden="true">
+                <span class="uc-p uc-p1"></span><span class="uc-p uc-p2"></span>
+                <span class="uc-p uc-p3"></span><span class="uc-p uc-p4"></span>
+                <span class="uc-p uc-p5"></span><span class="uc-p uc-p6"></span>
+            </div>` : '';
+            return `<div class="theme-card${active?' theme-active-card':''}${isUncommon?' uncommon-card':''}" data-theme-key="${key}" style="${active?`border-color:${t.accent};box-shadow:0 0 0 2px ${t.accent}`:''}">
+                ${particles}
                 <div class="theme-swatches"><div class="swatch" style="background:${adj(s1)}"></div><div class="swatch" style="background:${adj(s2)}"></div><div class="swatch" style="background:${adj(s3)}"></div><div class="swatch" style="background:${t.accent}"></div></div>
-                <span class="theme-card-name">${t.name}</span>${pill}</div>`;
+                <span class="theme-card-name">${t.name}</span>${pill}${rarityBadge}</div>`;
         };
         const visible = Object.entries(THEMES).filter(([key, t]) => !t.secret || this.ownedThemes.includes(key));
         const commons   = visible.filter(([k, t]) => t.rarity !== 'uncommon');
@@ -1708,12 +1587,6 @@ class Minesweeper {
         const afEl = document.getElementById('auto-flag-empty-toggle');
         if (afEl) afEl.checked = this.autoFlagOnEmpty;
 
-        const holdMs = parseInt(localStorage.getItem('ms_hold_confirm_ms') ?? '1000', 10);
-        window.HoldConfirm && (window.HoldConfirm.duration = holdMs);
-        const hcSlider  = document.getElementById('hold-confirm-duration-slider');
-        const hcDisplay = document.getElementById('hold-confirm-duration-display');
-        if (hcSlider)  hcSlider.value = holdMs;
-        if (hcDisplay) hcDisplay.textContent = holdMs <= 0 ? 'Instant' : `${(holdMs/1000).toFixed(1)}s`;
     }
 
     /* ══ DIFFICULTY GRID ═══════════════════════════════════════ */
@@ -3488,8 +3361,6 @@ class Minesweeper {
                 this._closeModalWithExit('board-finished-modal', 'boardwin').then(() => this.showMenu());
             }
         });
-        this.bindHoldToHide('bf-hold-hide-btn', 'board-finished-modal');
-
         /* Game Over Modal */
         document.getElementById('menu-btn').addEventListener('click', () => {
             this._closeModalWithExit('game-over-modal', 'btn').then(() => {
@@ -3515,8 +3386,6 @@ class Minesweeper {
                 this.createFreshBoard(); this.bindGameEvents(); this.setupScrolling(); this.updateBoardIndicator();
             });
         });
-        this.bindHoldToHide('modal-hold-hide-btn', 'game-over-modal');
-
         /* Back button */
         document.getElementById('back-btn').addEventListener('click', () => { this.pauseRun(); this.showMenu(); this.sfx.play('btn'); });
 
@@ -3526,18 +3395,6 @@ class Minesweeper {
 
         /* Settings */
         document.getElementById('settings-open-btn').addEventListener('click', () => { document.getElementById('settings-modal').classList.add('show'); this.sfx.play('modal'); });
-        const updateTagBtn = document.getElementById('update-tag-btn');
-        if (updateTagBtn) {
-            updateTagBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.sfx.play('modal');
-                this.showDiffModal(
-                    'Update: Explosive Aesthetics!',
-                    'The new update, fixing old bugs (and new ones.) adding more power ups, and more features!',
-                    [{ label: this.t('ok','OK'), cls: 'restart-btn', action: () => {} }]
-                );
-            });
-        }
         document.getElementById('settings-close-btn').addEventListener('click', () => { document.getElementById('settings-modal').classList.remove('show'); this.sfx.play('btn'); });
         document.getElementById('settings-modal').addEventListener('click', e => { if (e.target===document.getElementById('settings-modal')) document.getElementById('settings-modal').classList.remove('show'); });
         document.getElementById('dark-mode-toggle').addEventListener('change', e => {
@@ -3576,16 +3433,6 @@ class Minesweeper {
             localStorage.setItem('ms_particle_amount', v);
             if (pDisplay) pDisplay.textContent = `${Math.round(v*100)}%`;
             if (this.floatingBg) this.floatingBg.setParticleAmount(v);
-        });
-
-        /* Hold-to-Confirm duration */
-        const hcSlider = document.getElementById('hold-confirm-duration-slider');
-        const hcDisplay = document.getElementById('hold-confirm-duration-display');
-        if (hcSlider) hcSlider.addEventListener('input', () => {
-            const ms = parseInt(hcSlider.value, 10);
-            if (window.HoldConfirm) window.HoldConfirm.duration = ms;
-            localStorage.setItem('ms_hold_confirm_ms', ms);
-            if (hcDisplay) hcDisplay.textContent = ms <= 0 ? 'Instant' : `${(ms/1000).toFixed(1)}s`;
         });
 
         /* Save Files */
@@ -4556,4 +4403,4 @@ class Minesweeper {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => { HoldConfirm.init(); new Minesweeper(); });
+document.addEventListener('DOMContentLoaded', () => { new Minesweeper(); });
