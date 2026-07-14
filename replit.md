@@ -6,6 +6,12 @@ A web-based "MineSweeper Gone Rogue" game with Flask backend and vanilla HTML/CS
 
 Flask (Python) serves a single-page app. All game logic runs in the browser via `static/game.js`. State is persisted in `localStorage`.
 
+## Running on Replit
+
+- The `Minesweeper` workflow runs `python main.py`, which serves on port 5000 (bound via the Project run button).
+- Dependencies (Flask + friends) are installed into `.pythonlibs` via the standard Python package tool; `pyproject.toml` uses Poetry's format (had to add a placeholder `authors` field, since Poetry rejects configs without one).
+- No secrets or external services are required to run this project.
+
 ## Features
 
 ### Menu
