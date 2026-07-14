@@ -275,7 +275,7 @@ const THEMES = {
     purple:   { name:'Purple Theme',   accent:'#9C27B0', cost:500,  diff:{ easy:'#CE93D8', normal:'#9C27B0', hard:'#4A148C' } },
     black:    { name:'Black Theme',    accent:'#111111', cost:0,    secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
     synthwave:{ name:'Synthwave Theme',accent:'#ff2bd6', cost:1000, rarity:'uncommon', diff:{ easy:'#00d4ff', normal:'#ff2bd6', hard:'#7c1fa3' } },
-    spamton:  { name:'Spamton Theme',  accent:'#FF2BD6', accent2:'#FFD700', cost:1000, rarity:'uncommon', diff:{ easy:'#FFD700', normal:'#FF2BD6', hard:'#FF2BD6' } },
+    spamton:  { name:'Spamton Theme',  accent:'#FF2BD6', cost:1000, rarity:'uncommon', diff:{ easy:'#FFD700', normal:'#FF2BD6', hard:'#FF2BD6' } },
 };
 
 /* ── FEAT DEFINITIONS ────────────────────────────────────────── */
@@ -875,13 +875,29 @@ class Minesweeper {
         if (!screen) { this._afterLoading(); return; }
 
         const mineIds = Object.keys(MINE_DEFS);
-        let mineIdx = 0;
         let sqRotation = 0;
 
+        /* Random mine icon each cycle, but never immediately repeated:
+         * shuffle a fresh queue whenever the current one runs out, and
+         * swap the queue's first pick with its second if it would echo
+         * the last icon shown (i.e. straddling two shuffled queues).   */
+        let iconQueue = [];
+        let lastIconId = null;
+        const refillQueue = () => {
+            const arr = mineIds.slice();
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            if (arr.length > 1 && arr[0] === lastIconId) [arr[0], arr[1]] = [arr[1], arr[0]];
+            iconQueue = arr;
+        };
         const swapIcon = () => {
-            const def = MINE_DEFS[mineIds[mineIdx % mineIds.length]];
+            if (iconQueue.length === 0) refillQueue();
+            const id = iconQueue.shift();
+            lastIconId = id;
+            const def = MINE_DEFS[id];
             if (iconEl && def) iconEl.innerHTML = def.icon();
-            mineIdx++;
         };
         swapIcon();
 
