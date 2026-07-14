@@ -417,13 +417,6 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 [data-rarity="legendary"] {
     box-shadow: 0 0 0 2.5px rgba(255,193,7,.9);
 }
-[data-rarity="legendary"]::after {
-    content: '★';
-    position: absolute; top: 2px; right: 4px;
-    font-size: .52rem; line-height: 1;
-    color: #FFC107; pointer-events: none;
-    text-shadow: 0 1px 3px rgba(0,0,0,.3);
-}
 .mm-shop-slot-icon svg { width: 32px; height: 32px; }
 .mm-shop-slot-name {
     font-size: .62rem; font-weight: 800; text-align: center; color: var(--text);
@@ -1253,32 +1246,30 @@ input:checked + .switch-slider::before { transform: translateX(20px); }
 
 /* ── STORE MODAL ─────────────────────────────────────────── */
 .store-modal-content { width: min(92vw, 360px); }
-.themes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 4px; }
+.themes-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 130px)); justify-content: center; gap: 12px; padding-bottom: 4px; }
 .theme-card {
-    border-radius: 16px; padding: 9px;
+    width: 100%; max-width: 130px;
+    border-radius: 14px; padding: 7px;
     border: 2px solid var(--border);
     background: var(--diff-bg); cursor: pointer;
     transition: border-color .15s, transform .1s;
     user-select: none; touch-action: none;
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-    /* compact square-ish aspect */
-    aspect-ratio: 1 / 1.08;
-    justify-content: center;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .theme-card:active { transform: scale(.95); }
 .theme-card.theme-active-card { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 .theme-card.purchase-pop { animation: purchasePop .42s cubic-bezier(.3,.7,.3,1.45); }
 @keyframes purchasePop { 0%{transform:scale(1)} 40%{transform:scale(1.08)} 100%{transform:scale(1)} }
 .theme-swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 100%; }
-.swatch { height: 18px; border-radius: 7px; border: 1.5px solid var(--swatch-outline); }
+.swatch { height: 13px; border-radius: 5px; border: 1.5px solid var(--swatch-outline); }
 .theme-card-name {
-    font-size: .6rem; font-weight: 800; letter-spacing: .06em;
+    font-size: .56rem; font-weight: 800; letter-spacing: .05em;
     color: var(--text); text-transform: uppercase; text-align: center;
-    line-height: 1.2;
+    line-height: 1.15;
 }
 .theme-cost-pill {
-    font-size: .54rem; font-weight: 800; letter-spacing: .06em;
-    padding: 2px 8px; border-radius: 99px;
+    font-size: .5rem; font-weight: 800; letter-spacing: .05em;
+    padding: 1px 7px; border-radius: 99px;
     background: var(--bg); color: var(--text-muted);
     border: 1.5px solid var(--border); text-transform: uppercase;
 }
@@ -1370,29 +1361,29 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
 /* ── COLLECTION MODAL ────────────────────────────────────── */
 .collection-modal-content { width: min(92vw, 360px); }
 .mines-collection-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
     max-height: 52vh; overflow-y: auto; padding-right: 4px; margin-bottom: 4px;
 }
 .mines-collection-grid::-webkit-scrollbar { width: 3px; }
 .mines-collection-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 .mine-coll-card {
-    border-radius: 18px; padding: 10px 8px;
+    border-radius: 14px; padding: 8px 4px;
     background: var(--diff-bg); border: 2px solid var(--border);
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
     justify-content: center;
     cursor: pointer; transition: transform .12s, border-color .15s;
     user-select: none; position: relative;
-    aspect-ratio: 1 / 1.05;
 }
 .mine-coll-card:active { transform: scale(.94); }
 .mine-coll-icon {
-    width: 52px; height: 52px; aspect-ratio: 1; border-radius: 14px;
+    width: 38px; height: 38px; aspect-ratio: 1; border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
+.mine-coll-icon svg { width: 22px; height: 22px; }
 .mine-coll-rarity {
-    font-size: .48rem; font-weight: 900; letter-spacing: .1em;
-    text-transform: uppercase; padding: 2px 6px; border-radius: 99px;
+    font-size: .42rem; font-weight: 900; letter-spacing: .08em;
+    text-transform: uppercase; padding: 1px 5px; border-radius: 99px;
     background: var(--bg); color: var(--text-muted); border: 1px solid var(--border);
 }
 .mine-coll-rarity.rarity-common   { color: var(--text-muted); border-color: var(--border); }
@@ -1400,8 +1391,8 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
 .mine-coll-rarity.rarity-rare     { color: #7C4DFF; border-color: rgba(124,77,255,.4); }
 .mine-coll-rarity.rarity-legendary{ color: #FFC107; border-color: rgba(255,193,7,.4); }
 .mine-coll-name {
-    font-size: .62rem; font-weight: 800; letter-spacing: .04em;
-    color: var(--text); text-align: center; text-transform: uppercase; line-height: 1.2;
+    font-size: .52rem; font-weight: 800; letter-spacing: .02em;
+    color: var(--text); text-align: center; text-transform: uppercase; line-height: 1.15;
 }
 
 /* Mine info modal */
