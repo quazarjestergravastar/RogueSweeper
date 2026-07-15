@@ -40,7 +40,7 @@ const SPRITE_FILES = {
  * /static/assets/difficulties/diff-hard-locked.svg for the gray
  * locked state. Populated by Sprites.preload() into Sprites.themedDiff
  * = { <theme>: { easy, normal, hard }, _locked: <hardLockedSvg> }.    */
-const THEMED_DIFF_THEMES = ['green','red','blue','yellow','purple','black','synthwave','spamton'];
+const THEMED_DIFF_THEMES = ['green','red','blue','yellow','purple','black','synthwave','spamton','danger_zone','volatile','blueprint','retro_terminal'];
 const THEMED_DIFF_LEVELS = ['easy','normal','hard'];
 Sprites.themedDiff = {};
 
@@ -287,6 +287,10 @@ const THEMES = {
     black:    { name:'Black Theme',    accent:'#111111', cost:0,    secret:true, diff:{ easy:'#333333', normal:'#111111', hard:'#000000' } },
     synthwave:{ name:'Synthwave Theme',accent:'#ff2bd6', cost:1000, rarity:'uncommon', diff:{ easy:'#00d4ff', normal:'#ff2bd6', hard:'#7c1fa3' } },
     spamton:  { name:'Spamton Theme',  accent:'#FF2BD6', cost:1000, rarity:'uncommon', diff:{ easy:'#FFD700', normal:'#FF2BD6', hard:'#FF2BD6' } },
+    danger_zone:    { name:'Danger Zone',     accent:'#FFD500', accent2:'#111111', cost:1000, rarity:'uncommon', diff:{ easy:'#FFE066', normal:'#FFD500', hard:'#111111' } },
+    volatile:       { name:'Volatile',        accent:'#E63312', accent2:'#FF7A00', cost:1000, rarity:'uncommon', diff:{ easy:'#FFAB40', normal:'#FF5722', hard:'#B71C1C' } },
+    blueprint:      { name:'Blueprint',       accent:'#2FD1FF', accent2:'#123B66', cost:1000, rarity:'uncommon', diff:{ easy:'#7EE0FF', normal:'#2FD1FF', hard:'#123B66' } },
+    retro_terminal: { name:'Retro Terminal',  accent:'#33FF66', cost:1000, rarity:'uncommon', diff:{ easy:'#66FF99', normal:'#33FF66', hard:'#0C8A2E' } },
 };
 
 /* ── FEAT DEFINITIONS ────────────────────────────────────────── */
@@ -2550,8 +2554,18 @@ class Minesweeper {
         const TAP_MOVE_THRESH = 8;
         let lastTapTime = 0;
         let downX = 0, downY = 0, didMove = false;
+        /* Click-through fix: capture the pointer to this exact slot element
+         * on press, and stop the event from bubbling to whatever menu/board
+         * UI happens to sit behind the HUD. Without pointer capture, a
+         * re-render mid-gesture (e.g. renderMineHud() after a sell) can let
+         * the eventual pointerup land on a freshly-created element — or,
+         * since .mine-hud overlays menu/board chrome, an un-captured tap can
+         * leak through to a button underneath. See modal-click-through-guard
+         * and hold-to-confirm memory notes for the same pattern elsewhere. */
         slot.addEventListener('pointerdown', (e) => {
             downX = e.clientX; downY = e.clientY; didMove = false;
+            if (slot.setPointerCapture) { try { slot.setPointerCapture(e.pointerId); } catch (_) {} }
+            e.stopPropagation();
         });
         slot.addEventListener('pointermove', (e) => {
             if (Math.abs(e.clientX - downX) > TAP_MOVE_THRESH || Math.abs(e.clientY - downY) > TAP_MOVE_THRESH) {
@@ -2559,6 +2573,8 @@ class Minesweeper {
             }
         });
         slot.addEventListener('pointerup', (e) => {
+            e.stopPropagation();
+            if (slot.releasePointerCapture) { try { slot.releasePointerCapture(e.pointerId); } catch (_) {} }
             if (didMove) { lastTapTime = 0; return; }
             const now = Date.now();
             const mine = this.playerMines[slotIndex];
@@ -2579,6 +2595,7 @@ class Minesweeper {
                 }, DOUBLE_TAP_MS);
             }
         });
+        slot.addEventListener('click', (e) => { e.stopPropagation(); });
     }
 
     _showSellConfirm(slotIndex) {
@@ -2644,6 +2661,11 @@ class Minesweeper {
         };
 
         slot.addEventListener('pointerdown', e => {
+            /* Click-through fix: keep this gesture bound to the slot that
+             * was actually pressed, and don't let it bubble to menu/board
+             * chrome sitting behind the HUD (see _bindMineTaps above for
+             * the full rationale — same pattern applied to drag-start). */
+            e.stopPropagation();
             /* Don't start drag immediately, wait for movement */
             const ox = e.clientX, oy = e.clientY;
             const onMove = (ev) => {

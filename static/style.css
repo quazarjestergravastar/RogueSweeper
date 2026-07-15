@@ -496,12 +496,12 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     background: transparent;
 }
 .header {
-    display: flex; gap: 8px; padding: 10px 12px 8px;
+    display: flex; gap: 6px; padding: 6px 10px 5px;
     flex-shrink: 0; align-items: center;
 }
 .stats-panel {
     flex: 1; display: flex; align-items: stretch; justify-content: space-around;
-    padding: 6px 0;
+    padding: 4px 0;
 }
 .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
 .board-stat { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
@@ -510,8 +510,8 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* Run points HUD in game header */
 .run-pts-hud {
     display: flex; flex-direction: column; align-items: center; gap: 1px;
-    padding: 6px 10px; flex-shrink: 0;
-    color: var(--accent); min-width: 52px;
+    padding: 4px 8px; flex-shrink: 0;
+    color: var(--accent); min-width: 46px;
 }
 .run-pts-hud svg { color: var(--accent); }
 .run-pts-hud-val {
@@ -527,7 +527,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 /* ── STYLE METER (compact square HUD) ───────────────────── */
 .style-meter {
     position: absolute;
-    top: 62px; left: 14px; z-index: 15;
+    top: 52px; left: 14px; z-index: 15;
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     pointer-events: none; transition: transform .22s ease;
     width: 64px; /* Fixed width prevents layout shift when trigger text appears */
@@ -633,17 +633,17 @@ body.dark-mode .sm-ring-bg {
 /* ── MODE TOGGLE (bottom center) ─────────────────────────── */
 .mode-toggle-bottom {
     position: absolute;
-    bottom: 140px;
+    bottom: 122px;
     left: 50%; transform: translateX(-50%);
     z-index: 10;
     display: flex;
-    background: var(--card); border-radius: 20px;
+    background: var(--card); border-radius: 18px;
     box-shadow: 0 4px 20px var(--card-shadow);
-    padding: 5px; gap: 5px;
+    padding: 4px; gap: 4px;
 }
 .mode-btn {
-    width: 72px; height: 48px; border-radius: 15px;
-    font-size: .7rem; font-weight: 800; letter-spacing: .06em;
+    width: 64px; height: 42px; border-radius: 13px;
+    font-size: .68rem; font-weight: 800; letter-spacing: .06em;
     color: var(--text-muted); background: transparent;
 }
 .mode-btn.active { background: var(--btn-dark); color: var(--btn-dark-t); }
@@ -651,13 +651,13 @@ body.dark-mode .sm-ring-bg {
 /* ── MINE HUD ────────────────────────────────────────────── */
 .mine-hud {
     position: absolute;
-    bottom: 66px;
+    bottom: 58px;
     left: 50%; transform: translateX(-50%);
     z-index: 10;
     background: var(--card);
-    border-radius: 20px;
+    border-radius: 18px;
     box-shadow: 0 4px 20px var(--card-shadow);
-    padding: 6px;
+    padding: 5px;
     transition: transform .35s cubic-bezier(.3,.7,.3,1.5), opacity .3s;
 }
 /* Inline (non-fixed) hud lives inside flex containers (menu, mine market).
@@ -668,17 +668,25 @@ body.dark-mode .sm-ring-bg {
     margin: 4px auto 6px; align-self: center;
     max-width: calc(100vw - 24px);
     box-sizing: border-box;
+    padding: 5px;
 }
 .mine-hud.mine-hud-inline .mine-hud-slots {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
     max-width: 100%;
 }
 .mine-hud.mine-hud-inline .mine-slot {
-    width: 48px;
+    width: 40px;
 }
-.mine-hud.mine-hud-menu { margin-top: auto; }
+.mine-hud.mine-hud-inline .mine-slot-icon-wrap {
+    width: 36px; height: 36px; border-radius: 10px;
+}
+.mine-hud.mine-hud-inline .mine-slot-icon-wrap svg { width: 21px; height: 21px; }
+.mine-hud.mine-hud-inline .mine-slot-counter {
+    font-size: .46rem; padding: 1px 3px; border-radius: 5px;
+}
+.mine-hud.mine-hud-menu { margin: 2px auto 0; }
 /* Board-finished HUD: lives outside .modal-content, pinned at the same fixed position so the
    loadout appears in the same spot across game / board-clear / market screens. */
 .mine-hud.mine-hud-bf {
@@ -707,21 +715,21 @@ body.dark-mode .sm-ring-bg {
 /* Hide mine-hud completely if no run is active (e.g. on menu) */
 .mine-hud.hud-empty { display: none; }
 .mine-hud-slots {
-    display: flex; gap: 5px; align-items: center;
+    display: flex; gap: 4px; align-items: center;
 }
 .mine-slot {
-    width: 52px; display: flex; flex-direction: column;
-    align-items: center; gap: 3px; cursor: pointer;
+    width: 46px; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; cursor: pointer;
     user-select: none; position: relative;
 }
 .mine-slot-icon-wrap {
-    width: 44px; height: 44px; border-radius: 12px;
+    width: 38px; height: 38px; border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
     position: relative; transition: transform .15s, opacity .2s;
 }
 .mine-slot.depleted .mine-slot-icon-wrap { opacity: .35; filter: grayscale(.8); }
 .mine-slot.active-board-used .mine-slot-icon-wrap { opacity: .5; }
-.mine-slot-icon-wrap svg { width: 26px; height: 26px; }
+.mine-slot-icon-wrap svg { width: 22px; height: 22px; }
 .mine-slot-counter {
     position: absolute; top: -4px; right: -4px;
     font-size: .52rem; font-weight: 900;
@@ -865,8 +873,8 @@ body.dark-mode .sm-ring-bg {
     transform-origin: top left; will-change: transform;
 }
 .game-board {
-    display: grid; gap: 4px; padding: 14px;
-    background: var(--card); border-radius: 22px;
+    display: grid; gap: 3px; padding: 10px;
+    background: var(--card); border-radius: 20px;
     transform-origin: top left; will-change: transform;
     transition: clip-path .5s cubic-bezier(.3,.7,.3,1), border-radius .5s ease;
 }
@@ -1893,6 +1901,206 @@ body.dark-mode.theme-synthwave {
     --n4:#b07cff; --n5:#ffb84d; --n6:#5ee7ff;
     --n7:#ffffff; --n8:#9a7cc4;
 }
+/* ── DANGER ZONE THEME (uncommon) — black + hazard yellow, industrial ── */
+body.theme-danger_zone {
+    --accent: #FFD500;
+    --bg: #f5f3e6;
+    --bg2: #ece7cc;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text2: #4a4a3a;
+    --text-muted: #93885a;
+    --border: #e3d99a;
+    --card-shadow: rgba(20,18,0,.14);
+    --btn-dark: #1a1a1a;
+    --btn-dark-t: #FFD500;
+    --diff-bg: #f7f2d9;
+    --cell: #ffffff;
+    --revealed: #f0eac6;
+    --mine: #e63312;
+    --flag: #FFD500;
+    --flag-w: #e63312;
+    --sm-color: #c9a600;
+    --swatch-outline: rgba(0,0,0,.2);
+    --n1: #2196F3; --n2: #1a8a3a; --n3: #e63312;
+    --n4: #9C27B0; --n5: #FF7A00; --n6: #00838f;
+    --n7: #1a1a1a; --n8: #93885a;
+}
+body.dark-mode.theme-danger_zone {
+    --accent: #FFD500;
+    --bg: #0d0d0d;
+    --bg2: #060606;
+    --card: #1c1a12;
+    --text: #FFD500;
+    --text2: #e8d98a;
+    --text-muted: #8a7a30;
+    --border: #443300;
+    --card-shadow: rgba(0,0,0,.55);
+    --btn-dark: #FFD500;
+    --btn-dark-t: #0d0d0d;
+    --diff-bg: #181611;
+    --cell: #221f14;
+    --revealed: #161409;
+    --mine: #ff3b1f;
+    --flag: #FFD500;
+    --flag-w: #ff3b1f;
+    --sm-color: #FFD500;
+    --swatch-outline: rgba(255,255,255,.2);
+    --n1: #4fc3f7; --n2: #8bc34a; --n3: #ff3b1f;
+    --n4: #ce93d8; --n5: #ffab40; --n6: #4dd0e1;
+    --n7: #FFD500; --n8: #8a7a30;
+}
+
+/* ── VOLATILE THEME (uncommon) — deep reds & fiery oranges ── */
+body.theme-volatile {
+    --accent: #E63312;
+    --bg: #fff3ee;
+    --bg2: #ffe4d6;
+    --card: #ffffff;
+    --text: #2a0e05;
+    --text2: #7a2c10;
+    --text-muted: #c17a55;
+    --border: #ffcfb0;
+    --card-shadow: rgba(230,50,18,.16);
+    --btn-dark: #E63312;
+    --btn-dark-t: #ffffff;
+    --diff-bg: #fff0e8;
+    --cell: #ffffff;
+    --revealed: #ffe4d6;
+    --mine: #B71C1C;
+    --flag: #FF7A00;
+    --flag-w: #B71C1C;
+    --sm-color: #E63312;
+    --swatch-outline: rgba(0,0,0,.16);
+    --n1: #0288D1; --n2: #E63312; --n3: #FF7A00;
+    --n4: #AD1457; --n5: #FFB300; --n6: #D84315;
+    --n7: #2a0e05; --n8: #c17a55;
+}
+body.dark-mode.theme-volatile {
+    --accent: #E63312;
+    --bg: #1a0704;
+    --bg2: #0d0302;
+    --card: #2b0e08;
+    --text: #ffe3d2;
+    --text2: #ffb08a;
+    --text-muted: #a85a3a;
+    --border: #5c1e0e;
+    --card-shadow: rgba(0,0,0,.55);
+    --btn-dark: #E63312;
+    --btn-dark-t: #1a0704;
+    --diff-bg: #25100a;
+    --cell: #331409;
+    --revealed: #241008;
+    --mine: #ff3b1f;
+    --flag: #FFB300;
+    --flag-w: #ff3b1f;
+    --sm-color: #FF5A1F;
+    --swatch-outline: rgba(255,255,255,.2);
+    --n1: #4fc3f7; --n2: #FF5A1F; --n3: #FFB300;
+    --n4: #ec407a; --n5: #ffca28; --n6: #ff7043;
+    --n7: #ffe3d2; --n8: #a85a3a;
+}
+
+/* ── BLUEPRINT THEME (uncommon) — navy & cyan technical schematic ── */
+body.theme-blueprint {
+    --accent: #2FD1FF;
+    --bg: #eef4f8;
+    --bg2: #dfe9f0;
+    --card: #ffffff;
+    --text: #0b2d4d;
+    --text2: #1f5b8f;
+    --text-muted: #7fa8c4;
+    --border: #bcd4e6;
+    --card-shadow: rgba(11,61,102,.14);
+    --btn-dark: #123B66;
+    --btn-dark-t: #eaf6ff;
+    --diff-bg: #e6f0f7;
+    --cell: #ffffff;
+    --revealed: #dfeaf2;
+    --mine: #d64550;
+    --flag: #2FD1FF;
+    --flag-w: #d64550;
+    --sm-color: #1f7ab0;
+    --swatch-outline: rgba(0,0,0,.16);
+    --n1: #2FD1FF; --n2: #123B66; --n3: #d64550;
+    --n4: #6a4fc4; --n5: #e0a030; --n6: #1f8fae;
+    --n7: #0b2d4d; --n8: #7fa8c4;
+}
+body.dark-mode.theme-blueprint {
+    --accent: #2FD1FF;
+    --bg: #0a2038;
+    --bg2: #061420;
+    --card: #123a5c;
+    --text: #eaf6ff;
+    --text2: #a9d6f0;
+    --text-muted: #5f8bab;
+    --border: #1f5580;
+    --card-shadow: rgba(0,0,0,.5);
+    --btn-dark: #2FD1FF;
+    --btn-dark-t: #0a2038;
+    --diff-bg: #0d2c4a;
+    --cell: #153f63;
+    --revealed: #0d2c4a;
+    --mine: #ff6b6b;
+    --flag: #2FD1FF;
+    --flag-w: #ff6b6b;
+    --sm-color: #2FD1FF;
+    --swatch-outline: rgba(255,255,255,.22);
+    --n1: #2FD1FF; --n2: #7ee0ff; --n3: #ff6b6b;
+    --n4: #b39ddb; --n5: #ffd54f; --n6: #4dd0e1;
+    --n7: #eaf6ff; --n8: #5f8bab;
+}
+
+/* ── RETRO TERMINAL THEME (uncommon) — monochrome CRT green ── */
+body.theme-retro_terminal {
+    --accent: #1a8a2e;
+    --bg: #eef7ee;
+    --bg2: #dcf0dc;
+    --card: #ffffff;
+    --text: #0a3d0a;
+    --text2: #1a6b1a;
+    --text-muted: #7fae7f;
+    --border: #bfe3bf;
+    --card-shadow: rgba(10,80,10,.14);
+    --btn-dark: #0a3d0a;
+    --btn-dark-t: #d9ffd9;
+    --diff-bg: #e6f5e6;
+    --cell: #ffffff;
+    --revealed: #e2f2e2;
+    --mine: #cc3333;
+    --flag: #1a8a2e;
+    --flag-w: #cc3333;
+    --sm-color: #1a8a2e;
+    --swatch-outline: rgba(0,0,0,.16);
+    --n1: #1a6b8a; --n2: #1a8a2e; --n3: #cc3333;
+    --n4: #6b1a8a; --n5: #8a6b1a; --n6: #1a8a8a;
+    --n7: #0a3d0a; --n8: #7fae7f;
+}
+body.dark-mode.theme-retro_terminal {
+    --accent: #33FF66;
+    --bg: #050805;
+    --bg2: #020402;
+    --card: #0d150d;
+    --text: #33FF66;
+    --text2: #22cc4d;
+    --text-muted: #1a662e;
+    --border: #1a3d1a;
+    --card-shadow: rgba(0,0,0,.6);
+    --btn-dark: #33FF66;
+    --btn-dark-t: #050805;
+    --diff-bg: #0a120a;
+    --cell: #0f1a0f;
+    --revealed: #0a120a;
+    --mine: #ff3333;
+    --flag: #33FF66;
+    --flag-w: #ff3333;
+    --sm-color: #33FF66;
+    --swatch-outline: rgba(255,255,255,.18);
+    --n1: #33ff66; --n2: #66ff99; --n3: #ff3333;
+    --n4: #99ff33; --n5: #ccff33; --n6: #33ffcc;
+    --n7: #33ff66; --n8: #1a662e;
+}
+
 /* ── UNCOMMON THEME CARDS — clean flat style with particle layer ── */
 .theme-card.uncommon-card {
     overflow: hidden; position: relative;
@@ -1932,6 +2140,63 @@ body.dark-mode.theme-synthwave {
 .theme-card[data-theme-key="spamton"] .uc-p3,
 .theme-card[data-theme-key="spamton"] .uc-p6,
 .theme-card[data-theme-key="spamton"] .uc-p5 { background: rgba(255,43,214,.28); }
+
+/* Danger Zone card */
+.theme-card[data-theme-key="danger_zone"] {
+    background: #14120a;
+    border-color: #FFD500;
+    border-width: 2px;
+    color: #FFD500;
+}
+.theme-card[data-theme-key="danger_zone"] .theme-card-name { color: #FFD500; }
+.theme-card[data-theme-key="danger_zone"] .theme-cost-pill {
+    background: rgba(0,0,0,.55); color: #FFD500; border-color: rgba(255,213,0,.35);
+}
+.theme-card[data-theme-key="danger_zone"] .uc-p { background: rgba(255,213,0,.28); }
+
+/* Volatile card */
+.theme-card[data-theme-key="volatile"] {
+    background: #1a0704;
+    border-color: #FF7A00;
+    border-width: 2px;
+    color: #fff;
+}
+.theme-card[data-theme-key="volatile"] .theme-card-name { color: #fff; }
+.theme-card[data-theme-key="volatile"] .theme-cost-pill {
+    background: rgba(0,0,0,.5); color: #ffd9c2; border-color: rgba(255,122,0,.35);
+}
+.theme-card[data-theme-key="volatile"] .uc-p1,
+.theme-card[data-theme-key="volatile"] .uc-p4,
+.theme-card[data-theme-key="volatile"] .uc-p2 { background: rgba(255,122,0,.32); }
+.theme-card[data-theme-key="volatile"] .uc-p3,
+.theme-card[data-theme-key="volatile"] .uc-p6,
+.theme-card[data-theme-key="volatile"] .uc-p5 { background: rgba(230,51,18,.30); }
+
+/* Blueprint card */
+.theme-card[data-theme-key="blueprint"] {
+    background: #0a2038;
+    border-color: #2FD1FF;
+    border-width: 2px;
+    color: #eaf6ff;
+}
+.theme-card[data-theme-key="blueprint"] .theme-card-name { color: #eaf6ff; }
+.theme-card[data-theme-key="blueprint"] .theme-cost-pill {
+    background: rgba(0,0,0,.4); color: #cdeeff; border-color: rgba(47,209,255,.35);
+}
+.theme-card[data-theme-key="blueprint"] .uc-p { background: rgba(47,209,255,.24); }
+
+/* Retro Terminal card */
+.theme-card[data-theme-key="retro_terminal"] {
+    background: #050805;
+    border-color: #33FF66;
+    border-width: 2px;
+    color: #33FF66;
+}
+.theme-card[data-theme-key="retro_terminal"] .theme-card-name { color: #33FF66; }
+.theme-card[data-theme-key="retro_terminal"] .theme-cost-pill {
+    background: rgba(0,0,0,.5); color: #a6ffc0; border-color: rgba(51,255,102,.35);
+}
+.theme-card[data-theme-key="retro_terminal"] .uc-p { background: rgba(51,255,102,.24); }
 
 /* Shared particle system for uncommon cards */
 .uc-particles {
