@@ -19,6 +19,7 @@ const SPRITE_FILES = {
     mine_mine:'mine-mine', trench_mine:'trench-mine', grenade_mine:'grenade-mine',
     totem_mine:'totem-mine', fractal_mine:'fractal-mine',
     kickstart_mine:'kickstart-mine', diffusal_mine:'diffusal-mine', pipe_mine:'pipe-mine',
+    steel_mine:'steel-mine',
     nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
@@ -198,14 +199,24 @@ const MINE_DEFS = {
         limit: '1 time per board; permanently consumed once triggered',
         icon: () => Sprites.diffusal_mine
     },
+    steel_mine: {
+        id: 'steel_mine', name: 'Steel Mine', cost: 220,
+        color: '#90A4AE', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'uncommon', passive: true,
+        requirement: 'None',
+        effect: 'For every 100 Spts. you earn across the run, instantly grants +50 Rpts.',
+        trigger: 'Passive — checked automatically every time Spts. increases',
+        limit: '1 time per board',
+        icon: () => Sprites.steel_mine
+    },
     pipe_mine: {
         id: 'pipe_mine', name: 'Pipe Mine', cost: 240,
-        color: '#607D8B', maxCharges: 2, placesPerBoard: 1,
-        rarity: 'rare', passive: true,
-        requirement: 'None to place — dormant until Style rank B',
-        effect: 'Sits dormant on the board until Style rank reaches B, then tunnels a straight line through the board, safely revealing roughly a third of the remaining tiles along that line.',
+        color: '#607D8B', maxCharges: 3, placesPerBoard: 1,
+        rarity: 'rare',
+        requirement: 'Must be manually placed — dormant until Style rank B',
+        effect: 'Sits dormant on the board until Style rank reaches B, then blasts a wide horizontal band through the board, safely revealing roughly a third of the remaining tiles along it (with a few random gaps left unrevealed).',
         trigger: 'On placement once Style rank B+ is reached',
-        limit: '1 time per board',
+        limit: '1 time per board · 3 charges per run',
         icon: () => Sprites.pipe_mine
     },
     nuke_mimb: {
@@ -776,6 +787,7 @@ class Minesweeper {
 
         this.boardStyleScore = 0;
         this.runStyleScore   = 0;
+        this.steelMilestoneScore = 0;
 
         /* Run points (separate from main points) */
         this.runPoints = 0;
@@ -818,8 +830,6 @@ class Minesweeper {
         this.voidedCells = new Set();
         /* Throttle: timestamp of last successful placement (1/sec cap) */
         this._lastPlaceAt = 0;
-        /* Scratch card used this market visit */
-        this.scratchUsed = false;
         /* Slot machine used this market visit */
         this.slotUsed = false;
 
@@ -959,6 +969,11 @@ class Minesweeper {
         Sprites.renderThemedDiff(this.activeTheme || 'green', this.hardUnlocked);
         this.renderDifficultyGrid();
         this.renderCarousel();
+        /* If the app was restarted/reloaded mid-run, the menu's mine
+         * loadout HUD was never rendered on boot — only later user
+         * actions (buying, selling, opening the market) triggered it.
+         * Render it now so the active run's loadout shows immediately. */
+        this.renderMineHud();
     }
 
     /* ══ RUN STATE ═════════════════════════════════════════════ */
@@ -1613,6 +1628,16 @@ class Minesweeper {
         if (this.hardUnlocked) { hardBox.classList.add('hard-unlocked'); hardBox.classList.remove('diff-locked'); }
         else { hardBox.classList.remove('hard-unlocked'); hardBox.classList.add('diff-locked'); }
         document.getElementById('difficulty-grid').classList.toggle('run-locked', !!this.runState);
+        /* Always keep the selected-difficulty highlight in sync with
+         * currentDifficulty here, instead of relying on every call site
+         * to also poke the '.selected' class — this is what was missing
+         * on a cold page load mid-run, leaving no difficulty box marked
+         * selected even though the run's difficulty was locked in.      */
+        document.querySelectorAll('.diff-box').forEach(b => b.classList.remove('selected'));
+        if (this.currentDifficulty) {
+            const box = document.getElementById(`diff-${this.currentDifficulty}`);
+            if (box) box.classList.add('selected');
+        }
         Sprites.renderThemedDiff(this.activeTheme || 'green', this.hardUnlocked);
     }
 
@@ -1808,7 +1833,7 @@ class Minesweeper {
         this.runState = { active:true, difficulty:this.currentDifficulty, currentBoard:boardIdx, unlockedUpTo:boardIdx, paused:false, boardState:null, boardRanks:[] };
         this._saveRunState();
         this.rows = cfg.rows; this.cols = cfg.cols; this.mines = cfg.mines;
-        this.runStyleScore = 0; this.boardStyleScore = 0;
+        this.runStyleScore = 0; this.boardStyleScore = 0; this.steelMilestoneScore = 0;
         this._resetRunState();
         this.sfx.play('btn');
         this.transitionToGame(() => {
@@ -1907,7 +1932,7 @@ class Minesweeper {
 
         const finalRank  = this.styleMeter ? this.styleMeter.getFinalRank() : 'D';
         const boardScore = this.styleMeter ? this.styleMeter.getScore() : 0;
-        this.boardStyleScore = boardScore;
+        this._setBoardStyleScore(boardScore);
         this.runStyleScore  += boardScore;
         if (rs && !rs.boardRanks) rs.boardRanks = [];
         if (rs)  rs.boardRanks[rs.currentBoard] = finalRank;
@@ -2003,7 +2028,6 @@ class Minesweeper {
 
         if (!resumingMarket) {
             /* Reset per-market state on fresh entry */
-            this.scratchUsed = false;
             this.slotUsed = false;
             this.scratchBought = false;
             this.slotBought = false;
@@ -2035,12 +2059,12 @@ class Minesweeper {
         /* Reset buy buttons */
         const scratchBuyBtn = document.getElementById('scratch-buy-btn');
         const scratchActBtn = document.getElementById('scratch-btn');
-        if (scratchBuyBtn) { scratchBuyBtn.textContent = `BUY · ${SCRATCH_COST} RPTS`; scratchBuyBtn.classList.remove('spent'); }
+        if (scratchBuyBtn) { scratchBuyBtn.textContent = `BUY · ${SCRATCH_COST} Rpts.`; scratchBuyBtn.classList.remove('spent'); }
         if (scratchActBtn) { scratchActBtn.textContent = 'SCRATCH'; scratchActBtn.classList.remove('used'); scratchActBtn.classList.add('mm-act-disabled'); }
 
         const slotBuyBtn = document.getElementById('slot-buy-btn');
         const slotActBtn = document.getElementById('slot-btn');
-        if (slotBuyBtn) { slotBuyBtn.textContent = `BUY · ${SLOT_MACHINE_COST} RPTS`; slotBuyBtn.classList.remove('spent'); }
+        if (slotBuyBtn) { slotBuyBtn.textContent = `BUY · ${SLOT_MACHINE_COST} Rpts.`; slotBuyBtn.classList.remove('spent'); }
         if (slotActBtn) { slotActBtn.textContent = 'SPIN'; slotActBtn.classList.remove('used'); slotActBtn.classList.add('mm-act-disabled'); }
 
         /* Render slot machine mini display */
@@ -2057,7 +2081,7 @@ class Minesweeper {
     }
 
     doScratchBuy() {
-        if (this.scratchBought || this.scratchUsed) return;
+        if (this.scratchBought) return;
         if (this.runPoints < SCRATCH_COST && !this.infiniteCoins) { this.sfx.play('error'); return; }
         this.spendRunPoints(SCRATCH_COST);
         this.scratchBought = true;
@@ -2117,12 +2141,15 @@ class Minesweeper {
         });
     }
 
-    /* ── Scratch Card ── */
+    /* ── Scratch Card ──
+     * Buyable and playable any number of times per market visit — each
+     * play consumes the "bought" state so another BUY is required before
+     * scratching again, but there's no longer a one-time-per-visit lock. */
     doScratch() {
-        if (!this.scratchBought || this.scratchUsed) return;
-        this.scratchUsed = true;
+        if (!this.scratchBought) return;
+        this.scratchBought = false;
         const actBtn = document.getElementById('scratch-btn');
-        if (actBtn) { actBtn.textContent = 'USED'; actBtn.classList.add('used'); }
+        if (actBtn) { actBtn.textContent = 'SCRATCH'; actBtn.classList.add('mm-act-disabled'); }
 
         const win = Math.random() < 0.5;
         const scratchFront = document.getElementById('scratch-front');
@@ -2159,6 +2186,14 @@ class Minesweeper {
             }
             const rptEl = document.getElementById('mm-run-pts');
             if (rptEl) rptEl.textContent = this.runPoints;
+
+            /* Reset the card face after a beat so it can be bought again. */
+            setTimeout(() => {
+                if (scratchFront) { scratchFront.classList.remove('hidden'); scratchFront.style.transition = 'none'; scratchFront.style.transform = ''; }
+                if (scratchResult) { scratchResult.classList.add('hidden'); scratchResult.textContent = ''; scratchResult.className = 'scratch-result hidden'; }
+                const buyBtn = document.getElementById('scratch-buy-btn');
+                if (buyBtn) { buyBtn.textContent = `BUY · ${SCRATCH_COST} Rpts.`; buyBtn.classList.remove('spent'); }
+            }, 1400);
         }, 320);
     }
 
@@ -2261,9 +2296,12 @@ class Minesweeper {
             if (stoppedCount >= 3) return;
             const i = stoppedCount;
             this._slotStopped[i] = true;
-            /* Snap to a random mine */
-            const idx = Math.floor(Math.random() * MAX_MINES);
-            stoppedMines.push(ALL_MINE_IDS[idx]);
+            /* Snap to a rarity-weighted mine — legendaries are only ever
+             * obtainable through the Slot Machine, so keep them a rare,
+             * lucky pull here too rather than as common as everything else. */
+            const pickedId = this._pickRarityWeightedId(ALL_MINE_IDS);
+            const idx = ALL_MINE_IDS.indexOf(pickedId);
+            stoppedMines.push(pickedId);
             const targetOffset = idx * ITEM_HEIGHT;
             this._slotOffset[i] = targetOffset;
             const strip = document.getElementById(`slot-strip-${i}`);
@@ -2336,12 +2374,7 @@ class Minesweeper {
             default:          return 1;
         }
     }
-    _pickRandomMine() {
-        /* Legendary mines normally never appear in the normal shop
-         * inventory — they're only obtainable via the Slot Machine —
-         * unless the player has redeemed the infinite-coins cheat code,
-         * in which case legendaries are also allowed to show up here.   */
-        const ids = this.infiniteCoins ? ALL_MINE_IDS.slice() : ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary');
+    _pickRarityWeightedId(ids) {
         const weights = ids.map(id => this._mineRarityWeight(id));
         const total = weights.reduce((s,w) => s+w, 0);
         let r = Math.random() * total;
@@ -2350,6 +2383,14 @@ class Minesweeper {
             if (r <= 0) return ids[i];
         }
         return ids[0];
+    }
+    _pickRandomMine() {
+        /* Legendary mines normally never appear in the normal shop
+         * inventory — they're only obtainable via the Slot Machine —
+         * unless the player has redeemed the infinite-coins cheat code,
+         * in which case legendaries are also allowed to show up here.   */
+        const ids = this.infiniteCoins ? ALL_MINE_IDS.slice() : ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary');
+        return this._pickRarityWeightedId(ids);
     }
     _rerollMarketShop() {
         this.marketShop = [this._pickRandomMine(), this._pickRandomMine()];
@@ -2369,7 +2410,7 @@ class Minesweeper {
             slot.innerHTML = `
                 <div class="mm-shop-slot-icon" data-rarity="${def.rarity}" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}</div>
                 <div class="mm-shop-slot-name">${def.name}</div>
-                <div class="mm-shop-slot-cost">${def.cost} RPTS</div>
+                <div class="mm-shop-slot-cost">${def.cost} Rpts.</div>
                 <button class="mm-shop-slot-buy juicy-btn ${(!canAfford || isFull || sold) ? 'disabled' : ''}" data-shop-idx="${i}">${sold ? 'SOLD' : 'BUY'}</button>
             `;
             const btn = slot.querySelector('.mm-shop-slot-buy');
@@ -2544,7 +2585,7 @@ class Minesweeper {
         const mine = this.playerMines[slotIndex]; if (!mine) return;
         const def = MINE_DEFS[mine.id];
         const refund = Math.floor(def.cost * SELL_REFUND_RATIO);
-        this.showDiffModal(`Sell ${def.name}?`, `You'll get back <strong>${refund} run pts</strong>.`, [
+        this.showDiffModal(`Sell ${def.name}?`, `You'll get back <strong>${refund} Rpts.</strong>`, [
             { label: 'Sell', cls: 'abort-btn', action: () => this.sellMine(slotIndex) },
             { label: 'Cancel', cls: 'menu-link-btn', action: () => {} }
         ]);
@@ -2631,12 +2672,42 @@ class Minesweeper {
 
     _reorderMine(fromIdx, toIdx) {
         if (fromIdx === toIdx) return;
+        /* True swap (not a shift): dragging slot A onto slot B trades their
+         * positions directly, leaving every other slot untouched.         */
+        const parents = document.querySelectorAll('.mine-hud .mine-hud-slots');
+        const oldRects = [];
+        parents.forEach(p => {
+            const a = p.children[fromIdx], b = p.children[toIdx];
+            if (a && b) oldRects.push({ parent: p, aRect: a.getBoundingClientRect(), bRect: b.getBoundingClientRect() });
+        });
+
         const mines = [...this.playerMines];
-        const [moved] = mines.splice(fromIdx, 1);
-        mines.splice(toIdx, 0, moved);
+        [mines[fromIdx], mines[toIdx]] = [mines[toIdx], mines[fromIdx]];
         this.playerMines = mines;
         this.renderMineHud();
+        this.saveCurrentToSlot(this.currentSlot);
         this.sfx.play('btn');
+
+        /* FLIP-style swap animation: slide each slot from its previous
+         * screen position into its new one so the swap reads as a smooth
+         * exchange instead of an instant jump.                            */
+        requestAnimationFrame(() => {
+            oldRects.forEach(({ parent, aRect, bRect }) => {
+                const newA = parent.children[fromIdx], newB = parent.children[toIdx];
+                if (!newA || !newB) return;
+                [[newA, aRect], [newB, bRect]].forEach(([el, oldRect]) => {
+                    const newRect = el.getBoundingClientRect();
+                    const dx = oldRect.left - newRect.left, dy = oldRect.top - newRect.top;
+                    if (!dx && !dy) return;
+                    el.style.transition = 'none';
+                    el.style.transform = `translate(${dx}px, ${dy}px)`;
+                    requestAnimationFrame(() => {
+                        el.style.transition = 'transform .28s cubic-bezier(.3,.7,.3,1.5)';
+                        el.style.transform = '';
+                    });
+                });
+            });
+        });
     }
 
     placeMineOnBoard(slotIndex, r, c) {
@@ -2899,29 +2970,41 @@ class Minesweeper {
                 break;
             }
             case 'pipe_mine': {
-                /* Reveal ~1/3 of remaining safe tiles in a straight line
-                 * outward from the placement point, skipping (not
-                 * detonating) any mine tiles encountered along the way.    */
+                /* Reveal ~1/3 of remaining safe tiles in a wide horizontal
+                 * BAND (multiple rows, not a single line) extending outward
+                 * from the placement point, with a handful of random gaps
+                 * left unrevealed so the shape looks imperfect/organic
+                 * rather than a clean straight tunnel. Mine tiles are
+                 * skipped (not detonated) as the blast passes over them.   */
                 const remainingSafe = [];
                 for (let i = 0; i < this.rows; i++) for (let j = 0; j < this.cols; j++) {
                     if (this.board[i][j] !== -1 && !this.revealed[i][j]) remainingSafe.push([i, j]);
                 }
                 const targetCount = Math.max(1, Math.ceil(remainingSafe.length / 3));
-                const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
-                const dir = dirs[Math.floor(Math.random() * dirs.length)];
-                let revealedCount = 0, nr = r, nc = c, step = 0;
-                const doStep = () => {
-                    nr += dir[0]; nc += dir[1]; step++;
-                    if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) return;
-                    if (revealedCount >= targetCount) return;
-                    if (this.board[nr][nc] === -1) { setTimeout(doStep, 45); return; } /* pipe skips mines */
-                    if (!this.revealed[nr][nc]) { this.reveal(nr, nc); revealedCount++; }
-                    setTimeout(doStep, 45);
+                const BAND_HALF = 1; /* band spans r-1..r+1 when in bounds */
+                const bandRows = [];
+                for (let dr = -BAND_HALF; dr <= BAND_HALF; dr++) {
+                    const rr = r + dr;
+                    if (rr >= 0 && rr < this.rows) bandRows.push(rr);
+                }
+                const dir = Math.random() < 0.5 ? 1 : -1;
+                const GAP_CHANCE = 0.22; /* imperfections along the band */
+                const queue = [];
+                for (let nc = c + dir; nc >= 0 && nc < this.cols; nc += dir) {
+                    bandRows.forEach(rr => queue.push([rr, nc]));
+                }
+                let revealedCount = 0;
+                const doStep = (i) => {
+                    if (i >= queue.length || revealedCount >= targetCount) return;
+                    const [nr, ncc] = queue[i];
+                    if (this.board[nr][ncc] === -1 || Math.random() < GAP_CHANCE) { setTimeout(() => doStep(i + 1), 40); return; }
+                    if (!this.revealed[nr][ncc]) { this.reveal(nr, ncc); revealedCount++; }
+                    setTimeout(() => doStep(i + 1), 40);
                 };
                 this.spawnExplosion(cx, cy, '#607D8B', 14);
                 this.sfx.play('mine_place');
                 this._spawnStyleTriggerText('Pipe blast!', '#607D8B');
-                doStep();
+                doStep(0);
                 break;
             }
             case 'nuke_mimb': {
@@ -3120,6 +3203,31 @@ class Minesweeper {
         }
     }
 
+    /* Centralised setter for board-level Style score. Every place that
+     * updates the Style Meter's live score routes through here so the
+     * Steel Mine's passive (every 100 cumulative Style score → +50 run
+     * points) can be checked in exactly one spot instead of duplicated
+     * at each call site. */
+    _setBoardStyleScore(newScore) {
+        const prev = this.boardStyleScore || 0;
+        const delta = newScore - prev;
+        this.boardStyleScore = newScore;
+        if (delta > 0) this._checkSteelMine(delta);
+    }
+    _checkSteelMine(delta) {
+        if (!this.playerMines || !this.playerMines.some(m => m && m.id === 'steel_mine' && !this.bannedMineIds.includes('steel_mine'))) return;
+        const before = Math.floor((this.steelMilestoneScore || 0) / 100);
+        this.steelMilestoneScore = (this.steelMilestoneScore || 0) + delta;
+        const after = Math.floor(this.steelMilestoneScore / 100);
+        if (after > before) {
+            const gained = (after - before) * 50;
+            this.runPoints += gained;
+            const rptEl = document.getElementById('mm-run-pts');
+            if (rptEl) rptEl.textContent = this.runPoints;
+            this._spawnStyleTriggerText(`+${gained} steel!`, '#90A4AE', 'steel_fx');
+        }
+    }
+
     _onStyleRankUp(rank) {
         /* Trench mine: give style points = sum of adjacent numbers for each
          * placed trench mine. Each contributing trench plays an SFX, spawns
@@ -3133,7 +3241,7 @@ class Minesweeper {
             }, 0);
             if (total <= 0) return;
             this.styleMeter.addScore(total);
-            this.boardStyleScore = this.styleMeter.getScore();
+            this._setBoardStyleScore(this.styleMeter.getScore());
             const cell = this.getCell(r, c);
             const rect = cell ? cell.getBoundingClientRect() : null;
             const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
@@ -3316,14 +3424,42 @@ class Minesweeper {
     }
 
     /* ══ MENU EVENTS ═══════════════════════════════════════════ */
-    /* Global defense against "click-through" on popups: while any modal is
-     * open, a stray pointerdown/click that lands outside every open modal
-     * (e.g. a release event that resolves against whatever is now exposed
-     * behind a popup, or a mis-stacked overlay) must never reach the menu
-     * or board underneath. Runs in the capture phase so it wins the race
-     * against every other listener, regardless of where it's attached. */
+    /* Global defense against "click-through" on popups AND full-screen swaps
+     * (menu / game / mine-market): a stray input event that resolves against
+     * whatever is now exposed at the same screen coordinates right after a
+     * screen or modal swap — a known ghost-event race on touch/mouse-emulated
+     * browsers — must never reach the newly-shown UI underneath. This runs in
+     * the capture phase on document so it wins the race against every other
+     * listener regardless of where it's attached.
+     *
+     * Two layers:
+     *  1. Time-armed swallow: a MutationObserver watches the top-level
+     *     screens + every .modal-overlay for class changes (show/hide) and
+     *     opens a short grace window; any input event of any kind arriving
+     *     inside that window is swallowed outright.
+     *  2. Spatial guard: while a modal is open (outside any grace window),
+     *     any input event landing outside every open .modal-overlay is
+     *     swallowed so it can never leak to the menu/board behind it. */
     _bindModalClickGuard() {
+        let swallowUntil = 0;
+        const arm = () => { swallowUntil = Date.now() + 220; };
+
+        const watchTargets = [
+            document.getElementById('menu-screen'),
+            document.getElementById('game-screen'),
+            document.getElementById('mine-market-screen'),
+            ...document.querySelectorAll('.modal-overlay')
+        ].filter(Boolean);
+        const mo = new MutationObserver(arm);
+        watchTargets.forEach(el => mo.observe(el, { attributes: true, attributeFilter: ['class'] }));
+
         const guard = (e) => {
+            if (Date.now() < swallowUntil) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                return;
+            }
             const opens = document.querySelectorAll('.modal-overlay.show');
             if (!opens.length) return;
             for (const overlay of opens) {
@@ -3333,7 +3469,7 @@ class Minesweeper {
             e.stopPropagation();
             if (e.stopImmediatePropagation) e.stopImmediatePropagation();
         };
-        ['pointerdown','mousedown','touchstart','click'].forEach(type => {
+        ['pointerdown','mousedown','touchstart','click','pointerup','mouseup','touchend'].forEach(type => {
             document.addEventListener(type, guard, { capture: true, passive: false });
         });
     }
@@ -3418,7 +3554,7 @@ class Minesweeper {
                 this._clearRunState(); this.runState = null;
                 this.currentDifficulty = prevDiff;
                 this.carouselIndex = 0;
-                this.runStyleScore = 0; this.boardStyleScore = 0;
+                this.runStyleScore = 0; this.boardStyleScore = 0; this.steelMilestoneScore = 0;
                 this._resetRunState();
                 this.runState = { active:true, difficulty:prevDiff, currentBoard:0, unlockedUpTo:0, paused:false, boardState:null, boardRanks:[] };
                 this._saveRunState();
@@ -3521,7 +3657,7 @@ class Minesweeper {
         const scratchBuyBtn = document.getElementById('scratch-buy-btn');
         if (scratchBuyBtn) scratchBuyBtn.addEventListener('click', () => { this.doScratchBuy(); });
         document.getElementById('scratch-btn').addEventListener('click', () => {
-            if (!this.scratchBought || this.scratchUsed) { this.sfx.play('error'); return; }
+            if (!this.scratchBought) { this.sfx.play('error'); return; }
             this.sfx.play('btn'); this.doScratch();
         });
         const slotBuyBtn = document.getElementById('slot-buy-btn');
@@ -4012,7 +4148,7 @@ class Minesweeper {
         if (revealed > 0) {
             const res = this.styleMeter.onAction('quickdig');
             if (res && res.hit69) this._unlockSecret('score_69');
-            this.boardStyleScore = this.styleMeter.getScore();
+            this._setBoardStyleScore(this.styleMeter.getScore());
             this.sfx.play('quickdig');
         }
         this.updateDisplay(); this.evaluateFlagCompletion(); this.saveCurrentBoardToRun();
@@ -4074,7 +4210,7 @@ class Minesweeper {
         if (!wasFirstClick) {
             const res = this.styleMeter.onAction('dig');
             if (res && res.hit69) this._unlockSecret('score_69');
-            this.boardStyleScore = this.styleMeter.getScore();
+            this._setBoardStyleScore(this.styleMeter.getScore());
         }
         this.reveal(r, c, wasFirstClick);
         /* Auto-switch to flag mode after revealing a zero/empty tile (cascade).
@@ -4198,7 +4334,7 @@ class Minesweeper {
         const res = this.styleMeter.onAction('cascade');
         if (res && res.hit69) this._unlockSecret('score_69');
         this.styleMeter.addScore(15);
-        this.boardStyleScore = this.styleMeter.getScore();
+        this._setBoardStyleScore(this.styleMeter.getScore());
         const cell = this.getCell(r, c);
         const rect = cell ? cell.getBoundingClientRect() : null;
         const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
@@ -4279,7 +4415,7 @@ class Minesweeper {
         if (cell) cell.classList.remove('diffusal-armed');
         this.flagged[r][c] = false; /* leave the tile un-flagged/un-revealed, effectively defused */
         for (let i = 0; i < 2; i++) this.styleMeter._rankUp();
-        this.boardStyleScore = this.styleMeter.getScore();
+        this._setBoardStyleScore(this.styleMeter.getScore());
         const rect = cell ? cell.getBoundingClientRect() : null;
         const cx = rect ? rect.left + rect.width/2 : window.innerWidth/2;
         const cy = rect ? rect.top + rect.height/2 : window.innerHeight/2;

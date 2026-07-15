@@ -58,12 +58,12 @@
                 </div>
                 <div class="points-row points-row-split hidden" id="points-row-split">
                     <div class="points-split-side">
-                        <span class="points-split-label" data-text="permanent">PERMANENT</span>
+                        <span class="points-split-label" data-text="permanent">Ppts.</span>
                         <span class="points-badge" id="points-display-split"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:2px"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg><span id="points-display-perm">0</span></span>
                     </div>
                     <div class="points-split-divider"></div>
                     <div class="points-split-side">
-                        <span class="points-split-label" data-text="runPoints">RUN</span>
+                        <span class="points-split-label" data-text="runPoints">Rpts.</span>
                         <span class="points-badge run-points-badge" id="points-display-run-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:2px"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg><span id="points-display-run">0</span></span>
                     </div>
                 </div>
@@ -94,6 +94,12 @@
                     <div class="diff-icon-wrap soon-wrap">?</div>
                     <span class="diff-name">???</span>
                 </div>
+            </div>
+
+            <!-- Mine HUD inline (menu, when run is active) — sits between
+                 the difficulty select grid and the board carousel HUD. -->
+            <div class="mine-hud mine-hud-inline mine-hud-menu" id="mine-hud-menu">
+                <div class="mine-hud-slots"></div>
             </div>
 
             <div class="board-carousel-section juicy-card" id="board-carousel-section">
@@ -140,11 +146,6 @@
                 <button class="collection-btn juicy-btn" id="collection-btn">COLLECTION</button>
             </div>
 
-            <!-- Mine HUD inline (menu, when run is active) -->
-            <div class="mine-hud mine-hud-inline mine-hud-menu" id="mine-hud-menu">
-                <div class="mine-hud-slots"></div>
-            </div>
-
         </div>
 
         <!-- ── GAME ── -->
@@ -167,7 +168,7 @@
                 <div class="run-pts-hud juicy-card" id="run-pts-hud">
                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>
                     <span class="run-pts-hud-val num-font" id="run-pts-hud-val">0</span>
-                    <span class="run-pts-hud-label">RUN</span>
+                    <span class="run-pts-hud-label">Rpts.</span>
                 </div>
             </div>
             <div class="zoom-container" id="zoom-container">
@@ -186,7 +187,7 @@
                     <div class="sm-rank-label" id="sm-rank-letter">D</div>
                 </div>
                 <div class="sm-score-box">
-                    <span class="sm-score-caption" data-text="style">STYLE</span>
+                    <span class="sm-score-caption">Spts.</span>
                     <div class="sm-score num-font" id="sm-score">0</div>
                 </div>
                 <div class="style-trigger-stack" id="style-trigger-stack" aria-live="polite"></div>
@@ -224,7 +225,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
                 </div>
                 <div class="mm-rp-info">
-                    <span class="mm-rp-label">RPTS</span>
+                    <span class="mm-rp-label">Rpts.</span>
                     <span class="mm-rp-value num-font" id="mm-run-pts">0</span>
                 </div>
             </div>
@@ -249,8 +250,8 @@
                 </div>
                 <div class="mm-feat-info">
                     <div class="mm-feat-title">Scratch Card</div>
-                    <div class="mm-feat-desc">Double your RPTS or nothing</div>
-                    <div class="mm-feat-cost" id="scratch-cost-label">50 RPTS</div>
+                    <div class="mm-feat-desc">Double your Rpts. or nothing</div>
+                    <div class="mm-feat-cost" id="scratch-cost-label">50 Rpts.</div>
                 </div>
                 <div class="mm-feat-actions">
                     <button class="mm-feat-buy-btn juicy-btn" id="scratch-buy-btn">BUY</button>
@@ -270,7 +271,7 @@
                 <div class="mm-feat-info">
                     <div class="mm-feat-title">Slot Machine</div>
                     <div class="mm-feat-desc">Win a mine for your loadout</div>
-                    <div class="mm-feat-cost" id="slot-cost-label">100 RPTS</div>
+                    <div class="mm-feat-cost" id="slot-cost-label">100 Rpts.</div>
                 </div>
                 <div class="mm-feat-actions">
                     <button class="mm-feat-buy-btn juicy-btn" id="slot-buy-btn">BUY</button>
@@ -284,7 +285,7 @@
                     <span class="mm-shop-title">Mine Shop</span>
                     <button class="mm-shop-reroll-btn juicy-btn" id="mm-shop-reroll-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                        <span>REROLL · <span id="mm-shop-reroll-cost">50</span> RPTS</span>
+                        <span>REROLL · <span id="mm-shop-reroll-cost">50</span> Rpts.</span>
                     </button>
                 </div>
                 <div class="mm-shop-slots">
@@ -394,22 +395,23 @@
                 </div>
                 <p class="redeem-msg hidden" id="redeem-msg"></p>
             </div>
-            <button class="close-settings-btn juicy-btn" id="settings-close-btn" data-text="done">Done</button>
+            <button class="modal-close-x juicy-btn" id="settings-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
     </div>
 
     <!-- ── SAVES MODAL ── -->
     <div class="modal-overlay" id="saves-modal">
         <div class="modal-content juicy-card">
+            <button class="modal-close-x juicy-btn" id="saves-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2 data-text="saveFiles">Save Files</h2>
             <div class="save-slots" id="save-slots"></div>
-            <button class="close-settings-btn juicy-btn" id="saves-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── STORE (THEMES) MODAL ── -->
     <div class="modal-overlay" id="store-modal">
         <div class="modal-content juicy-card store-modal-content">
+            <button class="modal-close-x juicy-btn" id="store-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2>Themes</h2>
             <div class="tab-nav-container" id="store-tab-nav">
                 <button class="tab-nav-arrow tab-nav-prev juicy-btn" id="store-tab-prev" aria-label="Previous tab">&#8249;</button>
@@ -421,13 +423,13 @@
             </div>
             <div class="tab-panel active" id="store-panel-themes"></div>
             <div class="tab-panel" id="store-panel-uncommon"></div>
-            <button class="close-settings-btn juicy-btn" id="store-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── FEATS MODAL ── -->
     <div class="modal-overlay" id="feats-modal">
         <div class="modal-content juicy-card feats-modal-content">
+            <button class="modal-close-x juicy-btn" id="feats-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2 data-text="feats">Feats</h2>
             <div class="feats-modal-body">
                 <div class="feats-side-nav" id="feats-side-nav">
@@ -439,13 +441,13 @@
                 </div>
                 <div class="feats-list" id="feats-list"></div>
             </div>
-            <button class="close-settings-btn juicy-btn" id="feats-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── COLLECTION MODAL ── -->
     <div class="modal-overlay" id="collection-modal">
         <div class="modal-content juicy-card collection-modal-content">
+            <button class="modal-close-x juicy-btn" id="collection-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2>Collection</h2>
             <div class="tab-nav-container" id="coll-tab-nav">
                 <div class="modal-tab-bar" id="coll-tab-bar" style="flex:1">
@@ -453,13 +455,13 @@
                 </div>
             </div>
             <div class="coll-panel active" id="coll-panel-mines"></div>
-            <button class="close-settings-btn juicy-btn" id="collection-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── MINE INFO MODAL ── -->
     <div class="modal-overlay" id="mine-info-modal">
         <div class="modal-content juicy-card mine-info-modal-content">
+            <button class="modal-close-x juicy-btn" id="mine-info-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <div class="mine-info-icon-wrap" id="mine-info-icon-wrap"></div>
             <h2 id="mine-info-name"></h2>
             <span class="mine-info-passive-tag hidden" id="mine-info-passive-tag">Passive</span>
@@ -481,13 +483,13 @@
                     <span class="mine-info-val" id="mine-info-limit"></span>
                 </div>
             </div>
-            <button class="close-settings-btn juicy-btn" id="mine-info-close-btn" data-text="close">Close</button>
         </div>
     </div>
 
     <!-- ── SLOT MACHINE POPUP ── -->
     <div class="modal-overlay" id="slot-popup">
         <div class="modal-content juicy-card slot-popup-content">
+            <button class="modal-close-x juicy-btn" id="slot-popup-close" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2>Slot Machine</h2>
             <div class="slot-reels-wrap">
                 <div class="slot-reels" id="slot-reels">
@@ -513,18 +515,17 @@
                 <p class="slot-result-label">Pick one mine to add to your loadout:</p>
                 <div class="slot-result-mines" id="slot-result-mines"></div>
             </div>
-            <button class="menu-link-btn juicy-btn" id="slot-popup-close" style="width:100%;margin-top:8px">BACK</button>
         </div>
     </div>
 
     <!-- ── PURCHASE CONFIRM MODAL ── -->
     <div class="modal-overlay" id="purchase-modal">
         <div class="modal-content juicy-card">
+            <button class="modal-close-x juicy-btn" id="purchase-cancel-btn" aria-label="Cancel"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2 id="purchase-title" data-text="purchaseTheme">Purchase Theme</h2>
             <p id="purchase-body" style="color:var(--text2);margin:8px 0 18px;font-size:.88rem"></p>
             <div class="modal-buttons">
-                <button class="confirm-btn juicy-btn" id="purchase-confirm-btn" data-text="buy">Buy</button>
-                <button class="menu-link-btn juicy-btn" id="purchase-cancel-btn" data-text="cancel">Cancel</button>
+                <button class="confirm-btn juicy-btn" id="purchase-confirm-btn" data-text="buy" style="flex:1;min-width:100%">Buy</button>
             </div>
         </div>
     </div>
@@ -532,20 +533,20 @@
     <!-- ── COMING SOON MODAL ── -->
     <div class="modal-overlay coming-soon-overlay" id="coming-soon-modal">
         <div class="modal-content juicy-card">
+            <button class="modal-close-x juicy-btn" id="coming-soon-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2 data-text="comingSoon">Coming Soon</h2>
             <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem" data-text="comingSoonBody">This content isn't available yet. Stay tuned!</p>
-            <button class="confirm-btn juicy-btn" id="coming-soon-close-btn" data-text="ok">OK</button>
         </div>
     </div>
 
     <!-- ── ABORT CONFIRM MODAL ── -->
     <div class="modal-overlay" id="abort-confirm-modal">
         <div class="modal-content juicy-card">
+            <button class="modal-close-x juicy-btn" id="abort-confirm-no-btn" aria-label="Cancel"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <h2>Abort Run?</h2>
-            <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem">Earned RPTS will convert to PTS and you'll get the flag bonus, just like a loss. Continue?</p>
+            <p style="color:var(--text2);margin:8px 0 18px;font-size:.88rem">Earned Rpts. will convert to Ppts. and you'll get the flag bonus, just like a loss. Continue?</p>
             <div class="modal-buttons">
-                <button class="abort-btn juicy-btn" id="abort-confirm-yes-btn">ABORT</button>
-                <button class="menu-link-btn juicy-btn" id="abort-confirm-no-btn">CANCEL</button>
+                <button class="abort-btn juicy-btn" id="abort-confirm-yes-btn" style="flex:1;min-width:100%">ABORT</button>
             </div>
         </div>
     </div>
