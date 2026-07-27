@@ -702,9 +702,19 @@ body.dark-mode .sm-ring-bg {
     left: 50%; transform: translateX(-50%);
     z-index: 105;
     margin: 0; align-self: auto;
-    pointer-events: auto;
+    /* Default pointer-events: none so this HUD — which floats at the
+     * bottom of the fixed board-finished modal overlay — cannot intercept
+     * taps on the menu buttons below it when the modal is not visible.
+     * CSS lets children with pointer-events:auto be hit even when their
+     * parent has pointer-events:none (the modal's hidden state), so we
+     * must opt back in explicitly only when the modal is showing. */
+    pointer-events: none;
     /* Fade in slightly after the modal pops in for visual continuity. */
     animation: hudFadeIn .26s .08s cubic-bezier(.3,.7,.3,1.5) both;
+}
+/* Re-enable interaction only while the board-finished modal is open. */
+#board-finished-modal.show .mine-hud.mine-hud-bf {
+    pointer-events: auto;
 }
 @keyframes hudFadeIn {
     0%   { opacity: 0; transform: translateX(-50%) translateY(20px) scale(.94); }
