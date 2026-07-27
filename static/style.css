@@ -244,6 +244,13 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .diff-icon-wrap[data-themed-diff] { background: transparent; }
 .diff-icon-wrap[data-themed-diff] svg { width: 34px; height: 34px; display: block; }
+/* When a diff card is selected its background becomes --btn-dark, which can
+ * match or be very close to the SVG circle fill.  A white ring separates the
+ * icon from the card background regardless of colour. */
+.diff-box.selected .diff-icon-wrap[data-themed-diff] {
+    outline: 2px solid rgba(255,255,255,0.55);
+    border-radius: 50%;
+}
 .soon-wrap   { background: #ccc; font-size: .9rem; color: #888; }
 .diff-name { font-size: .63rem; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); text-transform: uppercase; }
 .diff-box.diff-soon { opacity: .5; }
@@ -1815,6 +1822,8 @@ body.ting-glitch .container { animation: tingGlitch .8s steps(1) forwards; }
 /* Light variant */
 body.theme-synthwave {
     --accent: #ff2bd6;
+    --accent2: #ff2bd6;
+    --accent-grad: #ff2bd6;
     --bg: #fbeaf6;
     --card: #ffffff;
     --text: #2a0d3a;
@@ -1836,6 +1845,8 @@ body.theme-synthwave {
 /* ── SPAMTON THEME — full pink & yellow palette ── */
 body.theme-spamton {
     --accent: #FF2BD6;
+    --accent2: #FF2BD6;
+    --accent-grad: #FF2BD6;
     --bg: #fff5fc;
     --bg2: #ffe8f9;
     --card: #ffffff;
@@ -1860,6 +1871,8 @@ body.theme-spamton {
 }
 body.dark-mode.theme-spamton {
     --accent: #FF2BD6;
+    --accent2: #FF2BD6;
+    --accent-grad: #FF2BD6;
     --bg: #190014;
     --bg2: #0e0009;
     --card: #2d0025;
@@ -1886,6 +1899,8 @@ body.dark-mode.theme-spamton {
 /* Dark variant */
 body.dark-mode.theme-synthwave {
     --accent: #ff2bd6;
+    --accent2: #ff2bd6;
+    --accent-grad: #ff2bd6;
     --bg: #1a0a2a;
     --card: #2a1248;
     --text: #ffffff;
@@ -1904,6 +1919,8 @@ body.dark-mode.theme-synthwave {
 /* ── DANGER ZONE THEME (uncommon) — black + hazard yellow, industrial ── */
 body.theme-danger_zone {
     --accent: #FFD500;
+    --accent2: #FFD500;
+    --accent-grad: #FFD500;
     --bg: #f5f3e6;
     --bg2: #ece7cc;
     --card: #ffffff;
@@ -1928,6 +1945,8 @@ body.theme-danger_zone {
 }
 body.dark-mode.theme-danger_zone {
     --accent: #FFD500;
+    --accent2: #FFD500;
+    --accent-grad: #FFD500;
     --bg: #0d0d0d;
     --bg2: #060606;
     --card: #1c1a12;
@@ -1954,6 +1973,8 @@ body.dark-mode.theme-danger_zone {
 /* ── VOLATILE THEME (uncommon) — deep reds & fiery oranges ── */
 body.theme-volatile {
     --accent: #E63312;
+    --accent2: #E63312;
+    --accent-grad: #E63312;
     --bg: #fff3ee;
     --bg2: #ffe4d6;
     --card: #ffffff;
@@ -1978,6 +1999,8 @@ body.theme-volatile {
 }
 body.dark-mode.theme-volatile {
     --accent: #E63312;
+    --accent2: #E63312;
+    --accent-grad: #E63312;
     --bg: #1a0704;
     --bg2: #0d0302;
     --card: #2b0e08;
@@ -2004,6 +2027,8 @@ body.dark-mode.theme-volatile {
 /* ── BLUEPRINT THEME (uncommon) — navy & cyan technical schematic ── */
 body.theme-blueprint {
     --accent: #2FD1FF;
+    --accent2: #2FD1FF;
+    --accent-grad: #2FD1FF;
     --bg: #eef4f8;
     --bg2: #dfe9f0;
     --card: #ffffff;
@@ -2028,6 +2053,8 @@ body.theme-blueprint {
 }
 body.dark-mode.theme-blueprint {
     --accent: #2FD1FF;
+    --accent2: #2FD1FF;
+    --accent-grad: #2FD1FF;
     --bg: #0a2038;
     --bg2: #061420;
     --card: #123a5c;
@@ -2054,6 +2081,8 @@ body.dark-mode.theme-blueprint {
 /* ── RETRO TERMINAL THEME (uncommon) — monochrome CRT green ── */
 body.theme-retro_terminal {
     --accent: #1a8a2e;
+    --accent2: #1a8a2e;
+    --accent-grad: #1a8a2e;
     --bg: #eef7ee;
     --bg2: #dcf0dc;
     --card: #ffffff;
@@ -2078,6 +2107,8 @@ body.theme-retro_terminal {
 }
 body.dark-mode.theme-retro_terminal {
     --accent: #33FF66;
+    --accent2: #33FF66;
+    --accent-grad: #33FF66;
     --bg: #050805;
     --bg2: #020402;
     --card: #0d150d;

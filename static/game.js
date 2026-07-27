@@ -2668,10 +2668,19 @@ class Minesweeper {
             e.stopPropagation();
             /* Don't start drag immediately, wait for movement */
             const ox = e.clientX, oy = e.clientY;
+            const pid = e.pointerId;
             const onMove = (ev) => {
                 if (Math.abs(ev.clientX - ox) > DRAG_THRESH || Math.abs(ev.clientY - oy) > DRAG_THRESH) {
                     document.removeEventListener('pointermove', onMove);
                     document.removeEventListener('pointerup', onUp);
+                    /* _bindMineTaps sets pointer-capture on the slot so that
+                     * all pointer events are directed there (preventing
+                     * click-through).  Once a drag begins we must release
+                     * that capture so the eventual pointerup fires on the
+                     * actual element under the cursor (the board cell) and
+                     * reaches the document-level dragEnd listener rather
+                     * than being swallowed by the slot's stopPropagation. */
+                    try { slot.releasePointerCapture(pid); } catch(_) {}
                     startDrag(ev.clientX, ev.clientY);
                     document.addEventListener('pointermove', dragMove);
                     document.addEventListener('pointerup', dragEnd);
