@@ -2087,6 +2087,17 @@ class Minesweeper {
         }
         if (!this.marketShop) { this.marketShopRerollCost = 50; this._rerollMarketShop(); }
 
+        /* Remove any banned mines (e.g. a used totem) from existing shop slots */
+        const banned = this.bannedMineIds || [];
+        if (this.marketShop) {
+            for (let i = 0; i < this.marketShop.length; i++) {
+                if (banned.includes(this.marketShop[i])) {
+                    this.marketShop[i] = this._pickRandomMine();
+                    this.marketShopSold[i] = false;
+                }
+            }
+        }
+
         /* Replenish all mine charges */
         this.playerMines.forEach(m => { m.charges = m.maxCharges; });
         this.renderMineHud();
@@ -2439,7 +2450,9 @@ class Minesweeper {
          * inventory — they're only obtainable via the Slot Machine —
          * unless the player has redeemed the infinite-coins cheat code,
          * in which case legendaries are also allowed to show up here.   */
-        const ids = this.infiniteCoins ? ALL_MINE_IDS.slice() : ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary');
+        const banned = this.bannedMineIds || [];
+        const ids = (this.infiniteCoins ? ALL_MINE_IDS.slice() : ALL_MINE_IDS.filter(id => MINE_DEFS[id].rarity !== 'legendary'))
+            .filter(id => !banned.includes(id));
         return this._pickRarityWeightedId(ids);
     }
     _rerollMarketShop() {
@@ -4508,9 +4521,8 @@ class Minesweeper {
         const totemIdx = this.playerMines.findIndex(m => m.id === 'totem_mine' && m.charges > 0 && !this.bannedMineIds.includes('totem_mine'));
         if (totemIdx === -1) return false;
 
-        /* Trigger totem: absorb the mine hit */
-        const totemMine = this.playerMines[totemIdx];
-        totemMine.charges = 0;
+        /* Trigger totem: absorb the mine hit, then remove it from the loadout entirely */
+        this.playerMines.splice(totemIdx, 1);
         this.bannedMineIds.push('totem_mine');
         this.totemTriggered = true;
 
