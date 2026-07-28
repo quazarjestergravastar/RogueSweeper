@@ -1944,8 +1944,10 @@ class Minesweeper {
         this.feats.bestBoardStyleScore = Math.max(this.feats.bestBoardStyleScore || 0, boardScore);
         this.feats.bestRunStyleScore   = Math.max(this.feats.bestRunStyleScore   || 0, this.runStyleScore);
 
-        /* Award run points from board style score */
-        this.addRunPoints(boardScore);
+        /* Economy: 1 Rpt per 2 Spts — add silently; HUD bumps after animation */
+        const rptsEarned = Math.floor(boardScore / 2);
+        this.runPoints += rptsEarned;
+        this.saveCurrentToSlot(this.currentSlot);
 
         let correctFlags = 0;
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++)
@@ -1971,34 +1973,34 @@ class Minesweeper {
         this.styleMeter.hide();
 
         const el = document.getElementById('board-finished-modal');
-        const rankLine = document.getElementById('bf-rank-line');
-        if (rankLine) { rankLine.textContent = `${this.t('style','Style')}: ${boardScore} pts · ${this.t('rank','Rank')}: ${finalRank}`; rankLine.style.color = RANK_COLORS[finalRank]; }
         const overallRank = this.getOverallRunRank(finalRank);
-        const rankBadge = document.getElementById('bf-rank-badge');
-        const rankBadgeLetter = document.getElementById('bf-rank-badge-letter');
-        if (rankBadge && rankBadgeLetter) {
-            rankBadgeLetter.textContent = overallRank;
-            rankBadge.style.setProperty('--rank-color', RANK_COLORS[overallRank]);
-        }
+        const rankLetterEl = document.getElementById('bf-rank-badge-letter');
+        if (rankLetterEl) { rankLetterEl.textContent = overallRank; rankLetterEl.style.color = RANK_COLORS[overallRank]; }
+        document.getElementById('bf-time').textContent = this._formatTime(this.timer);
+        document.getElementById('bf-board-stat').textContent = `${boardNum}/${NUM_BOARDS}`;
+        document.getElementById('bf-flags-stat').textContent = `${correctFlags}`;
 
         if (isLast) {
             this.carouselIndex = 0;
             this._clearRunState(); this.runState = null;
             this.sfx.play('boardwin');
-            document.getElementById('bf-title').textContent   = this.t('runComplete','Run Complete!');
-            document.getElementById('bf-message').textContent = this.t('allBoardsCleared','All 8 boards cleared!');
-            document.getElementById('bf-points').textContent  = earned > 0 ? `+${earned} pts` : '';
+            document.getElementById('bf-title').textContent = this.t('runComplete','Run Complete!');
             document.getElementById('bf-continue-btn').textContent = this.t('backToMenu','Back to Menu');
-            /* Flush run points to main */
             this._flushRunPointsToMain();
         } else {
             if (rs) { rs.currentBoard++; rs.unlockedUpTo = Math.max(rs.unlockedUpTo, rs.currentBoard); rs.boardState = null; rs.paused = true; this.carouselIndex = rs.currentBoard; this._saveRunState(); }
-            document.getElementById('bf-title').textContent   = `${this.t('board','Board')} ${boardNum} ${this.t('completeWord','Complete')}!`;
-            document.getElementById('bf-message').textContent = `${this.t('board','Board')} ${boardNum} ${this.t('of','of')} 8 ${this.t('cleared','cleared')}!`;
-            document.getElementById('bf-points').textContent  = earned > 0 ? `+${earned} pts` : '';
+            document.getElementById('bf-title').textContent = `${this.t('board','Board')} ${boardNum} ${this.t('completeWord','Complete')}!`;
             document.getElementById('bf-continue-btn').textContent = 'Continue';
         }
         el.classList.add('show');
+        /* Animate Spts → Rpts conversion */
+        this._animateSptConversion(
+            document.getElementById('bf-spts-val'),
+            document.getElementById('bf-rpts-val'),
+            document.getElementById('bf-convert-arrow'),
+            boardScore, rptsEarned,
+            () => { this._updateRunPtsHud(); }
+        );
     }
 
     getOverallRunRank(fallbackRank = 'D') {
@@ -2008,6 +2010,50 @@ class Minesweeper {
         if (!ranks.length) return fallbackRank;
         const avg = ranks.reduce((sum, rank) => sum + RANK_LABELS.indexOf(rank), 0) / ranks.length;
         return RANK_LABELS[Math.max(0, Math.min(RANK_LABELS.length - 1, Math.round(avg)))];
+    }
+
+    _formatTime(s) {
+        if (!s) return '0s';
+        if (s >= 60) return `${Math.floor(s / 60)}m ${s % 60}s`;
+        return `${s}s`;
+    }
+
+    /* Animate Spts → Rpts conversion in the board-finished modal.
+     * Phase 1: count spts up from 0.
+     * Phase 2: arrow pulses.
+     * Phase 3: count rpts up from 0 then bump HUD via onDone().        */
+    _animateSptConversion(sptEl, rptEl, arrowEl, spts, rpts, onDone) {
+        if (sptEl) { sptEl.textContent = '0'; sptEl.classList.remove('done'); }
+        if (rptEl) { rptEl.textContent = '+0'; rptEl.classList.remove('done'); }
+        if (arrowEl) arrowEl.classList.remove('pulse');
+
+        const animCounter = (el, to, dur, fmt, cb) => {
+            const start = performance.now();
+            const step = (now) => {
+                const t = Math.min(1, (now - start) / dur);
+                const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                if (el) el.textContent = fmt(Math.round(to * ease));
+                if (t < 1) requestAnimationFrame(step);
+                else if (cb) cb();
+            };
+            requestAnimationFrame(step);
+        };
+
+        setTimeout(() => {
+            /* Phase 1: spts */
+            animCounter(sptEl, spts, 550, v => `${v}`, () => {
+                if (sptEl) sptEl.classList.add('done');
+                if (arrowEl) arrowEl.classList.add('pulse');
+                /* Phase 2: brief arrow flash, then rpts */
+                setTimeout(() => {
+                    if (arrowEl) arrowEl.classList.remove('pulse');
+                    animCounter(rptEl, rpts, 450, v => `+${v}`, () => {
+                        if (rptEl) rptEl.classList.add('done');
+                        if (onDone) onDone();
+                    });
+                }, 220);
+            });
+        }, 300); /* wait for modal pop-in */
     }
 
     startNextBoard() {
@@ -4549,6 +4595,7 @@ class Minesweeper {
                 delay+=25;
             }
         }
+        const boardNum = this.runState ? this.runState.currentBoard + 1 : 1;
         this.carouselIndex = 0;
         this._flushRunPointsToMain();
         this._clearRunState(); this.runState=null;
@@ -4559,19 +4606,16 @@ class Minesweeper {
         const earned = this.awardPoints(correctFlags);
         const stylePts = this.styleMeter ? this.styleMeter.getScore() : 0;
         const styleRank = this.styleMeter ? this.styleMeter.getFinalRank() : 'D';
+        const timerSnap = this.timer;
         setTimeout(() => {
-            document.getElementById('modal-title').textContent   = this.t('runOver','Run Over');
-            document.getElementById('modal-message').textContent = `${correctFlags} flag${correctFlags!==1?'s':''} · ${this.timer}s`;
-            document.getElementById('points-earned').textContent = earned > 0 ? `+${earned} ${this.t('points','points')}` : this.t('noPointsEarned','No points earned');
-            const badge = document.getElementById('go-rank-badge');
-            const letter = document.getElementById('go-rank-badge-letter');
-            const line = document.getElementById('go-rank-line');
-            if (badge && letter && line) {
-                letter.textContent = styleRank;
-                badge.style.setProperty('--rank-color', RANK_COLORS[styleRank]);
-                line.textContent = `${this.t('style','Style')}: ${stylePts} pts · ${this.t('rank','Rank')}: ${styleRank}`;
-                line.style.color = RANK_COLORS[styleRank];
-            }
+            document.getElementById('modal-title').textContent = this.t('runOver','Run Over');
+            const rankEl = document.getElementById('go-rank-badge-letter');
+            if (rankEl) { rankEl.textContent = styleRank; rankEl.style.color = RANK_COLORS[styleRank]; }
+            document.getElementById('go-time').textContent = this._formatTime(timerSnap);
+            document.getElementById('go-spts-val').textContent = stylePts;
+            document.getElementById('go-board-stat').textContent = `${boardNum}/${NUM_BOARDS}`;
+            document.getElementById('go-flags-stat').textContent = `${correctFlags}`;
+            document.getElementById('points-earned').textContent = earned > 0 ? `+${earned} ${this.t('points','points')}` : '';
             document.getElementById('game-over-modal').classList.add('show');
         }, Math.min(delay+300, 1400));
     }

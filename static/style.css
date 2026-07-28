@@ -1060,13 +1060,61 @@ body.dark-mode .sm-ring-bg {
 /* Tighter board-finished / game-over modals so the loadout below stays visible. */
 #board-finished-modal .modal-content,
 #game-over-modal .modal-content {
-    padding: 16px 16px 14px;
+    padding: 14px 14px 12px;
     margin-bottom: 100px;
 }
 #board-finished-modal .modal-content h2,
-#game-over-modal .modal-content h2 { margin-bottom: 3px; font-size: 1rem; }
-#board-finished-modal .modal-content p,
-#game-over-modal .modal-content p { font-size: .74rem; margin-bottom: 1px; }
+#game-over-modal .modal-content h2 { margin-bottom: 6px; font-size: 1rem; }
+
+/* ── END-RUN MODAL TILE LAYOUT ───────────────────────────── */
+.er-modal { width: min(92vw, 360px); }
+
+.er-tiles {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 6px;
+}
+.er-tiles.er-tiles-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.er-tile {
+    background: var(--bg2); border-radius: 12px; padding: 7px 8px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    min-height: 58px; justify-content: center;
+}
+.er-tile-label {
+    font-size: .5rem; font-weight: 900; letter-spacing: .1em;
+    color: var(--text-muted); text-transform: uppercase;
+}
+.er-tile-value {
+    font-size: 1.25rem; font-weight: 900; color: var(--text); line-height: 1;
+}
+.er-rank-letter {
+    font-size: 2.1rem; font-weight: 1000; line-height: 1;
+    font-family: 'Nunito', var(--sys-font);
+    transition: color .3s;
+}
+
+/* Spts → Rpts conversion row */
+.er-convert-row {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    background: var(--bg2); border-radius: 12px; padding: 9px 10px; margin: 0 0 6px;
+}
+.er-convert-side {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1;
+}
+.er-convert-label {
+    font-size: .48rem; font-weight: 900; letter-spacing: .1em;
+    color: var(--text-muted); text-transform: uppercase;
+}
+.er-convert-val {
+    font-size: 1.45rem; font-weight: 900; color: var(--text); line-height: 1;
+    transition: color .25s;
+}
+.er-convert-val.done { color: var(--accent); }
+.er-convert-arrow {
+    font-size: 1.3rem; color: var(--text-muted); padding: 0 4px;
+    transition: color .2s, transform .2s;
+    flex-shrink: 0;
+}
+.er-convert-arrow.pulse { color: var(--accent); transform: scale(1.3); }
 
 /* Compact modal sizing across all modals */
 .modal-content {

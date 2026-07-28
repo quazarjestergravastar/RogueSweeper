@@ -303,17 +303,33 @@
 
     <!-- ── GAME OVER MODAL ── -->
     <div class="modal-overlay" id="game-over-modal">
-        <div class="modal-content juicy-card">
+        <div class="modal-content juicy-card er-modal">
             <h2 id="modal-title" data-text="runOver">Run Over</h2>
-            <p id="modal-message"></p>
-            <p class="points-earned" id="points-earned"></p>
-            <div class="result-feedback">
-                <div class="bf-rank-badge compact" id="go-rank-badge">
-                    <span id="go-rank-badge-letter">D</span>
-                    <small data-text="styleRank">STYLE RANK</small>
+            <div class="er-tiles">
+                <div class="er-tile">
+                    <span class="er-tile-label">RANK</span>
+                    <span class="er-rank-letter" id="go-rank-badge-letter">D</span>
                 </div>
-                <p class="bf-rank-line" id="go-rank-line"></p>
+                <div class="er-tile">
+                    <span class="er-tile-label">TIME</span>
+                    <span class="er-tile-value" id="go-time">0s</span>
+                </div>
             </div>
+            <div class="er-tiles er-tiles-3">
+                <div class="er-tile">
+                    <span class="er-tile-label">STYLE PTS</span>
+                    <span class="er-tile-value" id="go-spts-val">0</span>
+                </div>
+                <div class="er-tile">
+                    <span class="er-tile-label">BOARD</span>
+                    <span class="er-tile-value" id="go-board-stat">1/8</span>
+                </div>
+                <div class="er-tile">
+                    <span class="er-tile-label">FLAGS ✓</span>
+                    <span class="er-tile-value" id="go-flags-stat">0</span>
+                </div>
+            </div>
+            <p class="points-earned" id="points-earned"></p>
             <div class="modal-buttons">
                 <button class="restart-btn juicy-btn" id="restart-btn" data-text="newRun">New Run</button>
                 <button class="menu-link-btn juicy-btn" id="menu-btn" data-text="menu">Menu</button>
@@ -323,17 +339,40 @@
 
     <!-- ── BOARD FINISHED MODAL ── -->
     <div class="modal-overlay" id="board-finished-modal">
-        <div class="modal-content juicy-card">
+        <div class="modal-content juicy-card er-modal">
             <h2 id="bf-title" data-text="boardComplete">Board Complete!</h2>
-            <p id="bf-message"></p>
-            <p class="points-earned" id="bf-points"></p>
-            <div class="result-feedback">
-                <div class="bf-rank-badge compact" id="bf-rank-badge">
-                    <span id="bf-rank-badge-letter">D</span>
+            <div class="er-tiles">
+                <div class="er-tile">
+                    <span class="er-tile-label">RANK</span>
+                    <span class="er-rank-letter" id="bf-rank-badge-letter">D</span>
                 </div>
-                <p class="bf-rank-line" id="bf-rank-line"></p>
+                <div class="er-tile">
+                    <span class="er-tile-label">TIME</span>
+                    <span class="er-tile-value" id="bf-time">0s</span>
+                </div>
             </div>
-            <div class="modal-buttons">
+            <div class="er-convert-row">
+                <div class="er-convert-side">
+                    <span class="er-convert-label">SPTS EARNED</span>
+                    <span class="er-convert-val" id="bf-spts-val">0</span>
+                </div>
+                <span class="er-convert-arrow" id="bf-convert-arrow">→</span>
+                <div class="er-convert-side">
+                    <span class="er-convert-label">RPTS GAINED</span>
+                    <span class="er-convert-val" id="bf-rpts-val">+0</span>
+                </div>
+            </div>
+            <div class="er-tiles">
+                <div class="er-tile">
+                    <span class="er-tile-label">BOARD</span>
+                    <span class="er-tile-value" id="bf-board-stat">1/8</span>
+                </div>
+                <div class="er-tile">
+                    <span class="er-tile-label">FLAGS ✓</span>
+                    <span class="er-tile-value" id="bf-flags-stat">0</span>
+                </div>
+            </div>
+            <div class="modal-buttons" style="margin-top:6px">
                 <button class="confirm-btn juicy-btn" id="bf-continue-btn" style="flex:1;min-width:100%" data-text="continue">Continue</button>
             </div>
         </div>
