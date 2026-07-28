@@ -134,29 +134,29 @@ const MINE_DEFS = {
         color: '#f44336', maxCharges: 2, placesPerBoard: 1,
         rarity: 'common',
         requirement: 'None',
-        effect: 'Flags all adjacent mines if any are present. If none, plays a disappearing animation.',
+        effect: 'Flags all adjacent mines on contact. Whiffs silently if none are adjacent.',
         trigger: 'Instantly on placement',
-        limit: '1 time per board',
+        limit: '1 per board',
         icon: () => Sprites.mine_mine
     },
     trench_mine: {
         id: 'trench_mine', name: 'Trench Mine', cost: 100,
         color: '#795548', maxCharges: 2, placesPerBoard: 2,
         rarity: 'common',
-        requirement: 'Must be placed on a zero tile adjacent to number tiles',
-        effect: 'Gives style points equal to the total of all adjacent number tiles whenever the style rank goes up.',
-        trigger: 'Passive — activates on each style rank-up',
-        limit: '2 times per board',
+        requirement: 'Zero tile adjacent to numbered tiles',
+        effect: 'Awards Spts equal to the sum of adjacent numbers each time your Style rank goes up.',
+        trigger: 'Passive — on each Style rank-up',
+        limit: '2 per board',
         icon: () => Sprites.trench_mine
     },
     grenade_mine: {
         id: 'grenade_mine', name: 'Grenade Mine', cost: 220,
         color: '#4CAF50', maxCharges: 2, placesPerBoard: 1,
         rarity: 'common',
-        requirement: 'None to place — dormant until Style rank C',
-        effect: 'Opens a smaller area if placed on a mine tile. Ends the run if placed on a non-mine tile. Sits dormant on the board until Style rank reaches C, then activates automatically.',
-        trigger: 'On placement once Style rank C+ is reached',
-        limit: '1 time per board',
+        requirement: 'None',
+        effect: 'Dormant until Style rank C. Auto-activates — reveals area if on a mine tile, ends the run if not.',
+        trigger: 'Auto-activates once Style rank C is reached',
+        limit: '1 per board',
         icon: () => Sprites.grenade_mine
     },
     totem_mine: {
@@ -164,9 +164,9 @@ const MINE_DEFS = {
         color: '#FFC107', maxCharges: 2, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'Prevents the run from ending once when the player would dig up a mine. Becomes permanently unusable afterwards.',
-        trigger: 'Passive — triggers automatically when a mine would end the run',
-        limit: '1 time per board; permanently consumed once triggered',
+        effect: 'Absorbs one fatal mine dig, saving the run. Permanently consumed afterward.',
+        trigger: 'Passive — triggers on a lethal dig',
+        limit: '1 per run (permanently consumed)',
         icon: () => Sprites.totem_mine
     },
     fractal_mine: {
@@ -174,9 +174,9 @@ const MINE_DEFS = {
         color: '#9C27B0', maxCharges: 1, placesPerBoard: 1,
         rarity: 'rare',
         requirement: 'None',
-        effect: 'When any mine within its 3×3 radius is triggered, all mines in that radius (including other fractal mines) detonate in a chain reaction.',
-        trigger: 'Passive — activates when any mine in radius is triggered',
-        limit: '1 time per board',
+        effect: 'When any mine in its 3×3 radius triggers, all mines in that radius chain-detonate.',
+        trigger: 'Passive — on any mine trigger in radius',
+        limit: '1 per board',
         icon: () => Sprites.fractal_mine
     },
     kickstart_mine: {
@@ -184,9 +184,9 @@ const MINE_DEFS = {
         color: '#00BCD4', maxCharges: 3, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'Instantly kicks the Style Meter into gear on your very first safe click of the board, granting bonus fill and score right away instead of starting cold.',
-        trigger: 'Passive — activates on the first safe click of each board',
-        limit: '1 time per board',
+        effect: 'Boosts the Style Meter on your first dig of each board. Skips the cold start.',
+        trigger: 'Passive — on first dig of the board',
+        limit: '1 per board',
         icon: () => Sprites.kickstart_mine
     },
     diffusal_mine: {
@@ -194,9 +194,9 @@ const MINE_DEFS = {
         color: '#009688', maxCharges: 2, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'If you dig up a mine, starts a 10-second countdown instead of ending the run instantly. Correctly flag that exact tile before time runs out to diffuse it and gain +2 Style ranks. If time runs out, the run ends as normal.',
-        trigger: 'Passive — triggers automatically when a mine would end the run',
-        limit: '1 time per board; permanently consumed once triggered',
+        effect: 'If you hit a mine, a 10s countdown starts. Flag that tile in time: survive and gain +2 Style ranks. Fail: run ends.',
+        trigger: 'Passive — triggers on a lethal dig',
+        limit: '1 per run (permanently consumed)',
         icon: () => Sprites.diffusal_mine
     },
     steel_mine: {
@@ -204,19 +204,19 @@ const MINE_DEFS = {
         color: '#90A4AE', maxCharges: 1, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'For every 100 Spts. you earn across the run, instantly grants +50 Rpts.',
-        trigger: 'Passive — checked automatically every time Spts. increases',
-        limit: '1 time per board',
+        effect: 'Grants +50 Rpts for every 100 Spts earned during the run.',
+        trigger: 'Passive — on each Spts milestone',
+        limit: '1 per board',
         icon: () => Sprites.steel_mine
     },
     pipe_mine: {
         id: 'pipe_mine', name: 'Pipe Mine', cost: 240,
         color: '#607D8B', maxCharges: 3, placesPerBoard: 1,
         rarity: 'rare',
-        requirement: 'Must be manually placed — dormant until Style rank B',
-        effect: 'Sits dormant on the board until Style rank reaches B, then blasts a wide horizontal band through the board, safely revealing roughly a third of the remaining tiles along it (with a few random gaps left unrevealed).',
-        trigger: 'On placement once Style rank B+ is reached',
-        limit: '1 time per board · 3 charges per run',
+        requirement: 'None',
+        effect: 'Dormant until Style rank B. Blasts a horizontal row, safely revealing ~⅓ of tiles along it.',
+        trigger: 'Auto-activates once Style rank B is reached',
+        limit: '1 per board · 3 charges',
         icon: () => Sprites.pipe_mine
     },
     nuke_mimb: {
@@ -224,9 +224,9 @@ const MINE_DEFS = {
         color: '#FF5722', maxCharges: 1, placesPerBoard: 1,
         rarity: 'legendary',
         requirement: 'None',
-        effect: 'Detonates instantly, safely revealing roughly half of all remaining safe tiles on the board at random.',
+        effect: 'Detonates instantly, safely revealing ~half of all remaining safe tiles at random.',
         trigger: 'Instantly on placement',
-        limit: '1 time per board',
+        limit: '1 per board',
         icon: () => Sprites.nuke_mimb
     },
     tsar_mimba: {
@@ -234,9 +234,9 @@ const MINE_DEFS = {
         color: '#3F51B5', maxCharges: 1, placesPerBoard: 1,
         rarity: 'legendary',
         requirement: 'None',
-        effect: 'Once armed, the board shrinks inward — voiding its outermost ring of tiles — every time your Style rank goes up for the rest of the board.',
-        trigger: 'Passive — activates on each Style rank-up after placement',
-        limit: '1 time per board',
+        effect: "After placement, each Style rank-up voids the board's outermost ring of tiles.",
+        trigger: 'Passive — on each Style rank-up after placement',
+        limit: '1 per board',
         icon: () => Sprites.tsar_mimba
     }
 };
