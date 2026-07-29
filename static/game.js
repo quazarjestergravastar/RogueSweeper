@@ -20,7 +20,7 @@ const SPRITE_FILES = {
     totem_mine:'totem-mine', fractal_mine:'fractal-mine',
     kickstart_mine:'kickstart-mine', diffusal_mine:'diffusal-mine', pipe_mine:'pipe-mine',
     steel_mine:'steel-mine',
-    nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba', dealer_mine:'dealer-mine',
+    nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
     feat_level:'feat-level', feat_level_hi:'feat-level-hi',
@@ -145,7 +145,7 @@ const MINE_DEFS = {
         rarity: 'common',
         requirement: 'Zero tile adjacent to numbered tiles',
         effect: 'Awards Spts equal to the sum of adjacent numbers each time your Style rank goes up.',
-        trigger: 'On each Style rank-up',
+        trigger: 'Passive — on each Style rank-up',
         limit: '2 per board',
         icon: () => Sprites.trench_mine
     },
@@ -175,7 +175,7 @@ const MINE_DEFS = {
         rarity: 'rare',
         requirement: 'None',
         effect: 'When any mine in its 3×3 radius triggers, all mines in that radius chain-detonate.',
-        trigger: 'On any mine detonation in radius',
+        trigger: 'Passive — on any mine trigger in radius',
         limit: '1 per board',
         icon: () => Sprites.fractal_mine
     },
@@ -235,19 +235,9 @@ const MINE_DEFS = {
         rarity: 'legendary',
         requirement: 'None',
         effect: "After placement, each Style rank-up voids the board's outermost ring of tiles.",
-        trigger: 'On each Style rank-up after placement',
+        trigger: 'Passive — on each Style rank-up after placement',
         limit: '1 per board',
         icon: () => Sprites.tsar_mimba
-    },
-    dealer_mine: {
-        id: 'dealer_mine', name: 'Dealer Mine', cost: 300,
-        color: '#1565C0', maxCharges: 1, placesPerBoard: 0,
-        rarity: 'rare', passive: true,
-        requirement: 'None',
-        effect: 'Mine Markets offer one additional mine for purchase.',
-        trigger: 'Passive — active for the entire run',
-        limit: 'Persists for the entire run',
-        icon: () => Sprites.dealer_mine
     }
 };
 const ALL_MINE_IDS = Object.keys(MINE_DEFS);
@@ -2465,26 +2455,12 @@ class Minesweeper {
             .filter(id => !banned.includes(id));
         return this._pickRarityWeightedId(ids);
     }
-    _hasDealer() {
-        return this.playerMines.some(m => m.id === 'dealer_mine');
-    }
     _rerollMarketShop() {
-        const slots = this._hasDealer() ? 3 : 2;
-        this.marketShop     = Array.from({ length: slots }, () => this._pickRandomMine());
-        this.marketShopSold = Array(slots).fill(false);
+        this.marketShop = [this._pickRandomMine(), this._pickRandomMine()];
+        this.marketShopSold = [false, false];
     }
     renderMarketShop() {
-        const hasDealer = this._hasDealer();
-        /* Show/hide the bonus slot added by Dealer Mine */
-        const slot2El = document.getElementById('mm-shop-slot-2');
-        if (slot2El) slot2El.classList.toggle('hidden', !hasDealer);
-        const shopCount = hasDealer ? 3 : 2;
-        /* Expand marketShop array if dealer was just added mid-market */
-        if (this.marketShop && this.marketShop.length < shopCount) {
-            this.marketShop.push(this._pickRandomMine());
-            this.marketShopSold.push(false);
-        }
-        for (let i = 0; i < shopCount; i++) {
+        for (let i = 0; i < 2; i++) {
             const slot = document.getElementById(`mm-shop-slot-${i}`);
             if (!slot) continue;
             const mineId = this.marketShop && this.marketShop[i];
@@ -2633,41 +2609,10 @@ class Minesweeper {
     }
 
     _bindMineTaps(slot, slotIndex) {
+        const DOUBLE_TAP_MS = 300;
         const TAP_MOVE_THRESH = 8;
-        const HOLD_MS = 480;
+        let lastTapTime = 0;
         let downX = 0, downY = 0, didMove = false;
-        let holdTimer = null;
-        let sellCardEl = null;
-
-        const dismissSellCard = () => {
-            if (sellCardEl) { sellCardEl.remove(); sellCardEl = null; }
-            slot.classList.remove('held');
-        };
-
-        const showSellCard = () => {
-            if (sellCardEl) return; /* already showing */
-            const mine = this.playerMines[slotIndex]; if (!mine) return;
-            slot.classList.add('held');
-            sellCardEl = document.createElement('div');
-            sellCardEl.className = 'mine-slot-sell-card';
-            sellCardEl.textContent = 'Sell';
-            slot.appendChild(sellCardEl);
-            sellCardEl.addEventListener('pointerdown', (e) => e.stopPropagation());
-            sellCardEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dismissSellCard();
-                this._showSellConfirm(slotIndex);
-            });
-            /* Dismiss when tapping anywhere outside this slot */
-            const onOutside = (e) => {
-                if (!slot.contains(e.target)) {
-                    dismissSellCard();
-                    document.removeEventListener('pointerdown', onOutside, true);
-                }
-            };
-            setTimeout(() => document.addEventListener('pointerdown', onOutside, true), 0);
-        };
-
         /* Click-through fix: capture the pointer to this exact slot element
          * on press, and stop the event from bubbling to whatever menu/board
          * UI happens to sit behind the HUD. Without pointer capture, a
@@ -2680,24 +2625,34 @@ class Minesweeper {
             downX = e.clientX; downY = e.clientY; didMove = false;
             if (slot.setPointerCapture) { try { slot.setPointerCapture(e.pointerId); } catch (_) {} }
             e.stopPropagation();
-            holdTimer = setTimeout(() => {
-                holdTimer = null;
-                if (!didMove) showSellCard();
-            }, HOLD_MS);
         });
         slot.addEventListener('pointermove', (e) => {
             if (Math.abs(e.clientX - downX) > TAP_MOVE_THRESH || Math.abs(e.clientY - downY) > TAP_MOVE_THRESH) {
                 didMove = true;
-                if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
             }
         });
         slot.addEventListener('pointerup', (e) => {
             e.stopPropagation();
             if (slot.releasePointerCapture) { try { slot.releasePointerCapture(e.pointerId); } catch (_) {} }
-            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-            if (didMove || sellCardEl) return; /* drag ended or sell card is up — no info popup */
+            if (didMove) { lastTapTime = 0; return; }
+            const now = Date.now();
             const mine = this.playerMines[slotIndex];
-            if (mine) this.showMineInfo(mine.id);
+            if (!mine) return;
+            if (now - lastTapTime < DOUBLE_TAP_MS) {
+                /* Double tap — sell confirm */
+                lastTapTime = 0;
+                this._showSellConfirm(slotIndex);
+            } else {
+                lastTapTime = now;
+                /* Single tap (after delay): show info */
+                setTimeout(() => {
+                    if (lastTapTime === now) {
+                        lastTapTime = 0;
+                        const m = this.playerMines[slotIndex];
+                        if (m) this.showMineInfo(m.id);
+                    }
+                }, DOUBLE_TAP_MS);
+            }
         });
         slot.addEventListener('click', (e) => { e.stopPropagation(); });
     }
@@ -2706,14 +2661,10 @@ class Minesweeper {
         const mine = this.playerMines[slotIndex]; if (!mine) return;
         const def = MINE_DEFS[mine.id];
         const refund = Math.floor(def.cost * SELL_REFUND_RATIO);
-        this.showDiffModal(
-            `Sell ${def.name}?`,
-            `Bought for <strong>${def.cost} Rpts.</strong><br>Refund: <strong>${refund} Rpts.</strong>`,
-            [
-                { label: 'Sell', cls: 'abort-btn', action: () => this.sellMine(slotIndex) },
-                { label: 'Cancel', cls: 'menu-link-btn', action: () => {} }
-            ]
-        );
+        this.showDiffModal(`Sell ${def.name}?`, `You'll get back <strong>${refund} Rpts.</strong>`, [
+            { label: 'Sell', cls: 'abort-btn', action: () => this.sellMine(slotIndex) },
+            { label: 'Cancel', cls: 'menu-link-btn', action: () => {} }
+        ]);
     }
 
     _bindMineDrag(slot, slotIndex) {
@@ -2754,10 +2705,8 @@ class Minesweeper {
             const el = document.elementFromPoint(x, y);
             ghost.style.display = '';
             if (el) {
-                /* Walk up from child elements (e.g. mine-cell-placed overlay) to the .cell */
-                const cellEl = el.classList.contains('cell') ? el : el.closest('.cell');
-                if (cellEl) {
-                    const r = parseInt(cellEl.dataset.row), c = parseInt(cellEl.dataset.col);
+                if (el.classList.contains('cell')) {
+                    const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
                     if (!isNaN(r) && !isNaN(c)) this.placeMineOnBoard(slotIndex, r, c);
                 } else {
                     /* Check if dropped on another mine slot (reorder) */
@@ -2809,104 +2758,6 @@ class Minesweeper {
             document.removeEventListener('pointermove', dragMove);
             document.removeEventListener('pointerup', dragEnd);
         };
-    }
-
-    /* ══ BOARD-MINE PICKUP (long-press a placed overlay) ═══════ */
-    _bindPlacedMinePickup(overlay, slotIndex, r, c) {
-        const HOLD_MS = 480;
-        const MOVE_THR = 8;
-        let holdTimer = null, pressX = 0, pressY = 0;
-
-        overlay.addEventListener('pointerdown', (e) => {
-            /* Prevent the board grid from seeing this press so it doesn't
-             * start a normal dig/flag gesture on the same pointer event. */
-            e.stopPropagation();
-            pressX = e.clientX; pressY = e.clientY;
-            holdTimer = setTimeout(() => {
-                holdTimer = null;
-                this._pickUpBoardMine(overlay, slotIndex, r, c, pressX, pressY);
-            }, HOLD_MS);
-        });
-        overlay.addEventListener('pointermove', (e) => {
-            if (holdTimer && (Math.abs(e.clientX - pressX) > MOVE_THR || Math.abs(e.clientY - pressY) > MOVE_THR)) {
-                clearTimeout(holdTimer); holdTimer = null;
-            }
-        });
-        const cancelHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } };
-        overlay.addEventListener('pointerup',     cancelHold);
-        overlay.addEventListener('pointercancel', cancelHold);
-    }
-
-    _pickUpBoardMine(overlay, slotIndex, r, c, startX, startY) {
-        /* Don't pick up a mine whose effect has already fired (it fades out). */
-        if (overlay.classList.contains('fading') || !overlay.parentNode) return;
-        const mine = this.playerMines[slotIndex];
-        if (!mine) return;
-
-        /* Restore charge and board count */
-        mine.charges = Math.min(mine.charges + 1, mine.maxCharges);
-        mine.boardPlacedCount = Math.max(0, mine.boardPlacedCount - 1);
-
-        /* Remove from dormant queue if it hadn't activated yet */
-        this.dormantMines = this.dormantMines.filter(m => !(m.r === r && m.c === c && m.id === mine.id));
-
-        overlay.remove();
-        this.renderMineHud();
-        this.saveCurrentToSlot(this.currentSlot);
-        this.sfx.play('btn');
-
-        /* Immediately start a floating drag so the user can drop it in one gesture */
-        this._startFloatingDrag(slotIndex, startX, startY);
-    }
-
-    _startFloatingDrag(slotIndex, startX, startY) {
-        const ghost = document.getElementById('mine-drag-ghost');
-        if (!ghost) return;
-        const mine = this.playerMines[slotIndex]; if (!mine) return;
-        const def = MINE_DEFS[mine.id];
-
-        let isDragging = true;
-        ghost.innerHTML = def.icon();
-        ghost.style.background = def.color + '33';
-        ghost.style.border = `2px solid ${def.color}`;
-        ghost.style.left = startX + 'px'; ghost.style.top = startY + 'px';
-        ghost.classList.remove('hidden');
-
-        const moveDrag = (e) => {
-            ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
-            ghost.style.display = 'none';
-            const el = document.elementFromPoint(e.clientX, e.clientY);
-            ghost.style.display = '';
-            document.querySelectorAll('.cell.mine-drop-target').forEach(c => c.classList.remove('mine-drop-target'));
-            const cellEl = el && (el.classList.contains('cell') ? el : el.closest('.cell'));
-            if (cellEl) cellEl.classList.add('mine-drop-target');
-        };
-        const endDrag = (e) => {
-            if (!isDragging) return;
-            isDragging = false;
-            document.removeEventListener('pointermove', moveDrag);
-            document.removeEventListener('pointerup',   endDrag);
-            ghost.classList.add('hidden');
-            document.querySelectorAll('.cell.mine-drop-target').forEach(c => c.classList.remove('mine-drop-target'));
-            ghost.style.display = 'none';
-            const el = document.elementFromPoint(e.clientX, e.clientY);
-            ghost.style.display = '';
-            if (el) {
-                const cellEl = el.classList.contains('cell') ? el : el.closest('.cell');
-                if (cellEl) {
-                    const nr = parseInt(cellEl.dataset.row), nc = parseInt(cellEl.dataset.col);
-                    if (!isNaN(nr) && !isNaN(nc)) this.placeMineOnBoard(slotIndex, nr, nc);
-                } else {
-                    const targetSlot = el.closest('.mine-slot');
-                    if (targetSlot) {
-                        const targetIdx = parseInt(targetSlot.dataset.slotIndex);
-                        if (!isNaN(targetIdx) && targetIdx !== slotIndex) this._reorderMine(slotIndex, targetIdx);
-                    }
-                }
-            }
-        };
-        document.addEventListener('pointermove', moveDrag);
-        document.addEventListener('pointerup',   endDrag);
     }
 
     _reorderMine(fromIdx, toIdx) {
@@ -3045,8 +2896,6 @@ class Minesweeper {
             }
             if (isDormant) overlay.classList.add('mine-dormant');
             cell.appendChild(overlay);
-            /* Allow long-pressing a placed mine to pick it back up */
-            this._bindPlacedMinePickup(overlay, slotIndex, r, c);
         }
 
         if (isDormant) {
@@ -4231,11 +4080,6 @@ class Minesweeper {
         }
         gb.appendChild(frag);
         this._refreshScrollDims();
-        /* Initialise connection classes. On first render revealed[] is all
-         * false so every cell connects to every neighbour → outer corners
-         * only.  On restore, renderSavedState() calls _updateAllConnections
-         * again after applying revealed state.                              */
-        this._updateAllConnections();
     }
     renderSavedState() {
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++) {
@@ -4249,7 +4093,6 @@ class Minesweeper {
         if (this.mode==='dig') { dig.classList.add('active'); flag.classList.remove('active'); }
         else { flag.classList.add('active'); dig.classList.remove('active'); }
         this.styleMeter.reset(); this.styleMeter.show();
-        this._updateAllConnections();
     }
 
     /* ══ GAME EVENTS ═══════════════════════════════════════════ */
@@ -4431,76 +4274,6 @@ class Minesweeper {
         return adj;
     }
 
-    /* ══ CONNECTED TILE BORDERS ════════════════════════════════
-     * Adjacent cells of the same state (both revealed or both
-     * unrevealed) share a flat edge; only outer-facing edges get
-     * the full corner radius.  This gives the board a unified
-     * "blob" look rather than a grid of isolated squares.       */
-    _applyCellConnections(r, c) {
-        const cell = this.getCell(r, c);
-        if (!cell || cell.classList.contains('circle-void')) return;
-        const rev = !!this.revealed[r][c];
-        const same = (nr, nc) => {
-            if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) return false;
-            const n = this.getCell(nr, nc);
-            return n && !n.classList.contains('circle-void') && !!this.revealed[nr][nc] === rev;
-        };
-        const T = same(r-1, c), B = same(r+1, c), L = same(r, c-1), R = same(r, c+1);
-        cell.classList.toggle('ct', T);
-        cell.classList.toggle('cb', B);
-        cell.classList.toggle('cl', L);
-        cell.classList.toggle('cr', R);
-
-        /* Inward concave curves — only on unrevealed cells.
-         * Where two unrevealed sides meet but the diagonal corner
-         * is revealed/out-of-bounds, the blob has an inner notch.
-         * A quarter-circle of --card color placed at that corner
-         * carves the notch into a smooth concave arc.            */
-        if (!rev) {
-            const rad = '9px';
-            const mk  = (px, py) =>
-                `radial-gradient(circle at ${px} ${py},var(--card) ${rad},transparent ${rad})`;
-            const needTL = T && L && !same(r-1, c-1);
-            const needTR = T && R && !same(r-1, c+1);
-            const needBL = B && L && !same(r+1, c-1);
-            const needBR = B && R && !same(r+1, c+1);
-            if (needTL) cell.style.setProperty('--ci-tl', mk('0%','0%'));
-            else        cell.style.removeProperty('--ci-tl');
-            if (needTR) cell.style.setProperty('--ci-tr', mk('100%','0%'));
-            else        cell.style.removeProperty('--ci-tr');
-            if (needBL) cell.style.setProperty('--ci-bl', mk('0%','100%'));
-            else        cell.style.removeProperty('--ci-bl');
-            if (needBR) cell.style.setProperty('--ci-br', mk('100%','100%'));
-            else        cell.style.removeProperty('--ci-br');
-        } else {
-            cell.style.removeProperty('--ci-tl');
-            cell.style.removeProperty('--ci-tr');
-            cell.style.removeProperty('--ci-bl');
-            cell.style.removeProperty('--ci-br');
-        }
-    }
-
-    /* Update the tapped cell, its 4 cardinal neighbours, AND its 4
-     * diagonal neighbours — diagonals are read by the inward-curve
-     * logic, so revealing a cell can change a diagonal's curve.   */
-    _updateConnectionsAround(r, c) {
-        this._applyCellConnections(r,   c  );
-        this._applyCellConnections(r-1, c  );
-        this._applyCellConnections(r+1, c  );
-        this._applyCellConnections(r,   c-1);
-        this._applyCellConnections(r,   c+1);
-        this._applyCellConnections(r-1, c-1);
-        this._applyCellConnections(r-1, c+1);
-        this._applyCellConnections(r+1, c-1);
-        this._applyCellConnections(r+1, c+1);
-    }
-
-    _updateAllConnections() {
-        for (let i = 0; i < this.rows; i++)
-            for (let j = 0; j < this.cols; j++)
-                this._applyCellConnections(i, j);
-    }
-
     saveCurrentBoardToRun() {
         if (!this.runState || this.firstClick || this.gameOver) return;
         this.runState.boardState = {
@@ -4611,7 +4384,7 @@ class Minesweeper {
         if (this.revealed[r][c]||this.flagged[r][c]) return;
         this.revealed[r][c]=true;
         const cell = this.getCell(r, c);
-        if (cell) { cell.classList.add('revealed'); this.playCellFx(cell, 'reveal-pop'); this._updateConnectionsAround(r, c); }
+        if (cell) { cell.classList.add('revealed'); this.playCellFx(cell, 'reveal-pop'); }
         if (this.board[r][c]===-1) {
             /* Check totem mine protection */
             if (this._checkTotemProtection(r, c)) return;
@@ -4667,19 +4440,7 @@ class Minesweeper {
          * starts. Flagging the EXACT mine tile within that window diffuses
          * it (+2 style ranks). Letting the countdown expire (or flagging
          * the wrong tile) ends the run as normal.                          */
-        if (this.diffusalCountdown) {
-            /* Already mid-countdown. If the player digs a DIFFERENT mine tile,
-             * diffusal only saves once — treat it as a normal lethal hit.     */
-            if (r !== this.diffusalCountdown.r || c !== this.diffusalCountdown.c) {
-                const { tickInterval, badge } = this.diffusalCountdown;
-                clearTimeout(this.diffusalCountdown.timeout);
-                clearInterval(tickInterval);
-                if (badge) badge.remove();
-                this.diffusalCountdown = null;
-                return false; /* fall through so reveal() calls endGame() */
-            }
-            return true; /* same armed tile re-tapped — ignore */
-        }
+        if (this.diffusalCountdown) return true; /* already mid-countdown, don't retrigger */
         const idx = this.playerMines.findIndex(m => m.id === 'diffusal_mine' && m.charges > 0 && !this.bannedMineIds.includes('diffusal_mine'));
         if (idx === -1) return false;
         const mine = this.playerMines[idx];

@@ -32,7 +32,6 @@
     --r-card: 20px;
     --r-btn:  16px;
     --r-sm:   12px;
-    --grid-line: rgba(0,0,0,.07);
 }
 
 body.dark-mode {
@@ -52,7 +51,6 @@ body.dark-mode {
     --diff-bg:     #222222;
     --swatch-outline: rgba(255,255,255,0.22);
     --n7:#eee;--n8:#777;
-    --grid-line: rgba(255,255,255,.12);
 }
 
 html, body {
@@ -775,33 +773,6 @@ body.dark-mode .sm-ring-bg {
 }
 .mine-slot.place-pop .mine-slot-icon-wrap { animation: mineSlotPlace .4s cubic-bezier(.3,.7,.3,1.5); }
 
-/* Hold-to-sell: highlight ring on held slot */
-.mine-slot.held .mine-slot-icon-wrap {
-    box-shadow: 0 0 0 2.5px var(--accent);
-    transform: scale(1.08);
-}
-
-/* Sell card that appears below a held slot */
-.mine-slot-sell-card {
-    position: absolute; top: calc(100% + 5px); left: 50%;
-    transform: translateX(-50%);
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: .62rem; font-weight: 900; letter-spacing: .06em;
-    color: #ef5350;
-    white-space: nowrap; cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,.18);
-    z-index: 200;
-    animation: sellCardPop .18s cubic-bezier(.3,.7,.3,1.5) both;
-}
-.mine-slot-sell-card:hover { background: #ef535018; }
-@keyframes sellCardPop {
-    from { transform: translateX(-50%) scale(.7); opacity: 0; }
-    to   { transform: translateX(-50%) scale(1);  opacity: 1; }
-}
-
 /* mine drag ghost */
 .mine-drag-ghost {
     position: fixed; z-index: 9998; pointer-events: none;
@@ -925,7 +896,7 @@ body.dark-mode .sm-ring-bg {
     transform-origin: top left; will-change: transform;
 }
 .game-board {
-    display: grid; gap: 0; padding: 10px;
+    display: grid; gap: 3px; padding: 10px;
     background: var(--card); border-radius: 20px;
     transform-origin: top left; will-change: transform;
     transition: clip-path .5s cubic-bezier(.3,.7,.3,1), border-radius .5s ease;
@@ -933,50 +904,16 @@ body.dark-mode .sm-ring-bg {
 .cell {
     width: 28px; height: 28px; min-width: 28px;
     background: var(--cell); border-radius: 9px;
-    box-shadow: none;
+    box-shadow: 0 2px 4px var(--cell-shadow);
     display: flex; align-items: center; justify-content: center;
     font-size: var(--cell-font-size); font-weight: 800; cursor: pointer;
     transition: transform .05s;
     touch-action: none; user-select: none; -webkit-user-select: none;
     position: relative;
     font-family: 'Nunito', var(--sys-font);
-    will-change: transform;
 }
-
-/* Unrevealed cells: compose inward concave-corner gradients (set via JS
- * CSS custom properties) on top of the base cell colour.               */
-.cell:not(.revealed):not(.circle-void) {
-    background:
-        var(--ci-tl, none),
-        var(--ci-tr, none),
-        var(--ci-bl, none),
-        var(--ci-br, none),
-        var(--cell);
-}
-
-/* Faint grid overlay — communicates tile boundaries, only on unopen tiles */
-.cell:not(.revealed):not(.circle-void)::before {
-    content: '';
-    position: absolute; inset: 0;
-    pointer-events: none; z-index: 1;
-    border-radius: inherit;
-    background-image:
-        linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 28px 28px;
-    background-position: 0 0;
-}
-
-/* Connected-edge classes — zero the corner radii on shared sides.
- * Border-radius changes are instant (no transition) to avoid mass
- * style-recalc jank during large cascade reveals.                  */
-.cell.ct { border-top-left-radius: 0; border-top-right-radius: 0; }
-.cell.cb { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.cell.cl { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.cell.cr { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-
-.cell.pressed { transform: scale(.88); z-index: 1; }
-.cell.revealed { background: var(--revealed); cursor: default; }
+.cell.pressed { transform: scale(.88); }
+.cell.revealed { background: var(--revealed); box-shadow: none; cursor: default; }
 .cell.flagged .cell-svg-icon { color: var(--flag); }
 .cell.reveal-pop { animation: revealPop .22s cubic-bezier(.3,.7,.3,1.45); }
 .cell.flag-pop { animation: flagPop .28s cubic-bezier(.3,.7,.3,1.45); }
