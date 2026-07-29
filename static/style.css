@@ -773,6 +773,33 @@ body.dark-mode .sm-ring-bg {
 }
 .mine-slot.place-pop .mine-slot-icon-wrap { animation: mineSlotPlace .4s cubic-bezier(.3,.7,.3,1.5); }
 
+/* Hold-to-sell: highlight ring on held slot */
+.mine-slot.held .mine-slot-icon-wrap {
+    box-shadow: 0 0 0 2.5px var(--accent);
+    transform: scale(1.08);
+}
+
+/* Sell card that appears below a held slot */
+.mine-slot-sell-card {
+    position: absolute; top: calc(100% + 5px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: .62rem; font-weight: 900; letter-spacing: .06em;
+    color: #ef5350;
+    white-space: nowrap; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    z-index: 200;
+    animation: sellCardPop .18s cubic-bezier(.3,.7,.3,1.5) both;
+}
+.mine-slot-sell-card:hover { background: #ef535018; }
+@keyframes sellCardPop {
+    from { transform: translateX(-50%) scale(.7); opacity: 0; }
+    to   { transform: translateX(-50%) scale(1);  opacity: 1; }
+}
+
 /* mine drag ghost */
 .mine-drag-ghost {
     position: fixed; z-index: 9998; pointer-events: none;

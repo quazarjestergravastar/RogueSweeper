@@ -145,7 +145,7 @@ const MINE_DEFS = {
         rarity: 'common',
         requirement: 'Zero tile adjacent to numbered tiles',
         effect: 'Awards Spts equal to the sum of adjacent numbers each time your Style rank goes up.',
-        trigger: 'Passive — on each Style rank-up',
+        trigger: 'On each Style rank-up',
         limit: '2 per board',
         icon: () => Sprites.trench_mine
     },
@@ -175,7 +175,7 @@ const MINE_DEFS = {
         rarity: 'rare',
         requirement: 'None',
         effect: 'When any mine in its 3×3 radius triggers, all mines in that radius chain-detonate.',
-        trigger: 'Passive — on any mine trigger in radius',
+        trigger: 'On any mine detonation in radius',
         limit: '1 per board',
         icon: () => Sprites.fractal_mine
     },
@@ -235,7 +235,7 @@ const MINE_DEFS = {
         rarity: 'legendary',
         requirement: 'None',
         effect: "After placement, each Style rank-up voids the board's outermost ring of tiles.",
-        trigger: 'Passive — on each Style rank-up after placement',
+        trigger: 'On each Style rank-up after placement',
         limit: '1 per board',
         icon: () => Sprites.tsar_mimba
     }
@@ -2609,10 +2609,41 @@ class Minesweeper {
     }
 
     _bindMineTaps(slot, slotIndex) {
-        const DOUBLE_TAP_MS = 300;
         const TAP_MOVE_THRESH = 8;
-        let lastTapTime = 0;
+        const HOLD_MS = 480;
         let downX = 0, downY = 0, didMove = false;
+        let holdTimer = null;
+        let sellCardEl = null;
+
+        const dismissSellCard = () => {
+            if (sellCardEl) { sellCardEl.remove(); sellCardEl = null; }
+            slot.classList.remove('held');
+        };
+
+        const showSellCard = () => {
+            if (sellCardEl) return; /* already showing */
+            const mine = this.playerMines[slotIndex]; if (!mine) return;
+            slot.classList.add('held');
+            sellCardEl = document.createElement('div');
+            sellCardEl.className = 'mine-slot-sell-card';
+            sellCardEl.textContent = 'Sell';
+            slot.appendChild(sellCardEl);
+            sellCardEl.addEventListener('pointerdown', (e) => e.stopPropagation());
+            sellCardEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dismissSellCard();
+                this._showSellConfirm(slotIndex);
+            });
+            /* Dismiss when tapping anywhere outside this slot */
+            const onOutside = (e) => {
+                if (!slot.contains(e.target)) {
+                    dismissSellCard();
+                    document.removeEventListener('pointerdown', onOutside, true);
+                }
+            };
+            setTimeout(() => document.addEventListener('pointerdown', onOutside, true), 0);
+        };
+
         /* Click-through fix: capture the pointer to this exact slot element
          * on press, and stop the event from bubbling to whatever menu/board
          * UI happens to sit behind the HUD. Without pointer capture, a
@@ -2625,34 +2656,24 @@ class Minesweeper {
             downX = e.clientX; downY = e.clientY; didMove = false;
             if (slot.setPointerCapture) { try { slot.setPointerCapture(e.pointerId); } catch (_) {} }
             e.stopPropagation();
+            holdTimer = setTimeout(() => {
+                holdTimer = null;
+                if (!didMove) showSellCard();
+            }, HOLD_MS);
         });
         slot.addEventListener('pointermove', (e) => {
             if (Math.abs(e.clientX - downX) > TAP_MOVE_THRESH || Math.abs(e.clientY - downY) > TAP_MOVE_THRESH) {
                 didMove = true;
+                if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
             }
         });
         slot.addEventListener('pointerup', (e) => {
             e.stopPropagation();
             if (slot.releasePointerCapture) { try { slot.releasePointerCapture(e.pointerId); } catch (_) {} }
-            if (didMove) { lastTapTime = 0; return; }
-            const now = Date.now();
+            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+            if (didMove || sellCardEl) return; /* drag ended or sell card is up — no info popup */
             const mine = this.playerMines[slotIndex];
-            if (!mine) return;
-            if (now - lastTapTime < DOUBLE_TAP_MS) {
-                /* Double tap — sell confirm */
-                lastTapTime = 0;
-                this._showSellConfirm(slotIndex);
-            } else {
-                lastTapTime = now;
-                /* Single tap (after delay): show info */
-                setTimeout(() => {
-                    if (lastTapTime === now) {
-                        lastTapTime = 0;
-                        const m = this.playerMines[slotIndex];
-                        if (m) this.showMineInfo(m.id);
-                    }
-                }, DOUBLE_TAP_MS);
-            }
+            if (mine) this.showMineInfo(mine.id);
         });
         slot.addEventListener('click', (e) => { e.stopPropagation(); });
     }
@@ -2661,10 +2682,14 @@ class Minesweeper {
         const mine = this.playerMines[slotIndex]; if (!mine) return;
         const def = MINE_DEFS[mine.id];
         const refund = Math.floor(def.cost * SELL_REFUND_RATIO);
-        this.showDiffModal(`Sell ${def.name}?`, `You'll get back <strong>${refund} Rpts.</strong>`, [
-            { label: 'Sell', cls: 'abort-btn', action: () => this.sellMine(slotIndex) },
-            { label: 'Cancel', cls: 'menu-link-btn', action: () => {} }
-        ]);
+        this.showDiffModal(
+            `Sell ${def.name}?`,
+            `Bought for <strong>${def.cost} Rpts.</strong><br>Refund: <strong>${refund} Rpts.</strong>`,
+            [
+                { label: 'Sell', cls: 'abort-btn', action: () => this.sellMine(slotIndex) },
+                { label: 'Cancel', cls: 'menu-link-btn', action: () => {} }
+            ]
+        );
     }
 
     _bindMineDrag(slot, slotIndex) {
@@ -4440,7 +4465,19 @@ class Minesweeper {
          * starts. Flagging the EXACT mine tile within that window diffuses
          * it (+2 style ranks). Letting the countdown expire (or flagging
          * the wrong tile) ends the run as normal.                          */
-        if (this.diffusalCountdown) return true; /* already mid-countdown, don't retrigger */
+        if (this.diffusalCountdown) {
+            /* Already mid-countdown. If the player digs a DIFFERENT mine tile,
+             * diffusal only saves once — treat it as a normal lethal hit.     */
+            if (r !== this.diffusalCountdown.r || c !== this.diffusalCountdown.c) {
+                const { tickInterval, badge } = this.diffusalCountdown;
+                clearTimeout(this.diffusalCountdown.timeout);
+                clearInterval(tickInterval);
+                if (badge) badge.remove();
+                this.diffusalCountdown = null;
+                return false; /* fall through so reveal() calls endGame() */
+            }
+            return true; /* same armed tile re-tapped — ignore */
+        }
         const idx = this.playerMines.findIndex(m => m.id === 'diffusal_mine' && m.charges > 0 && !this.bannedMineIds.includes('diffusal_mine'));
         if (idx === -1) return false;
         const mine = this.playerMines[idx];
