@@ -4440,25 +4440,59 @@ class Minesweeper {
         const cell = this.getCell(r, c);
         if (!cell || cell.classList.contains('circle-void')) return;
         const rev = !!this.revealed[r][c];
-        const connects = (nr, nc) => {
+        const same = (nr, nc) => {
             if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) return false;
             const n = this.getCell(nr, nc);
             return n && !n.classList.contains('circle-void') && !!this.revealed[nr][nc] === rev;
         };
-        cell.classList.toggle('ct', connects(r-1, c));
-        cell.classList.toggle('cb', connects(r+1, c));
-        cell.classList.toggle('cl', connects(r, c-1));
-        cell.classList.toggle('cr', connects(r, c+1));
+        const T = same(r-1, c), B = same(r+1, c), L = same(r, c-1), R = same(r, c+1);
+        cell.classList.toggle('ct', T);
+        cell.classList.toggle('cb', B);
+        cell.classList.toggle('cl', L);
+        cell.classList.toggle('cr', R);
+
+        /* Inward concave curves — only on unrevealed cells.
+         * Where two unrevealed sides meet but the diagonal corner
+         * is revealed/out-of-bounds, the blob has an inner notch.
+         * A quarter-circle of --card color placed at that corner
+         * carves the notch into a smooth concave arc.            */
+        if (!rev) {
+            const rad = '9px';
+            const mk  = (px, py) =>
+                `radial-gradient(circle at ${px} ${py},var(--card) ${rad},transparent ${rad})`;
+            const needTL = T && L && !same(r-1, c-1);
+            const needTR = T && R && !same(r-1, c+1);
+            const needBL = B && L && !same(r+1, c-1);
+            const needBR = B && R && !same(r+1, c+1);
+            if (needTL) cell.style.setProperty('--ci-tl', mk('0%','0%'));
+            else        cell.style.removeProperty('--ci-tl');
+            if (needTR) cell.style.setProperty('--ci-tr', mk('100%','0%'));
+            else        cell.style.removeProperty('--ci-tr');
+            if (needBL) cell.style.setProperty('--ci-bl', mk('0%','100%'));
+            else        cell.style.removeProperty('--ci-bl');
+            if (needBR) cell.style.setProperty('--ci-br', mk('100%','100%'));
+            else        cell.style.removeProperty('--ci-br');
+        } else {
+            cell.style.removeProperty('--ci-tl');
+            cell.style.removeProperty('--ci-tr');
+            cell.style.removeProperty('--ci-bl');
+            cell.style.removeProperty('--ci-br');
+        }
     }
 
-    /* Update just the tapped cell and its 4 cardinal neighbours
-     * (the only cells whose connection state can change).       */
+    /* Update the tapped cell, its 4 cardinal neighbours, AND its 4
+     * diagonal neighbours — diagonals are read by the inward-curve
+     * logic, so revealing a cell can change a diagonal's curve.   */
     _updateConnectionsAround(r, c) {
-        this._applyCellConnections(r, c);
-        this._applyCellConnections(r-1, c);
-        this._applyCellConnections(r+1, c);
+        this._applyCellConnections(r,   c  );
+        this._applyCellConnections(r-1, c  );
+        this._applyCellConnections(r+1, c  );
         this._applyCellConnections(r,   c-1);
         this._applyCellConnections(r,   c+1);
+        this._applyCellConnections(r-1, c-1);
+        this._applyCellConnections(r-1, c+1);
+        this._applyCellConnections(r+1, c-1);
+        this._applyCellConnections(r+1, c+1);
     }
 
     _updateAllConnections() {

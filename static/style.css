@@ -32,6 +32,7 @@
     --r-card: 20px;
     --r-btn:  16px;
     --r-sm:   12px;
+    --grid-line: rgba(0,0,0,.07);
 }
 
 body.dark-mode {
@@ -51,6 +52,7 @@ body.dark-mode {
     --diff-bg:     #222222;
     --swatch-outline: rgba(255,255,255,0.22);
     --n7:#eee;--n8:#777;
+    --grid-line: rgba(255,255,255,.12);
 }
 
 html, body {
@@ -934,13 +936,40 @@ body.dark-mode .sm-ring-bg {
     box-shadow: none;
     display: flex; align-items: center; justify-content: center;
     font-size: var(--cell-font-size); font-weight: 800; cursor: pointer;
-    transition: transform .05s, border-radius .08s;
+    transition: transform .05s;
     touch-action: none; user-select: none; -webkit-user-select: none;
     position: relative;
     font-family: 'Nunito', var(--sys-font);
+    will-change: transform;
 }
 
-/* Connected-edge classes — zero the corner radii on shared sides */
+/* Unrevealed cells: compose inward concave-corner gradients (set via JS
+ * CSS custom properties) on top of the base cell colour.               */
+.cell:not(.revealed):not(.circle-void) {
+    background:
+        var(--ci-tl, none),
+        var(--ci-tr, none),
+        var(--ci-bl, none),
+        var(--ci-br, none),
+        var(--cell);
+}
+
+/* Faint grid overlay — communicates tile boundaries, only on unopen tiles */
+.cell:not(.revealed):not(.circle-void)::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 1;
+    border-radius: inherit;
+    background-image:
+        linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: 0 0;
+}
+
+/* Connected-edge classes — zero the corner radii on shared sides.
+ * Border-radius changes are instant (no transition) to avoid mass
+ * style-recalc jank during large cascade reveals.                  */
 .cell.ct { border-top-left-radius: 0; border-top-right-radius: 0; }
 .cell.cb { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .cell.cl { border-top-left-radius: 0; border-bottom-left-radius: 0; }
