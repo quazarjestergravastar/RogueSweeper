@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <rect x="4" y="4" width="32" height="32" rx="9" fill="#1565C0"/>
+  <!-- back card, stacked behind -->
+  <rect x="9" y="12" width="13" height="17" rx="2.5" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <!-- front card -->
+  <rect x="18" y="10" width="13" height="17" rx="2.5" fill="rgba(255,255,255,0.27)" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"/>
+  <!-- diamond suit centred on front card -->
+  <path d="M24.5 14 L27.2 18.5 L24.5 23 L21.8 18.5 Z" fill="rgba(255,255,255,0.92)"/>
+  <!-- tiny corner pip on front card -->
+  <circle cx="20.2" cy="12.2" r="1.1" fill="rgba(255,255,255,0.55)"/>
+</svg>

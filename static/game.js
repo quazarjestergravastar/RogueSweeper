@@ -20,7 +20,7 @@ const SPRITE_FILES = {
     totem_mine:'totem-mine', fractal_mine:'fractal-mine',
     kickstart_mine:'kickstart-mine', diffusal_mine:'diffusal-mine', pipe_mine:'pipe-mine',
     steel_mine:'steel-mine',
-    nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
+    nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba', dealer_mine:'dealer-mine',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
     feat_level:'feat-level', feat_level_hi:'feat-level-hi',
@@ -238,6 +238,16 @@ const MINE_DEFS = {
         trigger: 'On each Style rank-up after placement',
         limit: '1 per board',
         icon: () => Sprites.tsar_mimba
+    },
+    dealer_mine: {
+        id: 'dealer_mine', name: 'Dealer Mine', cost: 300,
+        color: '#1565C0', maxCharges: 1, placesPerBoard: 0,
+        rarity: 'rare', passive: true,
+        requirement: 'None',
+        effect: 'Mine Markets offer one additional mine for purchase.',
+        trigger: 'Passive — active for the entire run',
+        limit: 'Persists for the entire run',
+        icon: () => Sprites.dealer_mine
     }
 };
 const ALL_MINE_IDS = Object.keys(MINE_DEFS);
@@ -2455,12 +2465,26 @@ class Minesweeper {
             .filter(id => !banned.includes(id));
         return this._pickRarityWeightedId(ids);
     }
+    _hasDealer() {
+        return this.playerMines.some(m => m.id === 'dealer_mine');
+    }
     _rerollMarketShop() {
-        this.marketShop = [this._pickRandomMine(), this._pickRandomMine()];
-        this.marketShopSold = [false, false];
+        const slots = this._hasDealer() ? 3 : 2;
+        this.marketShop     = Array.from({ length: slots }, () => this._pickRandomMine());
+        this.marketShopSold = Array(slots).fill(false);
     }
     renderMarketShop() {
-        for (let i = 0; i < 2; i++) {
+        const hasDealer = this._hasDealer();
+        /* Show/hide the bonus slot added by Dealer Mine */
+        const slot2El = document.getElementById('mm-shop-slot-2');
+        if (slot2El) slot2El.classList.toggle('hidden', !hasDealer);
+        const shopCount = hasDealer ? 3 : 2;
+        /* Expand marketShop array if dealer was just added mid-market */
+        if (this.marketShop && this.marketShop.length < shopCount) {
+            this.marketShop.push(this._pickRandomMine());
+            this.marketShopSold.push(false);
+        }
+        for (let i = 0; i < shopCount; i++) {
             const slot = document.getElementById(`mm-shop-slot-${i}`);
             if (!slot) continue;
             const mineId = this.marketShop && this.marketShop[i];
@@ -2730,8 +2754,10 @@ class Minesweeper {
             const el = document.elementFromPoint(x, y);
             ghost.style.display = '';
             if (el) {
-                if (el.classList.contains('cell')) {
-                    const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
+                /* Walk up from child elements (e.g. mine-cell-placed overlay) to the .cell */
+                const cellEl = el.classList.contains('cell') ? el : el.closest('.cell');
+                if (cellEl) {
+                    const r = parseInt(cellEl.dataset.row), c = parseInt(cellEl.dataset.col);
                     if (!isNaN(r) && !isNaN(c)) this.placeMineOnBoard(slotIndex, r, c);
                 } else {
                     /* Check if dropped on another mine slot (reorder) */
@@ -2783,6 +2809,104 @@ class Minesweeper {
             document.removeEventListener('pointermove', dragMove);
             document.removeEventListener('pointerup', dragEnd);
         };
+    }
+
+    /* ══ BOARD-MINE PICKUP (long-press a placed overlay) ═══════ */
+    _bindPlacedMinePickup(overlay, slotIndex, r, c) {
+        const HOLD_MS = 480;
+        const MOVE_THR = 8;
+        let holdTimer = null, pressX = 0, pressY = 0;
+
+        overlay.addEventListener('pointerdown', (e) => {
+            /* Prevent the board grid from seeing this press so it doesn't
+             * start a normal dig/flag gesture on the same pointer event. */
+            e.stopPropagation();
+            pressX = e.clientX; pressY = e.clientY;
+            holdTimer = setTimeout(() => {
+                holdTimer = null;
+                this._pickUpBoardMine(overlay, slotIndex, r, c, pressX, pressY);
+            }, HOLD_MS);
+        });
+        overlay.addEventListener('pointermove', (e) => {
+            if (holdTimer && (Math.abs(e.clientX - pressX) > MOVE_THR || Math.abs(e.clientY - pressY) > MOVE_THR)) {
+                clearTimeout(holdTimer); holdTimer = null;
+            }
+        });
+        const cancelHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } };
+        overlay.addEventListener('pointerup',     cancelHold);
+        overlay.addEventListener('pointercancel', cancelHold);
+    }
+
+    _pickUpBoardMine(overlay, slotIndex, r, c, startX, startY) {
+        /* Don't pick up a mine whose effect has already fired (it fades out). */
+        if (overlay.classList.contains('fading') || !overlay.parentNode) return;
+        const mine = this.playerMines[slotIndex];
+        if (!mine) return;
+
+        /* Restore charge and board count */
+        mine.charges = Math.min(mine.charges + 1, mine.maxCharges);
+        mine.boardPlacedCount = Math.max(0, mine.boardPlacedCount - 1);
+
+        /* Remove from dormant queue if it hadn't activated yet */
+        this.dormantMines = this.dormantMines.filter(m => !(m.r === r && m.c === c && m.id === mine.id));
+
+        overlay.remove();
+        this.renderMineHud();
+        this.saveCurrentToSlot(this.currentSlot);
+        this.sfx.play('btn');
+
+        /* Immediately start a floating drag so the user can drop it in one gesture */
+        this._startFloatingDrag(slotIndex, startX, startY);
+    }
+
+    _startFloatingDrag(slotIndex, startX, startY) {
+        const ghost = document.getElementById('mine-drag-ghost');
+        if (!ghost) return;
+        const mine = this.playerMines[slotIndex]; if (!mine) return;
+        const def = MINE_DEFS[mine.id];
+
+        let isDragging = true;
+        ghost.innerHTML = def.icon();
+        ghost.style.background = def.color + '33';
+        ghost.style.border = `2px solid ${def.color}`;
+        ghost.style.left = startX + 'px'; ghost.style.top = startY + 'px';
+        ghost.classList.remove('hidden');
+
+        const moveDrag = (e) => {
+            ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
+            ghost.style.display = 'none';
+            const el = document.elementFromPoint(e.clientX, e.clientY);
+            ghost.style.display = '';
+            document.querySelectorAll('.cell.mine-drop-target').forEach(c => c.classList.remove('mine-drop-target'));
+            const cellEl = el && (el.classList.contains('cell') ? el : el.closest('.cell'));
+            if (cellEl) cellEl.classList.add('mine-drop-target');
+        };
+        const endDrag = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            document.removeEventListener('pointermove', moveDrag);
+            document.removeEventListener('pointerup',   endDrag);
+            ghost.classList.add('hidden');
+            document.querySelectorAll('.cell.mine-drop-target').forEach(c => c.classList.remove('mine-drop-target'));
+            ghost.style.display = 'none';
+            const el = document.elementFromPoint(e.clientX, e.clientY);
+            ghost.style.display = '';
+            if (el) {
+                const cellEl = el.classList.contains('cell') ? el : el.closest('.cell');
+                if (cellEl) {
+                    const nr = parseInt(cellEl.dataset.row), nc = parseInt(cellEl.dataset.col);
+                    if (!isNaN(nr) && !isNaN(nc)) this.placeMineOnBoard(slotIndex, nr, nc);
+                } else {
+                    const targetSlot = el.closest('.mine-slot');
+                    if (targetSlot) {
+                        const targetIdx = parseInt(targetSlot.dataset.slotIndex);
+                        if (!isNaN(targetIdx) && targetIdx !== slotIndex) this._reorderMine(slotIndex, targetIdx);
+                    }
+                }
+            }
+        };
+        document.addEventListener('pointermove', moveDrag);
+        document.addEventListener('pointerup',   endDrag);
     }
 
     _reorderMine(fromIdx, toIdx) {
@@ -2921,6 +3045,8 @@ class Minesweeper {
             }
             if (isDormant) overlay.classList.add('mine-dormant');
             cell.appendChild(overlay);
+            /* Allow long-pressing a placed mine to pick it back up */
+            this._bindPlacedMinePickup(overlay, slotIndex, r, c);
         }
 
         if (isDormant) {
