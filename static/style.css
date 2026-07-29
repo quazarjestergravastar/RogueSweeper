@@ -923,7 +923,7 @@ body.dark-mode .sm-ring-bg {
     transform-origin: top left; will-change: transform;
 }
 .game-board {
-    display: grid; gap: 3px; padding: 10px;
+    display: grid; gap: 0; padding: 10px;
     background: var(--card); border-radius: 20px;
     transform-origin: top left; will-change: transform;
     transition: clip-path .5s cubic-bezier(.3,.7,.3,1), border-radius .5s ease;
@@ -931,16 +931,23 @@ body.dark-mode .sm-ring-bg {
 .cell {
     width: 28px; height: 28px; min-width: 28px;
     background: var(--cell); border-radius: 9px;
-    box-shadow: 0 2px 4px var(--cell-shadow);
+    box-shadow: none;
     display: flex; align-items: center; justify-content: center;
     font-size: var(--cell-font-size); font-weight: 800; cursor: pointer;
-    transition: transform .05s;
+    transition: transform .05s, border-radius .08s;
     touch-action: none; user-select: none; -webkit-user-select: none;
     position: relative;
     font-family: 'Nunito', var(--sys-font);
 }
-.cell.pressed { transform: scale(.88); }
-.cell.revealed { background: var(--revealed); box-shadow: none; cursor: default; }
+
+/* Connected-edge classes — zero the corner radii on shared sides */
+.cell.ct { border-top-left-radius: 0; border-top-right-radius: 0; }
+.cell.cb { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.cell.cl { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.cell.cr { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+
+.cell.pressed { transform: scale(.88); z-index: 1; }
+.cell.revealed { background: var(--revealed); cursor: default; }
 .cell.flagged .cell-svg-icon { color: var(--flag); }
 .cell.reveal-pop { animation: revealPop .22s cubic-bezier(.3,.7,.3,1.45); }
 .cell.flag-pop { animation: flagPop .28s cubic-bezier(.3,.7,.3,1.45); }

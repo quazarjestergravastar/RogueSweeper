@@ -4231,6 +4231,11 @@ class Minesweeper {
         }
         gb.appendChild(frag);
         this._refreshScrollDims();
+        /* Initialise connection classes. On first render revealed[] is all
+         * false so every cell connects to every neighbour → outer corners
+         * only.  On restore, renderSavedState() calls _updateAllConnections
+         * again after applying revealed state.                              */
+        this._updateAllConnections();
     }
     renderSavedState() {
         for (let i=0; i<this.rows; i++) for (let j=0; j<this.cols; j++) {
@@ -4244,6 +4249,7 @@ class Minesweeper {
         if (this.mode==='dig') { dig.classList.add('active'); flag.classList.remove('active'); }
         else { flag.classList.add('active'); dig.classList.remove('active'); }
         this.styleMeter.reset(); this.styleMeter.show();
+        this._updateAllConnections();
     }
 
     /* ══ GAME EVENTS ═══════════════════════════════════════════ */
@@ -4425,6 +4431,42 @@ class Minesweeper {
         return adj;
     }
 
+    /* ══ CONNECTED TILE BORDERS ════════════════════════════════
+     * Adjacent cells of the same state (both revealed or both
+     * unrevealed) share a flat edge; only outer-facing edges get
+     * the full corner radius.  This gives the board a unified
+     * "blob" look rather than a grid of isolated squares.       */
+    _applyCellConnections(r, c) {
+        const cell = this.getCell(r, c);
+        if (!cell || cell.classList.contains('circle-void')) return;
+        const rev = !!this.revealed[r][c];
+        const connects = (nr, nc) => {
+            if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) return false;
+            const n = this.getCell(nr, nc);
+            return n && !n.classList.contains('circle-void') && !!this.revealed[nr][nc] === rev;
+        };
+        cell.classList.toggle('ct', connects(r-1, c));
+        cell.classList.toggle('cb', connects(r+1, c));
+        cell.classList.toggle('cl', connects(r, c-1));
+        cell.classList.toggle('cr', connects(r, c+1));
+    }
+
+    /* Update just the tapped cell and its 4 cardinal neighbours
+     * (the only cells whose connection state can change).       */
+    _updateConnectionsAround(r, c) {
+        this._applyCellConnections(r, c);
+        this._applyCellConnections(r-1, c);
+        this._applyCellConnections(r+1, c);
+        this._applyCellConnections(r,   c-1);
+        this._applyCellConnections(r,   c+1);
+    }
+
+    _updateAllConnections() {
+        for (let i = 0; i < this.rows; i++)
+            for (let j = 0; j < this.cols; j++)
+                this._applyCellConnections(i, j);
+    }
+
     saveCurrentBoardToRun() {
         if (!this.runState || this.firstClick || this.gameOver) return;
         this.runState.boardState = {
@@ -4535,7 +4577,7 @@ class Minesweeper {
         if (this.revealed[r][c]||this.flagged[r][c]) return;
         this.revealed[r][c]=true;
         const cell = this.getCell(r, c);
-        if (cell) { cell.classList.add('revealed'); this.playCellFx(cell, 'reveal-pop'); }
+        if (cell) { cell.classList.add('revealed'); this.playCellFx(cell, 'reveal-pop'); this._updateConnectionsAround(r, c); }
         if (this.board[r][c]===-1) {
             /* Check totem mine protection */
             if (this._checkTotemProtection(r, c)) return;
