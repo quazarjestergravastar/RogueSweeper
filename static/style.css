@@ -407,7 +407,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .mm-shop-reroll-btn.disabled,
 .mm-shop-reroll-btn[disabled] { opacity: .45; pointer-events: none; }
-.mm-shop-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mm-shop-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(82px, 1fr)); gap: 8px; }
 .mm-shop-slot {
     background: var(--card); border: 2px solid var(--border);
     border-radius: 12px; padding: 6px;
@@ -443,6 +443,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     opacity: .45; pointer-events: none;
 }
 .mm-shop-slot.empty { opacity: .35; }
+.mm-shop-slot.hidden { display: none; }
 
 /* ── COUNTERS ────────────────────────────────────────────── */
 .counters-row {

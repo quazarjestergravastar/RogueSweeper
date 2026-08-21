@@ -20,6 +20,8 @@ const SPRITE_FILES = {
     totem_mine:'totem-mine', fractal_mine:'fractal-mine',
     kickstart_mine:'kickstart-mine', diffusal_mine:'diffusal-mine', pipe_mine:'pipe-mine',
     steel_mine:'steel-mine',
+     prospector_mine:'prospector-mine', fortune_mine:'fortune-mine',
+     dealer_mine:'dealer-mine', bargain_mine:'bargain-mine', mipen_meimer:'mipen-meimer',
     nuke_mimb:'nuke-mimb', tsar_mimba:'tsar-mimba',
     feat_board:'feat-board', feat_streak:'feat-streak', feat_collector:'feat-collector',
     feat_score:'feat-score', feat_score_hi:'feat-score-hi',
@@ -208,6 +210,56 @@ const MINE_DEFS = {
         trigger: 'Passive — on each Spts milestone',
         limit: '1 per board',
         icon: () => Sprites.steel_mine
+    },
+    prospector_mine: {
+        id: 'prospector_mine', name: 'Prospector Mine', cost: 200,
+        color: '#C49A3A', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'uncommon', passive: true,
+        requirement: 'None',
+        effect: 'The first reroll in every Mine Market is free.',
+        trigger: 'Passive — on the first market reroll',
+        limit: '1 free reroll per market',
+        icon: () => Sprites.prospector_mine
+    },
+    fortune_mine: {
+        id: 'fortune_mine', name: 'Fortune Mine', cost: 280,
+        color: '#8E44AD', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'rare', passive: true,
+        requirement: 'None',
+        effect: 'Every Mine Market has a chance to contain one discounted mine.',
+        trigger: 'Passive — when the market opens',
+        limit: '1 discounted offer per market',
+        icon: () => Sprites.fortune_mine
+    },
+    dealer_mine: {
+        id: 'dealer_mine', name: 'Dealer Mine', cost: 280,
+        color: '#1565C0', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'rare', passive: true,
+        requirement: 'None',
+        effect: 'Whenever you enter the Mine Market, one additional mine is offered for purchase.',
+        trigger: 'Passive — when the market opens',
+        limit: '1 additional offer per market',
+        icon: () => Sprites.dealer_mine
+    },
+    bargain_mine: {
+        id: 'bargain_mine', name: 'Bargain Mine', cost: 220,
+        color: '#00897B', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'uncommon', passive: true,
+        requirement: 'None',
+        effect: 'Whenever you purchase a mine, there is a chance to refund 50% of its cost.',
+        trigger: 'Passive — after purchasing a mine',
+        limit: 'Chance applies to each purchase',
+        icon: () => Sprites.bargain_mine
+    },
+    mipen_meimer: {
+        id: 'mipen_meimer', name: 'mipen meimer', cost: 320,
+        color: '#D84315', maxCharges: 1, placesPerBoard: 1,
+        rarity: 'rare', passive: true,
+        requirement: 'None',
+        effect: 'Whenever you enter the Mine Market, receive one random Common or Uncommon mine for free.',
+        trigger: 'Passive — when the market opens',
+        limit: 'Cannot grant Legendary mines or itself',
+        icon: () => Sprites.mipen_meimer
     },
     pipe_mine: {
         id: 'pipe_mine', name: 'Pipe Mine', cost: 240,
@@ -836,6 +888,9 @@ class Minesweeper {
         this._lastPlaceAt = 0;
         /* Slot machine used this market visit */
         this.slotUsed = false;
+        this.marketFirstRerollFree = false;
+        this.marketShopDiscounts = [];
+        this.marketShopRerollCount = 0;
 
         this.runState = this._loadRunState();
         this._loadActiveSlotSnapshot();
@@ -2081,9 +2136,12 @@ class Minesweeper {
             this.slotUsed = false;
             this.scratchBought = false;
             this.slotBought = false;
+            this.marketShopRerollCount = 0;
+            this.marketFirstRerollFree = this._hasPassiveMine('prospector_mine');
             /* Fresh collection shop with reroll cost reset */
             this.marketShopRerollCost = 50;
             this._rerollMarketShop();
+            this._grantMipenMeimerGift();
         }
         if (!this.marketShop) { this.marketShopRerollCost = 50; this._rerollMarketShop(); }
 
@@ -2456,24 +2514,37 @@ class Minesweeper {
         return this._pickRarityWeightedId(ids);
     }
     _rerollMarketShop() {
-        this.marketShop = [this._pickRandomMine(), this._pickRandomMine()];
-        this.marketShopSold = [false, false];
+        const count = this._hasPassiveMine('dealer_mine') ? 3 : 2;
+        this.marketShop = Array.from({ length: count }, () => this._pickRandomMine());
+        this.marketShopSold = Array(count).fill(false);
+        this.marketShopDiscounts = Array(count).fill(false);
+        if (this._hasPassiveMine('fortune_mine') && Math.random() < 0.5) {
+            this.marketShopDiscounts[Math.floor(Math.random() * count)] = true;
+        }
     }
     renderMarketShop() {
-        for (let i = 0; i < 2; i++) {
+        const slotCount = this.marketShop ? this.marketShop.length : 2;
+        for (let i = 0; i < 3; i++) {
             const slot = document.getElementById(`mm-shop-slot-${i}`);
             if (!slot) continue;
+            if (i >= slotCount) {
+                slot.className = 'mm-shop-slot empty hidden';
+                slot.innerHTML = '';
+                continue;
+            }
             const mineId = this.marketShop && this.marketShop[i];
             if (!mineId) { slot.className = 'mm-shop-slot empty'; slot.innerHTML = '<span class="mm-shop-slot-name" style="opacity:.5">—</span>'; continue; }
             const def = MINE_DEFS[mineId];
             const sold = this.marketShopSold && this.marketShopSold[i];
-            const canAfford = this.infiniteCoins || this.runPoints >= def.cost;
+            const discounted = this.marketShopDiscounts && this.marketShopDiscounts[i];
+            const price = discounted ? Math.floor(def.cost * 0.5) : def.cost;
+            const canAfford = this.infiniteCoins || this.runPoints >= price;
             const isFull = this.playerMines.length >= 6;
             slot.className = `mm-shop-slot${sold ? ' sold' : ''}`;
             slot.innerHTML = `
                 <div class="mm-shop-slot-icon" data-rarity="${def.rarity}" style="background:${def.color}22;border:2px solid ${def.color}55">${def.icon()}</div>
                 <div class="mm-shop-slot-name">${def.name}</div>
-                <div class="mm-shop-slot-cost">${def.cost} Rpts.</div>
+                <div class="mm-shop-slot-cost">${price}${discounted ? ` <s>${def.cost}</s>` : ''} Rpts.</div>
                 <button class="mm-shop-slot-buy juicy-btn ${(!canAfford || isFull || sold) ? 'disabled' : ''}" data-shop-idx="${i}">${sold ? 'SOLD' : 'BUY'}</button>
             `;
             const btn = slot.querySelector('.mm-shop-slot-buy');
@@ -2485,10 +2556,12 @@ class Minesweeper {
         }
         /* Update reroll button cost & affordability */
         const rcEl = document.getElementById('mm-shop-reroll-cost');
-        if (rcEl) rcEl.textContent = this.marketShopRerollCost;
+        const nextRerollCost = this.marketFirstRerollFree && this.marketShopRerollCount === 0
+            ? 0 : this.marketShopRerollCost;
+        if (rcEl) rcEl.textContent = nextRerollCost;
         const rbtn = document.getElementById('mm-shop-reroll-btn');
         if (rbtn) {
-            const canReroll = this.infiniteCoins || this.runPoints >= this.marketShopRerollCost;
+            const canReroll = this.infiniteCoins || this.runPoints >= nextRerollCost;
             rbtn.classList.toggle('disabled', !canReroll);
         }
     }
@@ -2497,24 +2570,50 @@ class Minesweeper {
         if (!mineId || this.marketShopSold[slotIdx]) { this.sfx.play('error'); return; }
         const def = MINE_DEFS[mineId];
         if (this.playerMines.length >= 6) { this.sfx.play('error'); return; }
-        if (!this.spendRunPoints(def.cost)) { this.sfx.play('error'); return; }
+        const discounted = this.marketShopDiscounts && this.marketShopDiscounts[slotIdx];
+        const price = discounted ? Math.floor(def.cost * 0.5) : def.cost;
+        if (!this.spendRunPoints(price)) { this.sfx.play('error'); return; }
         this.addMineToLoadout(mineId);
         this.marketShopSold[slotIdx] = true;
+        if (this._hasPassiveMine('bargain_mine') && Math.random() < 0.5) {
+            this.addRunPoints(Math.floor(price * 0.5));
+            this._spawnStyleTriggerText('Bargain refund!', '#00897B');
+        }
         const rptEl = document.getElementById('mm-run-pts');
         if (rptEl) rptEl.textContent = this.runPoints;
         this.sfx.play('purchase');
         this.renderMarketShop();
     }
     _doMarketShopReroll() {
-        const cost = this.marketShopRerollCost;
+        const free = this.marketFirstRerollFree && this.marketShopRerollCount === 0;
+        const cost = free ? 0 : this.marketShopRerollCost;
         if (!this.infiniteCoins && this.runPoints < cost) { this.sfx.play('error'); return; }
         if (!this.infiniteCoins) this.spendRunPoints(cost);
-        this.marketShopRerollCost = cost + 25;
+        this.marketShopRerollCount++;
+        if (!free) this.marketShopRerollCost = cost + 25;
         this._rerollMarketShop();
         const rptEl = document.getElementById('mm-run-pts');
         if (rptEl) rptEl.textContent = this.runPoints;
         this.sfx.play('btn');
         this.renderMarketShop();
+    }
+
+    _hasPassiveMine(mineId) {
+        return this.playerMines.some(m => m && m.id === mineId);
+    }
+
+    _grantMipenMeimerGift() {
+        if (!this._hasPassiveMine('mipen_meimer') || this.playerMines.length >= 6) return;
+        const eligible = ALL_MINE_IDS.filter(id => {
+            const rarity = MINE_DEFS[id].rarity;
+            return id !== 'mipen_meimer' && (rarity === 'common' || rarity === 'uncommon');
+        });
+        if (!eligible.length) return;
+        const giftId = this._pickRarityWeightedId(eligible);
+        if (this.addMineToLoadout(giftId)) {
+            this._spawnStyleTriggerText(`${MINE_DEFS[giftId].name} free!`, '#D84315');
+            this.sfx.play('purchase');
+        }
     }
 
     /* ══ MINE LOADOUT ══════════════════════════════════════════ */
