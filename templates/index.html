@@ -408,13 +408,6 @@
                     <span class="switch-slider"></span>
                 </label>
             </div>
-            <div class="settings-row">
-                <span class="toggle-label" data-text="autoFlagOnEmpty">Auto-switch to Flag on Empty Tap</span>
-                <label class="switch">
-                    <input type="checkbox" id="auto-flag-empty-toggle" checked>
-                    <span class="switch-slider"></span>
-                </label>
-            </div>
             <div class="sfx-slider-row">
                 <span class="sfx-slider-label" data-text="sfxVolume">SFX Volume</span>
                 <input type="range" class="sfx-slider" id="sfx-volume-slider" min="0" max="100" value="80" step="1">
@@ -502,25 +495,9 @@
             <button class="modal-close-x juicy-btn" id="mine-info-close-btn" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             <div class="mine-info-icon-wrap" id="mine-info-icon-wrap"></div>
             <h2 id="mine-info-name"></h2>
+            <span class="mine-info-rarity" id="mine-info-rarity"></span>
             <span class="mine-info-passive-tag hidden" id="mine-info-passive-tag">Passive</span>
-            <div class="mine-info-grid">
-                <div class="mine-info-row">
-                    <span class="mine-info-label">Requirement</span>
-                    <span class="mine-info-val" id="mine-info-req"></span>
-                </div>
-                <div class="mine-info-row">
-                    <span class="mine-info-label">Effect</span>
-                    <span class="mine-info-val" id="mine-info-effect"></span>
-                </div>
-                <div class="mine-info-row">
-                    <span class="mine-info-label">Trigger</span>
-                    <span class="mine-info-val" id="mine-info-trigger"></span>
-                </div>
-                <div class="mine-info-row">
-                    <span class="mine-info-label">Limit</span>
-                    <span class="mine-info-val" id="mine-info-limit"></span>
-                </div>
-            </div>
+            <p class="mine-info-description" id="mine-info-effect"></p>
         </div>
     </div>
 

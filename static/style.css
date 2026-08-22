@@ -1507,17 +1507,24 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
     margin-bottom: 8px;
 }
 .mine-info-passive-tag.hidden { display: none; }
-.mine-info-grid { text-align: left; margin: 10px 0; }
-.mine-info-row {
-    display: flex; flex-direction: column; gap: 3px;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
-}
-.mine-info-row:last-child { border-bottom: none; }
-.mine-info-label {
-    font-size: .52rem; font-weight: 900; letter-spacing: .1em;
+.mine-info-rarity {
+    display: inline-flex; align-items: center;
+    margin: 0 0 10px; padding: 3px 9px; border-radius: 99px;
+    font-size: .56rem; font-weight: 900; letter-spacing: .1em;
     text-transform: uppercase; color: var(--text-muted);
+    background: color-mix(in srgb, var(--border) 25%, var(--card) 75%);
+    border: 1px solid var(--border);
 }
-.mine-info-val { font-size: .78rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+.mine-info-rarity.rarity-common { color: #757575; border-color: rgba(117,117,117,.4); }
+.mine-info-rarity.rarity-uncommon { color: #43A047; border-color: rgba(67,160,71,.45); }
+.mine-info-rarity.rarity-rare { color: #7E57C2; border-color: rgba(126,87,194,.5); }
+.mine-info-rarity.rarity-legendary { color: #D89600; border-color: rgba(216,150,0,.55); }
+.mine-info-description {
+    margin: 8px 0 12px; padding: 11px 12px;
+    border-radius: 14px; background: color-mix(in srgb, var(--border) 14%, var(--card) 86%);
+    color: var(--text); font-size: .8rem; font-weight: 700;
+    line-height: 1.5; text-align: left;
+}
 
 /* ── FEAT NOTIFICATIONS (bottom popup queue) ─────────────── */
 .feat-notify-container {

@@ -136,7 +136,7 @@ const MINE_DEFS = {
         color: '#f44336', maxCharges: 2, placesPerBoard: 1,
         rarity: 'common',
         requirement: 'None',
-        effect: 'Flags all adjacent mines on contact. Whiffs silently if none are adjacent.',
+        effect: 'When placed, it marks every mine in the surrounding tiles. It helps you identify nearby danger without opening more cells.',
         trigger: 'Instantly on placement',
         limit: '1 per board',
         icon: () => Sprites.mine_mine
@@ -146,7 +146,7 @@ const MINE_DEFS = {
         color: '#795548', maxCharges: 2, placesPerBoard: 2,
         rarity: 'common',
         requirement: 'Zero tile adjacent to numbered tiles',
-        effect: 'Awards Spts equal to the sum of adjacent numbers each time your Style rank goes up.',
+        effect: 'When your Style rank rises, it rewards Spts based on the numbers around it. It turns careful placement near clues into extra score.',
         trigger: 'Passive — on each Style rank-up',
         limit: '2 per board',
         icon: () => Sprites.trench_mine
@@ -156,7 +156,7 @@ const MINE_DEFS = {
         color: '#4CAF50', maxCharges: 2, placesPerBoard: 1,
         rarity: 'common',
         requirement: 'None',
-        effect: 'Dormant until Style rank C. Auto-activates — reveals area if on a mine tile, ends the run if not.',
+        effect: 'It waits until Style rank C, then activates automatically. A safe placement reveals nearby cells; a bad placement ends the run.',
         trigger: 'Auto-activates once Style rank C is reached',
         limit: '1 per board',
         icon: () => Sprites.grenade_mine
@@ -166,7 +166,7 @@ const MINE_DEFS = {
         color: '#FFC107', maxCharges: 2, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'Absorbs one fatal mine dig, saving the run. Permanently consumed afterward.',
+        effect: 'It absorbs one mine that would end your run, giving you another chance. The protection is consumed after it saves you.',
         trigger: 'Passive — triggers on a lethal dig',
         limit: '1 per run (permanently consumed)',
         icon: () => Sprites.totem_mine
@@ -176,7 +176,7 @@ const MINE_DEFS = {
         color: '#9C27B0', maxCharges: 1, placesPerBoard: 1,
         rarity: 'rare',
         requirement: 'None',
-        effect: 'When any mine in its 3×3 radius triggers, all mines in that radius chain-detonate.',
+        effect: 'When a mine within three tiles triggers, it sets off the other mines in that area. It is powerful when placed in a dense cluster.',
         trigger: 'Passive — on any mine trigger in radius',
         limit: '1 per board',
         icon: () => Sprites.fractal_mine
@@ -186,7 +186,7 @@ const MINE_DEFS = {
         color: '#00BCD4', maxCharges: 3, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'Boosts the Style Meter on your first dig of each board. Skips the cold start.',
+        effect: 'Your first dig on every board starts with a Style boost. It helps your score build immediately instead of waiting for a streak.',
         trigger: 'Passive — on first dig of the board',
         limit: '1 per board',
         icon: () => Sprites.kickstart_mine
@@ -196,7 +196,7 @@ const MINE_DEFS = {
         color: '#009688', maxCharges: 2, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'If you hit a mine, a 10s countdown starts. Flag that tile in time: survive and gain +2 Style ranks. Fail: run ends.',
+        effect: 'When a mine would kill you, it gives you ten seconds to flag that tile. Flag it in time to survive and gain two Style ranks; miss it and the run ends.',
         trigger: 'Passive — triggers on a lethal dig',
         limit: '1 per run (permanently consumed)',
         icon: () => Sprites.diffusal_mine
@@ -206,7 +206,7 @@ const MINE_DEFS = {
         color: '#90A4AE', maxCharges: 1, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'Grants +50 Rpts for every 100 Spts earned during the run.',
+        effect: 'For every 100 Spts earned during the run, it grants 50 Rpts. It turns a strong Style score into more spending power.',
         trigger: 'Passive — on each Spts milestone',
         limit: '1 per board',
         icon: () => Sprites.steel_mine
@@ -216,7 +216,7 @@ const MINE_DEFS = {
         color: '#C49A3A', maxCharges: 1, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'The first reroll in every Mine Market is free.',
+        effect: 'Your first Mine Market reroll costs nothing. It lets you look for a better offer without spending Rpts.',
         trigger: 'Passive — on the first market reroll',
         limit: '1 free reroll per market',
         icon: () => Sprites.prospector_mine
@@ -226,7 +226,7 @@ const MINE_DEFS = {
         color: '#8E44AD', maxCharges: 1, placesPerBoard: 1,
         rarity: 'rare', passive: true,
         requirement: 'None',
-        effect: 'Every Mine Market has a chance to contain one discounted mine.',
+        effect: 'Each Mine Market has a chance to include one mine at half price. It rewards you for checking every offer.',
         trigger: 'Passive — when the market opens',
         limit: '1 discounted offer per market',
         icon: () => Sprites.fortune_mine
@@ -236,7 +236,7 @@ const MINE_DEFS = {
         color: '#1565C0', maxCharges: 1, placesPerBoard: 1,
         rarity: 'rare', passive: true,
         requirement: 'None',
-        effect: 'Whenever you enter the Mine Market, one additional mine is offered for purchase.',
+        effect: 'Each time you enter the Mine Market, it adds a third mine to the offers. More choices make it easier to find the right tool.',
         trigger: 'Passive — when the market opens',
         limit: '1 additional offer per market',
         icon: () => Sprites.dealer_mine
@@ -246,7 +246,7 @@ const MINE_DEFS = {
         color: '#00897B', maxCharges: 1, placesPerBoard: 1,
         rarity: 'uncommon', passive: true,
         requirement: 'None',
-        effect: 'Whenever you purchase a mine, there is a chance to refund 50% of its cost.',
+        effect: 'After each mine purchase, it has a chance to return half of what you paid. It makes risky shopping less expensive.',
         trigger: 'Passive — after purchasing a mine',
         limit: 'Chance applies to each purchase',
         icon: () => Sprites.bargain_mine
@@ -256,7 +256,7 @@ const MINE_DEFS = {
         color: '#D84315', maxCharges: 1, placesPerBoard: 1,
         rarity: 'rare', passive: true,
         requirement: 'None',
-        effect: 'Whenever you enter the Mine Market, receive one random Common or Uncommon mine for free.',
+        effect: 'Each time you enter the Mine Market, it gives you one random Common or Uncommon mine for free. It never gives itself or a Legendary mine.',
         trigger: 'Passive — when the market opens',
         limit: 'Cannot grant Legendary mines or itself',
         icon: () => Sprites.mipen_meimer
@@ -266,7 +266,7 @@ const MINE_DEFS = {
         color: '#607D8B', maxCharges: 3, placesPerBoard: 1,
         rarity: 'rare',
         requirement: 'None',
-        effect: 'Dormant until Style rank B. Blasts a horizontal row, safely revealing ~⅓ of tiles along it.',
+        effect: 'It waits until Style rank B, then blasts a wide horizontal band and safely opens about a third of its remaining safe cells, leaving some gaps.',
         trigger: 'Auto-activates once Style rank B is reached',
         limit: '1 per board · 3 charges',
         icon: () => Sprites.pipe_mine
@@ -276,7 +276,7 @@ const MINE_DEFS = {
         color: '#FF5722', maxCharges: 1, placesPerBoard: 1,
         rarity: 'legendary',
         requirement: 'None',
-        effect: 'Detonates instantly, safely revealing ~half of all remaining safe tiles at random.',
+        effect: 'When placed, it instantly reveals about half of the remaining safe cells at random. It is a high-impact way to clear a dangerous board.',
         trigger: 'Instantly on placement',
         limit: '1 per board',
         icon: () => Sprites.nuke_mimb
@@ -286,7 +286,7 @@ const MINE_DEFS = {
         color: '#3F51B5', maxCharges: 1, placesPerBoard: 1,
         rarity: 'legendary',
         requirement: 'None',
-        effect: "After placement, each Style rank-up voids the board's outermost ring of tiles.",
+        effect: 'After placement, every Style rank-up removes the board’s outermost ring of tiles. It reshapes the board as your score climbs.',
         trigger: 'Passive — on each Style rank-up after placement',
         limit: '1 per board',
         icon: () => Sprites.tsar_mimba
@@ -1612,18 +1612,15 @@ class Minesweeper {
         document.getElementById('mine-info-icon-wrap').style.background = def.color + '22';
         document.getElementById('mine-info-icon-wrap').style.border = `2px solid ${def.color}66`;
         document.getElementById('mine-info-name').textContent = def.name;
-        document.getElementById('mine-info-req').textContent = def.requirement;
+        const rarityEl = document.getElementById('mine-info-rarity');
+        if (rarityEl) {
+            rarityEl.textContent = `Rarity · ${def.rarity}`;
+            rarityEl.className = `mine-info-rarity rarity-${def.rarity}`;
+        }
         document.getElementById('mine-info-effect').textContent = def.effect;
-        document.getElementById('mine-info-trigger').textContent = def.trigger;
-        document.getElementById('mine-info-limit').textContent = def.limit;
         /* Show/hide PASSIVE tag and hide placement counter row for passive mines */
         const passiveTag = document.getElementById('mine-info-passive-tag');
         if (passiveTag) passiveTag.classList.toggle('hidden', !def.passive);
-        const limitEl = document.getElementById('mine-info-limit');
-        if (limitEl) {
-            const limitRow = limitEl.closest('.mine-info-row');
-            if (limitRow) limitRow.style.display = def.passive ? 'none' : '';
-        }
         document.getElementById('mine-info-modal').classList.add('show');
         this.sfx.play('modal');
     }
@@ -1672,12 +1669,6 @@ class Minesweeper {
         const pDisplay = document.getElementById('particle-amount-display');
         if (pSlider)  pSlider.value = Math.round(pAmt * 100);
         if (pDisplay) pDisplay.textContent = `${Math.round(pAmt * 100)}%`;
-
-        /* Auto-switch to flag mode after revealing an empty cascade. Default ON. */
-        const stored = localStorage.getItem('ms_auto_flag_empty');
-        this.autoFlagOnEmpty = (stored === null) ? true : (stored === 'true');
-        const afEl = document.getElementById('auto-flag-empty-toggle');
-        if (afEl) afEl.checked = this.autoFlagOnEmpty;
 
     }
 
@@ -3774,12 +3765,6 @@ class Minesweeper {
             localStorage.setItem('ms_style_meter_right', e.target.checked);
             this.sfx.play('btn');
         });
-        const autoFlagToggle = document.getElementById('auto-flag-empty-toggle');
-        if (autoFlagToggle) autoFlagToggle.addEventListener('change', e => {
-            this.autoFlagOnEmpty = e.target.checked;
-            localStorage.setItem('ms_auto_flag_empty', e.target.checked);
-            this.sfx.play('btn');
-        });
 
         /* SFX Volume */
         const volSlider = document.getElementById('sfx-volume-slider');
@@ -4402,13 +4387,6 @@ class Minesweeper {
             this._setBoardStyleScore(this.styleMeter.getScore());
         }
         this.reveal(r, c, wasFirstClick);
-        /* Auto-switch to flag mode after revealing a zero/empty tile (cascade).
-         * Skipped on the very first click so the player can keep digging the
-         * starting area without the mode flipping under them. */
-        if (this.autoFlagOnEmpty && !wasFirstClick && !this.gameOver
-            && this.mode === 'dig' && this.board[r][c] === 0) {
-            this._switchModeTo('flag');
-        }
     }
 
     _switchModeTo(mode) {
