@@ -504,34 +504,27 @@
     <!-- ── SLOT MACHINE POPUP ── -->
     <div class="modal-overlay" id="slot-popup">
         <div class="modal-content juicy-card slot-popup-content">
-            <button class="modal-close-x juicy-btn" id="slot-popup-close" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            <button class="modal-close-x juicy-btn slot-popup-skip" id="slot-popup-close" aria-label="Skip">SKIP</button>
             <h2>Slot Machine</h2>
             <div class="slot-reels-wrap">
                 <div class="slot-reels" id="slot-reels">
                     <div class="slot-reel-col">
                         <div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-0"></div></div>
-                        <div class="slot-reel-stopped hidden" id="slot-stop-ind-0"></div>
-                        <span class="slot-reel-stopped-name hidden" id="slot-stopped-name-0"></span>
+                        <div class="slot-reel-option hidden" id="slot-reel-option-0"></div>
                     </div>
                     <div class="slot-reel-col">
                         <div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-1"></div></div>
-                        <div class="slot-reel-stopped hidden" id="slot-stop-ind-1"></div>
-                        <span class="slot-reel-stopped-name hidden" id="slot-stopped-name-1"></span>
+                        <div class="slot-reel-option hidden" id="slot-reel-option-1"></div>
                     </div>
                     <div class="slot-reel-col">
                         <div class="slot-reel-window"><div class="slot-reel-strip" id="slot-strip-2"></div></div>
-                        <div class="slot-reel-stopped hidden" id="slot-stop-ind-2"></div>
-                        <span class="slot-reel-stopped-name hidden" id="slot-stopped-name-2"></span>
+                        <div class="slot-reel-option hidden" id="slot-reel-option-2"></div>
                     </div>
                 </div>
             </div>
             <div class="slot-controls" id="slot-controls">
                 <button class="slot-spin-btn juicy-btn" id="slot-spin-btn">SPIN</button>
                 <button class="slot-stop-btn juicy-btn hidden" id="slot-stop-btn">STOP</button>
-            </div>
-            <div class="slot-result-area hidden" id="slot-result-area">
-                <p class="slot-result-label">Pick one mine to add to your loadout:</p>
-                <div class="slot-result-mines" id="slot-result-mines"></div>
             </div>
         </div>
     </div>

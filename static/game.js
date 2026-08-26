@@ -2319,15 +2319,10 @@ class Minesweeper {
         const stopBtn = document.getElementById('slot-stop-btn');
         if (spinBtn) { spinBtn.classList.remove('hidden'); spinBtn.disabled = false; }
         if (stopBtn) stopBtn.classList.add('hidden');
-        /* Reset result area */
-        const resultArea = document.getElementById('slot-result-area');
-        if (resultArea) resultArea.classList.add('hidden');
-        /* Reset stop indicators */
+        /* Reset stopped-reel options */
         for (let i = 0; i < 3; i++) {
-            const ind = document.getElementById(`slot-stop-ind-${i}`);
-            if (ind) ind.classList.add('hidden');
-             const nameEl = document.getElementById(`slot-stopped-name-${i}`);
-             if (nameEl) { nameEl.textContent = ''; nameEl.classList.add('hidden'); }
+            const option = document.getElementById(`slot-reel-option-${i}`);
+            if (option) { option.innerHTML = ''; option.classList.add('hidden'); }
         }
         popup.classList.add('show');
         this.sfx.play('modal');
@@ -2349,7 +2344,8 @@ class Minesweeper {
                     const def = MINE_DEFS[id];
                     const item = document.createElement('div');
                     item.className = 'slot-reel-item';
-                    item.innerHTML = `${def.icon()}<span class="slot-reel-item-name">${def.name}</span>`;
+                    /* Names are intentionally hidden while the reel spins. */
+                    item.innerHTML = def.icon();
                     strip.appendChild(item);
                 });
             }
@@ -2372,7 +2368,6 @@ class Minesweeper {
         const ITEM_HEIGHT = 80;
         const MAX_MINES = ALL_MINE_IDS.length;
         let stoppedCount = 0;
-        const stoppedMines = [];
 
         /* Replace buttons to remove stale listeners */
         const newSpin = spinBtn.cloneNode(true);
@@ -2385,10 +2380,10 @@ class Minesweeper {
             newStop.classList.remove('hidden');
             this._slotSpinning = true;
             this._slotStopped = [false, false, false];
-            stoppedCount = 0; stoppedMines.length = 0;
+            stoppedCount = 0;
             for (let i = 0; i < 3; i++) {
-                const ind = document.getElementById(`slot-stop-ind-${i}`);
-                if (ind) ind.classList.add('hidden');
+                const option = document.getElementById(`slot-reel-option-${i}`);
+                if (option) { option.innerHTML = ''; option.classList.add('hidden'); }
             }
             let tick = 0;
             this._slotInterval = setInterval(() => {
@@ -2414,7 +2409,6 @@ class Minesweeper {
             const pickedId = this._pickRarityWeightedId(ALL_MINE_IDS);
             const def = MINE_DEFS[pickedId];
             const idx = ALL_MINE_IDS.indexOf(pickedId);
-            stoppedMines.push(pickedId);
             const targetOffset = idx * ITEM_HEIGHT;
             this._slotOffset[i] = targetOffset;
             const strip = document.getElementById(`slot-strip-${i}`);
@@ -2423,20 +2417,15 @@ class Minesweeper {
                 strip.style.transform = `translateY(-${targetOffset}px)`;
                 setTimeout(() => { if (strip) strip.style.transition = ''; }, 340);
             }
-            const ind = document.getElementById(`slot-stop-ind-${i}`);
-            if (ind) ind.classList.remove('hidden');
-             const nameEl = document.getElementById(`slot-stopped-name-${i}`);
-             if (nameEl) {
-                 nameEl.textContent = def.name;
-                 nameEl.classList.remove('hidden');
-             }
+            this._showSlotReelOption(i, pickedId);
             this.sfx.play('slot_stop');
             stoppedCount++;
             if (stoppedCount === 3) {
                 clearInterval(this._slotInterval); this._slotInterval = null;
                 this._slotSpinning = false;
                 newStop.classList.add('hidden');
-                setTimeout(() => this._showSlotResults(stoppedMines), 420);
+                 /* The stopped reels are now the result picker; no duplicate
+                  * three-card result row is needed. */
             }
         };
 
@@ -2444,57 +2433,42 @@ class Minesweeper {
         newStop.addEventListener('click', stopOne);
     }
 
-    _showSlotResults(mineIds) {
-        const resultArea = document.getElementById('slot-result-area');
-        const minesEl = document.getElementById('slot-result-mines');
-        const hint = document.getElementById('slot-hint');
-        if (!resultArea || !minesEl) return;
-        if (hint) hint.classList.add('hidden');
-        minesEl.innerHTML = '';
-        /* Slot machine prize: FREE since the player already paid for the slot machine.
-         * Limit one mine pick — picking adds and closes the popup. */
-        mineIds.forEach(id => {
-            const def = MINE_DEFS[id];
-            const isFull = this.playerMines.length >= 6;
-            const card = document.createElement('div');
-            card.className = `slot-result-mine-card${isFull ? ' full' : ''}`;
-            card.dataset.rarity = def.rarity;
-             card.innerHTML = `
-                 ${def.icon()}
-                 <span class="srmc-name">${def.name}</span>
-                 <span class="srmc-cost">FREE</span>
-                 <div class="srmc-actions">
-                     <button type="button" class="srmc-view-btn">VIEW DETAILS</button>
-                     <button type="button" class="srmc-pick-btn juicy-btn"${isFull ? ' disabled' : ''}>TAKE MINE</button>
-                 </div>
-             `;
-             /* The card and VIEW DETAILS show the description without
-              * consuming the slot-machine prize. */
-             card.addEventListener('click', () => this.showMineInfo(id));
-             const viewBtn = card.querySelector('.srmc-view-btn');
-             if (viewBtn) viewBtn.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 this.showMineInfo(id);
-             });
-             const pickBtn = card.querySelector('.srmc-pick-btn');
-             if (pickBtn && !isFull) {
-                 pickBtn.addEventListener('click', (e) => {
-                     e.stopPropagation();
-                    if (this.slotUsed) return;
-                     if (!this.addMineToLoadout(id, 0)) return;
-                    this.slotUsed = true;
-                    const slotActBtn = document.getElementById('slot-btn');
-                    if (slotActBtn) { slotActBtn.textContent = 'USED'; slotActBtn.classList.add('used'); slotActBtn.classList.add('mm-act-disabled'); }
-                    document.getElementById('slot-popup').classList.remove('show');
-                    const rptEl = document.getElementById('mm-run-pts');
-                    if (rptEl) rptEl.textContent = this.runPoints;
-                    this.sfx.play('purchase');
-                    card.classList.add('selected');
-                });
-            }
-            minesEl.appendChild(card);
+    _showSlotReelOption(reelIndex, mineId) {
+        const option = document.getElementById(`slot-reel-option-${reelIndex}`);
+        const def = MINE_DEFS[mineId];
+        if (!option || !def) return;
+        const isFull = this.playerMines.length >= 6;
+        option.innerHTML = `
+            <span class="slot-reel-option-name">${def.name}</span>
+            <div class="slot-reel-option-actions">
+                <button type="button" class="slot-reel-view-btn">VIEW</button>
+                <button type="button" class="slot-reel-take-btn juicy-btn"${isFull ? ' disabled' : ''}>TAKE</button>
+            </div>
+        `;
+        option.classList.remove('hidden');
+        option.querySelector('.slot-reel-view-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showMineInfo(mineId);
         });
-        resultArea.classList.remove('hidden');
+        option.querySelector('.slot-reel-take-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._takeSlotMachineMine(mineId);
+        });
+    }
+
+    _takeSlotMachineMine(mineId) {
+        if (this.slotUsed || this.playerMines.length >= 6) return;
+        if (!this.addMineToLoadout(mineId, 0)) return;
+        this.slotUsed = true;
+        const slotActBtn = document.getElementById('slot-btn');
+        if (slotActBtn) {
+            slotActBtn.textContent = 'USED';
+            slotActBtn.classList.add('used', 'mm-act-disabled');
+        }
+        document.getElementById('slot-popup')?.classList.remove('show');
+        const rptEl = document.getElementById('mm-run-pts');
+        if (rptEl) rptEl.textContent = this.runPoints;
+        this.sfx.play('purchase');
     }
 
     /* ── Collection Shop (random rarity-weighted mines) ── */
