@@ -790,7 +790,7 @@ body.dark-mode .sm-ring-bg {
 .mine-cell-placed {
     position: absolute; inset: 0; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    z-index: 2; pointer-events: none;
+    z-index: 2; pointer-events: auto;
     will-change: transform, opacity;
 }
 .mine-cell-placed svg { width: 78%; height: 78%; }
@@ -1768,6 +1768,19 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
     background: var(--accent-grad);
     animation: stopPop .35s cubic-bezier(.3,.7,.3,1.8) both;
 }
+.slot-reel-stopped-name {
+    max-width: 72px;
+    min-height: 1.2em;
+    color: var(--text);
+    font-size: .48rem;
+    font-weight: 900;
+    letter-spacing: .04em;
+    line-height: 1.1;
+    text-align: center;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+    animation: popIn .25s cubic-bezier(.3,.7,.3,1.5) both;
+}
 @keyframes stopPop {
     0%  { transform: scaleX(0); opacity: 0; }
     60% { transform: scaleX(1.3); opacity: 1; }
@@ -1803,7 +1816,7 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
     flex-wrap: wrap;
 }
 .slot-result-mine-card {
-    width: 80px; padding: 10px 6px; border-radius: 14px;
+    width: 94px; padding: 10px 6px; border-radius: 14px;
     background: var(--diff-bg); border: 2px solid var(--border);
     display: flex; flex-direction: column; align-items: center; gap: 6px;
     cursor: pointer; transition: transform .15s, border-color .15s;
@@ -1814,10 +1827,25 @@ body.dev-mode .feat-item.feat-done .feat-name { color: #111; }
 .slot-result-mine-card:nth-child(3) { animation-delay: .12s; }
 .slot-result-mine-card:active { transform: scale(.93); }
 .slot-result-mine-card.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--card) 88%); }
-.slot-result-mine-card.full { opacity: .4; pointer-events: none; }
+.slot-result-mine-card.full { opacity: .4; }
 .slot-result-mine-card svg { width: 32px; height: 32px; }
 .slot-result-mine-card .srmc-name { font-size: .5rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); text-align: center; }
 .slot-result-mine-card .srmc-cost { font-size: .55rem; font-weight: 800; color: var(--accent); }
+.srmc-actions { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 2px; }
+.srmc-view-btn, .srmc-pick-btn {
+    width: 100%; min-height: 24px; padding: 3px 2px;
+    border-radius: 7px; font-size: .43rem; font-weight: 900;
+    letter-spacing: .03em; line-height: 1.1;
+}
+.srmc-view-btn {
+    background: transparent; color: var(--text2);
+    border: 1px solid var(--border);
+}
+.srmc-pick-btn {
+    background: var(--accent-grad); color: #fff;
+    border: 0;
+}
+.srmc-pick-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ── ULTRAKILL FLASH ─────────────────────────────────────── */
 @keyframes ultrakillFlash {

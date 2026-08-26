@@ -2326,6 +2326,8 @@ class Minesweeper {
         for (let i = 0; i < 3; i++) {
             const ind = document.getElementById(`slot-stop-ind-${i}`);
             if (ind) ind.classList.add('hidden');
+             const nameEl = document.getElementById(`slot-stopped-name-${i}`);
+             if (nameEl) { nameEl.textContent = ''; nameEl.classList.add('hidden'); }
         }
         popup.classList.add('show');
         this.sfx.play('modal');
@@ -2410,6 +2412,7 @@ class Minesweeper {
              * obtainable through the Slot Machine, so keep them a rare,
              * lucky pull here too rather than as common as everything else. */
             const pickedId = this._pickRarityWeightedId(ALL_MINE_IDS);
+            const def = MINE_DEFS[pickedId];
             const idx = ALL_MINE_IDS.indexOf(pickedId);
             stoppedMines.push(pickedId);
             const targetOffset = idx * ITEM_HEIGHT;
@@ -2422,6 +2425,11 @@ class Minesweeper {
             }
             const ind = document.getElementById(`slot-stop-ind-${i}`);
             if (ind) ind.classList.remove('hidden');
+             const nameEl = document.getElementById(`slot-stopped-name-${i}`);
+             if (nameEl) {
+                 nameEl.textContent = def.name;
+                 nameEl.classList.remove('hidden');
+             }
             this.sfx.play('slot_stop');
             stoppedCount++;
             if (stoppedCount === 3) {
@@ -2451,11 +2459,29 @@ class Minesweeper {
             const card = document.createElement('div');
             card.className = `slot-result-mine-card${isFull ? ' full' : ''}`;
             card.dataset.rarity = def.rarity;
-            card.innerHTML = `${def.icon()}<span class="srmc-name">${def.name}</span><span class="srmc-cost">FREE</span>`;
-            if (!isFull) {
-                card.addEventListener('click', () => {
+             card.innerHTML = `
+                 ${def.icon()}
+                 <span class="srmc-name">${def.name}</span>
+                 <span class="srmc-cost">FREE</span>
+                 <div class="srmc-actions">
+                     <button type="button" class="srmc-view-btn">VIEW DETAILS</button>
+                     <button type="button" class="srmc-pick-btn juicy-btn"${isFull ? ' disabled' : ''}>TAKE MINE</button>
+                 </div>
+             `;
+             /* The card and VIEW DETAILS show the description without
+              * consuming the slot-machine prize. */
+             card.addEventListener('click', () => this.showMineInfo(id));
+             const viewBtn = card.querySelector('.srmc-view-btn');
+             if (viewBtn) viewBtn.addEventListener('click', (e) => {
+                 e.stopPropagation();
+                 this.showMineInfo(id);
+             });
+             const pickBtn = card.querySelector('.srmc-pick-btn');
+             if (pickBtn && !isFull) {
+                 pickBtn.addEventListener('click', (e) => {
+                     e.stopPropagation();
                     if (this.slotUsed) return;
-                    this.addMineToLoadout(id);
+                     if (!this.addMineToLoadout(id, 0)) return;
                     this.slotUsed = true;
                     const slotActBtn = document.getElementById('slot-btn');
                     if (slotActBtn) { slotActBtn.textContent = 'USED'; slotActBtn.classList.add('used'); slotActBtn.classList.add('mm-act-disabled'); }
